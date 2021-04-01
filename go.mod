@@ -1,1 +1,3 @@
-module "gonmap"
+module gonmap
+
+go 1.16
