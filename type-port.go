@@ -1,5 +1,14 @@
 package gonmap
 
+import (
+	"regexp"
+	"strconv"
+	"strings"
+)
+
+var PORT_LOAD_REGEXP = regexp.MustCompile("^(\\d+)(?:-(\\d+))?$")
+var PORT_LOAD_REGEXPS = regexp.MustCompile("^(\\d+(?:-\\d+)?)(?:,\\d+(?:-\\d+)?)*$")
+
 type port struct {
 	value  []int
 	length int
@@ -44,4 +53,40 @@ func (i *port) Pushs(iArr []int) int {
 
 func (i *port) Len() int {
 	return i.length
+}
+
+func (i *port) Load(expr string) bool {
+	if !PORT_LOAD_REGEXP.MatchString(expr) {
+		return false
+	}
+	rArr := PORT_LOAD_REGEXP.FindStringSubmatch(expr)
+	var startPort, endPort int
+	startPort, _ = strconv.Atoi(rArr[1])
+	if rArr[2] != "" {
+		endPort, _ = strconv.Atoi(rArr[2])
+	} else {
+		endPort = startPort
+	}
+	//fmt.Println(startPort,endPort)
+	portArr := Xrange(startPort, endPort)
+	i.Pushs(portArr)
+	return true
+}
+
+func (p *port) LoadS(str string) bool {
+	if !PORT_LOAD_REGEXPS.MatchString(str) {
+		return false
+	}
+	for _, s := range strings.Split(str, ",") {
+		p.Load(s)
+		//if IsInIntArr(p.value,3389){
+		//	fmt.Println(s)
+		//	os.Exit(0)
+		//}
+	}
+	return true
+}
+
+func (p *port) Fill() {
+	p.Pushs(Xrange(1, 65535))
 }

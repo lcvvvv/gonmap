@@ -79,10 +79,10 @@ func New() *Probes {
 		//Exclude [<protocol>:]<startport>[-<endport>]
 		"Probe": misc.MakeRegexpCompile("^(UDP|TCP) ([a-zA-Z0-9-_./]+) (?:q\\|([^|]*)\\|)$"),
 		//Probe <protocol> <probename> <probestring>
-		"match":  misc.MakeRegexpCompile("^([a-zA-Z0-9-_./]+) m\\|([^|]+)\\|([is]{0,2})(?: (.*))?$"),
-		"match=": misc.MakeRegexpCompile("^([a-zA-Z0-9-_./]+) m=([^=]+)=([is]{0,2})(?: (.*))?$"),
-		"match%": misc.MakeRegexpCompile("^([a-zA-Z0-9-_./]+) m%([^%]+)%([is]{0,2})(?: (.*))?$"),
-		"match@": misc.MakeRegexpCompile("^([a-zA-Z0-9-_./]+) m@([^@]+)@([is]{0,2})(?: (.*))?$"),
+		//"match":  misc.MakeRegexpCompile("^([a-zA-Z0-9-_./]+) m\\|([^|]+)\\|([is]{0,2})(?: (.*))?$"),
+		//"match=": misc.MakeRegexpCompile("^([a-zA-Z0-9-_./]+) m=([^=]+)=([is]{0,2})(?: (.*))?$"),
+		//"match%": misc.MakeRegexpCompile("^([a-zA-Z0-9-_./]+) m%([^%]+)%([is]{0,2})(?: (.*))?$"),
+		//"match@": misc.MakeRegexpCompile("^([a-zA-Z0-9-_./]+) m@([^@]+)@([is]{0,2})(?: (.*))?$"),
 		//match <service> <pattern> <patternopt> [<versioninfo>]
 		"matchVersioninfoProductname": misc.MakeRegexpCompile("p/([^/]+)/"),
 		"matchVersioninfoVersion":     misc.MakeRegexpCompile("v/([^/]+)/"),
@@ -226,39 +226,17 @@ func (this *Probes) makeStr(exprs string) string {
 	return args[1]
 }
 
-func (this *Probes) loadPorts(str string, ssl bool) {
-	var p = port.New()
-	for _, s := range strings.Split(str, ",") {
-		p.Load(s)
-	}
-	if ssl {
-		this.nowProbe.sslports = p
-	} else {
-		this.nowProbe.ports = p
-	}
-}
-
-func (this *Probes) loadExclude(str string) {
-	var exclude = port.NewProtocolPorts()
-	for _, s := range strings.Split(str, ",") {
-		r := this.commandMap["Exclude"].FindStringSubmatch(s)
-		if r[2] == "" {
-			slog.Error("exclude 语句格式错误")
-		}
-		protocol := r[1]
-		exprs := r[2]
-		switch protocol {
-		case "":
-			exclude.TCP.Load(exprs)
-			exclude.UDP.Load(exprs)
-		case "T":
-			exclude.TCP.Load(exprs)
-		case "U":
-			exclude.UDP.Load(exprs)
-		}
-	}
-	this.exclude = exclude
-}
+//func (this *Probes) loadPorts(str string, ssl bool) {
+//	var p = port.New()
+//	for _, s := range strings.Split(str, ",") {
+//		p.Load(s)
+//	}
+//	if ssl {
+//		this.nowProbe.sslports = p
+//	} else {
+//		this.nowProbe.ports = p
+//	}
+//}
 
 func (this *Probes) loadProbe(s string) {
 	//Probe <protocol> <probename> <probestring>
@@ -275,44 +253,44 @@ func (this *Probes) loadProbe(s string) {
 
 }
 
-func (this *Probes) loadMatch(s string, soft bool) {
-	match := gonmap.newMatch()
-	//"match": misc.MakeRegexpCompile("^([a-zA-Z0-9-_./]+) m\\|([^|]+)\\|([is]{0,2}) (.*)$"),
-	//match <service> <pattern>|<patternopt> [<versioninfo>]
-	//	"matchVersioninfoProductname": misc.MakeRegexpCompile("p/([^/]+)/"),
-	//	"matchVersioninfoVersion":     misc.MakeRegexpCompile("v/([^/]+)/"),
-	//	"matchVersioninfoInfo":        misc.MakeRegexpCompile("i/([^/]+)/"),
-	//	"matchVersioninfoHostname":    misc.MakeRegexpCompile("h/([^/]+)/"),
-	//	"matchVersioninfoOS":          misc.MakeRegexpCompile("o/([^/]+)/"),
-	//	"matchVersioninfoDevice":      misc.MakeRegexpCompile("d/([^/]+)/"),
-	var args []string
-	if this.commandMap["match"].MatchString(s) {
-		args = this.commandMap["match"].FindStringSubmatch(s)
-	}
-	if this.commandMap["match="].MatchString(s) {
-		args = this.commandMap["match="].FindStringSubmatch(s)
-	}
-	if this.commandMap["match%"].MatchString(s) {
-		args = this.commandMap["match%"].FindStringSubmatch(s)
-	}
-	if this.commandMap["match@"].MatchString(s) {
-		args = this.commandMap["match@"].FindStringSubmatch(s)
-	}
-	if args[1] == "" || args[2] == "" {
-		slog.Error(errors.New("match 语句参数不正确").Error())
-	}
-	match.soft = soft
-	match.service = args[1]
-	match.pattern = args[2]
-	match.versioninfo.service = match.service
-	match.versioninfo.version = this.getMatchVersionInfo(s, "matchVersioninfoVersion")
-	match.versioninfo.productname = this.getMatchVersionInfo(s, "matchVersioninfoProductname")
-	match.versioninfo.operatingsystem = this.getMatchVersionInfo(s, "matchVersioninfoOS")
-	match.versioninfo.hostname = this.getMatchVersionInfo(s, "matchVersioninfoHostname")
-	match.versioninfo.devicetype = this.getMatchVersionInfo(s, "matchVersioninfoDevice")
-	match.versioninfo.info = this.getMatchVersionInfo(s, "matchVersioninfoInfo")
-	this.nowProbe.matchs = append(this.nowProbe.matchs, match)
-}
+//func (this *Probes) loadMatch(s string, soft bool) {
+//	match := gonmap.newMatch()
+//	//"match": misc.MakeRegexpCompile("^([a-zA-Z0-9-_./]+) m\\|([^|]+)\\|([is]{0,2}) (.*)$"),
+//	//match <service> <pattern>|<patternopt> [<versioninfo>]
+//	//	"matchVersioninfoProductname": misc.MakeRegexpCompile("p/([^/]+)/"),
+//	//	"matchVersioninfoVersion":     misc.MakeRegexpCompile("v/([^/]+)/"),
+//	//	"matchVersioninfoInfo":        misc.MakeRegexpCompile("i/([^/]+)/"),
+//	//	"matchVersioninfoHostname":    misc.MakeRegexpCompile("h/([^/]+)/"),
+//	//	"matchVersioninfoOS":          misc.MakeRegexpCompile("o/([^/]+)/"),
+//	//	"matchVersioninfoDevice":      misc.MakeRegexpCompile("d/([^/]+)/"),
+//	var args []string
+//	if this.commandMap["match"].MatchString(s) {
+//		args = this.commandMap["match"].FindStringSubmatch(s)
+//	}
+//	if this.commandMap["match="].MatchString(s) {
+//		args = this.commandMap["match="].FindStringSubmatch(s)
+//	}
+//	if this.commandMap["match%"].MatchString(s) {
+//		args = this.commandMap["match%"].FindStringSubmatch(s)
+//	}
+//	if this.commandMap["match@"].MatchString(s) {
+//		args = this.commandMap["match@"].FindStringSubmatch(s)
+//	}
+//	if args[1] == "" || args[2] == "" {
+//		slog.Error(errors.New("match 语句参数不正确").Error())
+//	}
+//	match.soft = soft
+//	match.service = args[1]
+//	match.pattern = args[2]
+//	match.versioninfo.service = match.service
+//	match.versioninfo.version = this.getMatchVersionInfo(s, "matchVersioninfoVersion")
+//	match.versioninfo.productname = this.getMatchVersionInfo(s, "matchVersioninfoProductname")
+//	match.versioninfo.operatingsystem = this.getMatchVersionInfo(s, "matchVersioninfoOS")
+//	match.versioninfo.hostname = this.getMatchVersionInfo(s, "matchVersioninfoHostname")
+//	match.versioninfo.devicetype = this.getMatchVersionInfo(s, "matchVersioninfoDevice")
+//	match.versioninfo.info = this.getMatchVersionInfo(s, "matchVersioninfoInfo")
+//	this.nowProbe.matchs = append(this.nowProbe.matchs, match)
+//}
 
 func (this *Probes) Fallback(ProbeName string) *gonmap.response {
 	this.probeGroup[ProbeName].response = this.response

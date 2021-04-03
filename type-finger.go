@@ -1,5 +1,7 @@
 package gonmap
 
+import "fmt"
+
 type finger struct {
 	service         string
 	productname     string
@@ -26,4 +28,8 @@ func newFinger() *finger {
 		operatingsystem: "",
 		devicetype:      "",
 	}
+}
+
+func (f *finger) Show() {
+	fmt.Println(f)
 }

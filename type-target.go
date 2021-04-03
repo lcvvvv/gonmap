@@ -5,3 +5,7 @@ type target struct {
 	host string
 	uri  string
 }
+
+func newTarget() *target {
+	return &target{0, "", ""}
+}
