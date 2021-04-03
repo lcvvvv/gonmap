@@ -52,14 +52,20 @@ func (p *probe) loads(sArr []string) {
 }
 
 func (p *probe) scan(t *target) (string, error) {
-
+	var data string
+	var err error
 	if p.ports.Exist(t.port) {
-		data, err := simplenet.Send(p.request.protocol, t.uri, p.request.string, p.totalwaitms, 512)
-		if err == nil {
+		data, err = simplenet.Send(p.request.protocol, t.uri, p.request.string, p.totalwaitms, 512)
+		if err != nil {
+			fmt.Println(err.Error())
+		} else {
 			return data, err
 		}
 	}
-	return simplenet.TLSSend(p.request.protocol, t.uri, p.request.string, p.totalwaitms, 512)
+	if p.sslports.Exist(t.port) {
+		data, err = simplenet.TLSSend(p.request.protocol, t.uri, p.request.string, p.totalwaitms, 512)
+	}
+	return data, err
 }
 
 func (p *probe) match(s string) *finger {
@@ -80,13 +86,14 @@ func (p *probe) match(s string) *finger {
 				p.softMatchFilter = m.service
 				continue
 			} else {
-				//如果为硬捕获则直接设置指纹信息
-				f = m.versioninfo
+				//如果为硬捕获则直接获取指纹信息
+				f = m.makeVersionInfo(s)
 				f.service = m.service
 				return f
 			}
 		}
 	}
+	//如果最终没匹配到硬匹配，则直接返回软匹配结果
 	p.softMatchFilter = ""
 	if f.service != "" {
 		return f

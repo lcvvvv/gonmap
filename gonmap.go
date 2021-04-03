@@ -20,6 +20,7 @@ func Init() {
 		target:      newTarget(),
 		response:    nil,
 		finger:      nil,
+		filter:      5,
 	}
 	for i := 1; i <= 65535; i++ {
 		NMAP.portMap[i] = []string{}
@@ -36,6 +37,7 @@ func New() *nmap {
 		target:      nil,
 		response:    nil,
 		finger:      nil,
+		filter:      5,
 	}
 	*n = *NMAP
 	return n
@@ -50,6 +52,7 @@ type nmap struct {
 	portMap     map[int][]string
 
 	target *target
+	filter int
 
 	response *response
 	finger   *finger
@@ -62,6 +65,9 @@ func (n *nmap) Scan(ip string, port int) *finger {
 
 	//fmt.Println(n.portMap[port])
 	for _, requestName := range n.portMap[port] {
+		if n.probeGroup[requestName].rarity > n.filter {
+			continue
+		}
 		fmt.Println("开始探测：", requestName, "权重为", n.probeGroup[requestName].rarity)
 		data, err := n.probeGroup[requestName].scan(n.target)
 		if err != nil {
@@ -76,6 +82,10 @@ func (n *nmap) Scan(ip string, port int) *finger {
 		}
 	}
 	return nil
+}
+
+func (n *nmap) Filter(i int) {
+	n.filter = i
 }
 
 func (n *nmap) getFinger(data string, requestName string) *finger {
@@ -136,10 +146,16 @@ func (n *nmap) pushProbe(p *probe) {
 	n.probeGroup[p.request.name] = PROBE
 
 	//建立端口扫描对应表，将根据端口号决定使用何种请求包
+	//如果端口列表为空，这为全端口
 	if p.ports.length+p.sslports.length == 0 {
 		p.ports.Fill()
 		p.sslports.Fill()
+		for _, i := range p.ports.value {
+			n.portMap[i] = append(n.portMap[i], p.request.name)
+		}
+		return
 	}
+	//分别亚茹sslports,ports
 	for _, i := range p.ports.value {
 		n.portMap[i] = append(n.portMap[i], p.request.name)
 	}

@@ -60,6 +60,7 @@ func (m *match) load(s string, soft bool) bool {
 	m.versioninfo.hostname = m.getVersionInfo(s, "HOSTNAME")
 	m.versioninfo.operatingsystem = m.getVersionInfo(s, "OS")
 	m.versioninfo.devicetype = m.getVersionInfo(s, "INFO")
+
 	m.patternRegexp = m.getPatternRegexp(m.pattern)
 	return true
 }
@@ -75,4 +76,17 @@ func (m *match) getVersionInfo(s string, regID string) string {
 	} else {
 		return ""
 	}
+}
+
+func (m *match) makeVersionInfo(s string) *finger {
+	f := newFinger()
+	//fmt.Println(s)
+	f.info = m.patternRegexp.ReplaceAllString(s, m.versioninfo.info)
+	f.devicetype = m.patternRegexp.ReplaceAllString(s, m.versioninfo.devicetype)
+	f.hostname = m.patternRegexp.ReplaceAllString(s, m.versioninfo.hostname)
+	f.operatingsystem = m.patternRegexp.ReplaceAllString(s, m.versioninfo.operatingsystem)
+	f.productname = m.patternRegexp.ReplaceAllString(s, m.versioninfo.productname)
+	f.version = m.patternRegexp.ReplaceAllString(s, m.versioninfo.version)
+	f.service = m.patternRegexp.ReplaceAllString(s, m.versioninfo.service)
+	return f
 }
