@@ -18,15 +18,17 @@ func Send(protocol string, netloc string, data string, duration time.Duration, s
 	buf := make([]byte, size)
 	_, err = io.WriteString(conn, data)
 	if err != nil {
+		_ = conn.Close()
 		return "", err
 	}
 	length, err := conn.Read(buf)
 	if err != nil {
+		_ = conn.Close()
 		return "", err
 	}
 	_ = conn.Close()
 	if length == 0 {
-		return "", errors.New("返回包为空")
+		return "", errors.New("response is empty")
 	}
 	return string(buf[:length]), nil
 }
@@ -47,16 +49,18 @@ func TLSSend(protocol string, netloc string, data string, duration time.Duration
 	}
 	_, err = io.WriteString(conn, data)
 	if err != nil {
+		_ = conn.Close()
 		return "", err
 	}
 	buf := make([]byte, size)
 	length, err := conn.Read(buf)
 	if err != nil {
+		_ = conn.Close()
 		return "", err
 	}
 	_ = conn.Close()
 	if length == 0 {
-		return "", errors.New("返回包为空")
+		return "", errors.New("response is empty")
 	}
 	return string(buf[:length]), nil
 }
