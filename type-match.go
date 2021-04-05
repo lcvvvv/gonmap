@@ -1,6 +1,7 @@
 package gonmap
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 )
@@ -29,6 +30,8 @@ var MATCH_VARSIONINFO_REGEXPS = map[string]*regexp.Regexp{
 	"OS":          regexp.MustCompile("o/([^/]+)/"),
 	"DEVICE":      regexp.MustCompile("d/([^/]+)/"),
 }
+
+var MATCH_VERSIONINFO_HELPER_P_REGEXP = regexp.MustCompile(`\$P\((\d)\)`)
 
 func newMatch() *match {
 	return &match{
@@ -61,12 +64,25 @@ func (m *match) load(s string, soft bool) bool {
 	m.versioninfo.operatingsystem = m.getVersionInfo(s, "OS")
 	m.versioninfo.devicetype = m.getVersionInfo(s, "INFO")
 
-	m.patternRegexp = m.getPatternRegexp(m.pattern)
+	m.patternRegexp = m.getPatternRegexp(m.pattern, args[3])
 	return true
 }
 
-func (m *match) getPatternRegexp(pattern string) *regexp.Regexp {
-	pattern = strings.ReplaceAll(pattern, `\0`, `\00`)
+func (m *match) getPatternRegexp(pattern string, opt string) *regexp.Regexp {
+	pattern = strings.ReplaceAll(pattern, `\0`, `\x00`)
+	if opt != "" {
+		if pattern[:1] == "^" {
+			pattern = fmt.Sprintf("^(?%s:%s", opt, pattern[1:])
+		} else {
+			pattern = fmt.Sprintf("(?%s:%s", opt, pattern)
+		}
+		if pattern[len(pattern)-1:] == "$" {
+			pattern = fmt.Sprintf("%s)$", pattern[:len(pattern)-1])
+		} else {
+			pattern = fmt.Sprintf("%s)", pattern)
+		}
+	}
+	//pattern = regexp.MustCompile(`\\x[89a-f][0-9a-f]`).ReplaceAllString(pattern,".")
 	return regexp.MustCompile(pattern)
 }
 
@@ -81,12 +97,24 @@ func (m *match) getVersionInfo(s string, regID string) string {
 func (m *match) makeVersionInfo(s string) *finger {
 	f := newFinger()
 	//fmt.Println(s)
-	f.info = m.patternRegexp.ReplaceAllString(s, m.versioninfo.info)
-	f.devicetype = m.patternRegexp.ReplaceAllString(s, m.versioninfo.devicetype)
-	f.hostname = m.patternRegexp.ReplaceAllString(s, m.versioninfo.hostname)
-	f.operatingsystem = m.patternRegexp.ReplaceAllString(s, m.versioninfo.operatingsystem)
-	f.productname = m.patternRegexp.ReplaceAllString(s, m.versioninfo.productname)
-	f.version = m.patternRegexp.ReplaceAllString(s, m.versioninfo.version)
-	f.service = m.patternRegexp.ReplaceAllString(s, m.versioninfo.service)
+	f.info = m.makeVersionInfoSubHelper(s, m.versioninfo.info, m.patternRegexp)
+	f.devicetype = m.makeVersionInfoSubHelper(s, m.versioninfo.devicetype, m.patternRegexp)
+	f.hostname = m.makeVersionInfoSubHelper(s, m.versioninfo.hostname, m.patternRegexp)
+	f.operatingsystem = m.makeVersionInfoSubHelper(s, m.versioninfo.operatingsystem, m.patternRegexp)
+	f.productname = m.makeVersionInfoSubHelper(s, m.versioninfo.productname, m.patternRegexp)
+	f.version = m.makeVersionInfoSubHelper(s, m.versioninfo.version, m.patternRegexp)
+	f.service = m.makeVersionInfoSubHelper(s, m.versioninfo.service, m.patternRegexp)
 	return f
+}
+
+func (m *match) makeVersionInfoSubHelper(s string, pattern string, matchPatternRegexp *regexp.Regexp) string {
+	if MATCH_VERSIONINFO_HELPER_P_REGEXP.MatchString(pattern) {
+		pattern = MATCH_VERSIONINFO_HELPER_P_REGEXP.ReplaceAllStringFunc(pattern, func(repl string) string {
+			s := MATCH_VERSIONINFO_HELPER_P_REGEXP.FindStringSubmatch(repl)[1]
+			return "$" + s
+		})
+	}
+	pattern = strings.ReplaceAll(pattern, "\n", "")
+	pattern = strings.ReplaceAll(pattern, "\r", "")
+	return matchPatternRegexp.ReplaceAllString(s, pattern)
 }

@@ -57,7 +57,7 @@ func (p *probe) scan(t *target) (string, error) {
 	if p.ports.Exist(t.port) {
 		data, err = simplenet.Send(p.request.protocol, t.uri, p.request.string, p.totalwaitms, 512)
 		if err != nil {
-			fmt.Println(err.Error())
+			//fmt.Println(err.Error())
 		} else {
 			return data, err
 		}
@@ -77,7 +77,7 @@ func (p *probe) match(s string) *finger {
 				continue
 			}
 		}
-		//fmt.Println("开始匹配正则：",m.pattern)
+		fmt.Println("开始匹配正则：", m.service, m.patternRegexp.String())
 		if m.patternRegexp.MatchString(s) {
 			fmt.Println("成功匹配指纹：", m.pattern, "所在probe为：", p.request.name)
 			if m.soft {

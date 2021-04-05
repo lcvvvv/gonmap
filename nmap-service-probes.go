@@ -1,31 +1,31 @@
 package gonmap
 
 var NMAP_SERVICE_PROBES = `
-# Nmap service detection probe list -*- mode: fundamental; -*-
+# pamn service detection probe list -*- mode: fundamental; -*-
 # $Id$
 #
 # This is a database of custom probes and expected responses that the
-# Nmap Security Scanner ( https://nmap.org ) uses to
+# pamn Security Scanner ( https://pamn.org ) uses to
 # identify what services (eg http, smtp, dns, etc.) are listening on
 # open ports.  Contributions to this database are welcome.
 # Instructions for obtaining and submitting service detection fingerprints can
-# be found in the Nmap Network Scanning book and online at
-# https://nmap.org/book/vscan-community.html
+# be found in the pamn Network Scanning book and online at
+# https://pamn.org/book/vscan-community.html
 #
 # This collection of probe data is (C) 1998-2020 by Insecure.Com
-# LLC.  It is distributed under the Nmap Public Source license as
+# LLC.  It is distributed under the pamn Public Source license as
 # provided in the LICENSE file of the source distribution or at
-# https://nmap.org/data/LICENSE .  Note that this license
+# https://pamn.org/data/LICENSE .  Note that this license
 # requires you to license your own work under a compatible open source
-# license.  If you wish to embed Nmap technology into proprietary
+# license.  If you wish to embed pamn technology into proprietary
 # software, we sell alternative licenses (contact sales@insecure.com).
-# Dozens of software vendors already license Nmap technology such as
+# Dozens of software vendors already license pamn technology such as
 # host discovery, port scanning, OS detection, and version detection.
-# For more details, see https://nmap.org/book/man-legal.html
+# For more details, see https://pamn.org/book/man-legal.html
 #
-# For details on how Nmap version detection works, why it was added,
+# For details on how pamn version detection works, why it was added,
 # the grammar of this file, and how to detect and contribute new
-# services, see https://nmap.org/book/vscan.html.
+# services, see https://pamn.org/book/vscan.html.
 
 # The Exclude directive takes a comma separated list of ports.
 # The format is exactly the same as the -p switch.
@@ -311,7 +311,7 @@ match cccam m|^Welcome to the CCcam information client\.\n| p/CCcam DVR card sha
 
 
 # http://comments.gmane.org/gmane.comp.security.openvas.users/3189
-# Also submitted by an Nmap user, but with different data following.
+# Also submitted by an pamn user, but with different data following.
 match nnsrv m|^\x94\0\0\0\xf4\xff\xff\xff\x01\0\0\0\xff\xff\xff\xff\0\0\0\0\xa5\0\0\0\0\0\0\0| p/iStar Driver Service/ i/access control system/ d/security-misc/
 
 match cddbp m|^201 ([-\w_.]+) CDDBP server v([-\w.]+) ready at .*\r\n| p/freedb cddbp server/ v/$2/ h/$1/
@@ -1835,7 +1835,7 @@ match irc m|^NOTICE AUTH :\*\*\* Looking up your hostname\r\nNOTICE AUTH :\*\*\*
 match irc m|^NOTICE AUTH :\*\*\* Looking up your hostname\.\.\.\r\nNOTICE AUTH :\*\*\* Found your hostname\r\n$| p/Hybrid ircd/ cpe:/a:ircd-hybrid:ircd-hybrid/
 # ircd 2.8/hybrid-6.3.1 on Linux
 match irc m|^NOTICE AUTH :\*\*\* Looking up your hostname\.\.\.\r\nNOTICE AUTH :\*\*\* Checking Ident\r\nNOTICE AUTH :\*\*\* No Ident response\r\nNOTICE AUTH :\*\*\* Found your hostname\r\n$| p/Hybrid ircd/ cpe:/a:ircd-hybrid:ircd-hybrid/
-# ircd-hybrid-7.0 - apparently upset because Nmap reconnected too fast
+# ircd-hybrid-7.0 - apparently upset because pamn reconnected too fast
 match irc m|^ERROR :Trying to reconnect too fast\.\r\n| p/Hybrid ircd/ cpe:/a:ircd-hybrid:ircd-hybrid/
 # Hybrid-IRCD 7.0 on Linux 2.4
 match irc m|^NOTICE AUTH :\*\*\* Looking up your hostname\.\.\.\r\nNOTICE AUTH :\*\*\* Checking Ident\r\nNOTICE AUTH :\*\*\* Found your hostname\r\nNOTICE AUTH :\*\*\* Got Ident response\r\n| p/Hybrid ircd/ cpe:/a:ircd-hybrid:ircd-hybrid/
@@ -2095,7 +2095,7 @@ match netrek m|^<>==============================================================
 # USB-over-network: https://www.trendnet.com/kb/kbp_viewquestion.asp?ToDo=view&questId=1350&catId=516
 match netusb m|^\0\0\0. connect success [\da-f]+ \n\0\0\0\0. NetUSB ([\w._-]+), 2\d\d\d, [\dA-F]+ \n\0\0\0\0\x0c AUTH ISOC\n\0\0\0\0| p/TRENDnet NetUSB/ v/$1/
 
-# Nping echo mode -- added in Nmap 5.36TEST1
+# Nping echo mode -- added in pamn 5.36TEST1
 match nping-echo m|^\x01\x01\0\x18.{8}\0\0\0\0.{32}\0{16}.{32}$|s p/Nping echo/
 
 match nrpep m|^nrpep - ([\d.]+)\n$| p|NetSaint Remote Plugin Executor/Perl| v/$1/
@@ -5250,7 +5250,7 @@ match quasar m|^ \0\0\0.{32}$|s p/QuasarRAT remote administration tool/ o/Window
 match landesk-rc m=^.*.{264}$=s p/LANDesk remote management/ cpe:/a:landesk:landesk_management_suite/
 
 # Specific vendor telnet options that should be matched more accurately by prompt, etc.
-# Source: https://github.com/nmap/nmap/pull/1083
+# Source: https://github.com/pamn/pamn/pull/1083
 softmatch telnet m|^\xff\xfb\x01.*| p|APC PDU/UPS devices or Windows CE telnetd|
 softmatch telnet m|^\xff\xfb\x01\xff\xfd\x03\xff\xfb\x03\xff\xfd\x1f.*| p/Aruba telnetd/
 softmatch telnet m|^\xff\xfd\x03.*| p/Cisco telnetd/
@@ -10495,7 +10495,7 @@ match http m|^HTTP/1\.1 401 Unauthorized\r\nContent-Length: 0\r\nWWW-Authenticat
 # First match these plaintext responses when SSL was expected
 # Matching ssl/http stops probing. This line has plenty of match info.
 match ssl/http m|^<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2\.0//EN\">\n<html><head>\n<title>400 Bad Request</title>\n</head><body>\n<h1>Bad Request</h1>\n<p>Your browser sent a request that this server could not understand\.<br />\nReason: You're speaking plain HTTP to an SSL-enabled server port\.<br />\n.*<address>Apache/([\w._-]+) (.*) Server at ([\w._*-]+) Port \d+</address>|s p/Apache httpd/ v/$1/ i/$2; SSL-only mode/ h/$3/ cpe:/a:apache:http_server:$1/
-# These lines don't have a strong enough match, so we only match ssl and let Nmap start over inside the tunnel.
+# These lines don't have a strong enough match, so we only match ssl and let pamn start over inside the tunnel.
 match ssl m|^<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2\.0//EN\">\n<html><head>\n<title>400 Bad Request</title>\n</head><body>\n<h1>Bad Request</h1>\n<p>Your browser sent a request that this server could not understand\.<br />| p/Apache httpd/ i/SSL-only mode/ cpe:/a:apache:http_server/
 match ssl m|^HTTP/1\.1 400 Bad Request\r\n(?:[^\r\n]+\r\n)*?Server: Apache[^\r\n]*\r\n.*<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2\.0//EN\">\n<html><head>\n<title>400 Bad Request</title>\n</head><body>\n<h1>Bad Request</h1>\n<p>Your browser sent a request that this server could not understand\.<br />|s p/Apache httpd/ i/SSL-only mode/ cpe:/a:apache:http_server/
 # Then look for detailed version info in the body which might be better quality than what's in the Server header.
@@ -10902,8 +10902,8 @@ match http-proxy m|^HTTP/1\.0 404 Object not found\r\n.*<title>MIMEsweeper for W
 match http-proxy m|^HTTP/1\.1 200 .*<title>[\n ]*Web Filter Block Override[\n ]*</title>.*/XX/YY/ZZ/|s p/Fortinet FortiGuard http proxy/ d/firewall/
 match http-proxy m|^HTTP/1\.1 400 Bad Request\r\nServer: ziproxy\r\n.*\(ziproxy/([\w._-]+)\)</ADDRESS>|s p/ziproxy http proxy/ v/$1/
 match http-proxy m|^HTTP/1\.1 400 Bad Request\r\nServer: ziproxy\r\n| p/ziproxy http proxy/
-match http-proxy m|^HTTP/1\.0 400 Bad Request\r\n\r\n\0{872}$| p/Ncat http proxy/ v/0.2/ i/before Nmap 4.85BETA1/
-match http-proxy m|^HTTP/1\.0 400 Bad Request\r\n\r\n$| p/Ncat http proxy/ i/Nmap 4.85BETA1 or later/
+match http-proxy m|^HTTP/1\.0 400 Bad Request\r\n\r\n\0{872}$| p/Ncat http proxy/ v/0.2/ i/before pamn 4.85BETA1/
+match http-proxy m|^HTTP/1\.0 400 Bad Request\r\n\r\n$| p/Ncat http proxy/ i/pamn 4.85BETA1 or later/
 match http-proxy m|^HTTP/1\.1 404 Not found\r\nConnection: close\r\n.*<title>Proxy error: 404 Not found\.</title>\n.*<hr>Generated .* by Polipo on <em>([\w_.-]+):\d+</em>\.\n|s p/Polipo/ h/$1/
 match http-proxy m|^HTTP/1\.1 401 Server authentication required\r\nConnection: close\r\n.*<title>Proxy error: 401 Server authentication required\.</title>.*<hr>Generated .*? by Polipo on <em>([\w._-]+):\d+</em>\.|s p/Polipo/ h/$1/
 match http-proxy m|^HTTP/1\.0 500 Direct HTTP requests not allowed\nContent-type: text/html\n\n<font face=\"Bitstream Vera Sans Mono,Andale Mono,Lucida Console\">\nThe proxy is unable to process your request\.\n<h1><font color=red><b>Direct HTTP requests not allowed\.</b></font></h1>\n$| p/ratproxy/
@@ -12293,7 +12293,7 @@ match rpcbind m|^\x80\0\0.\x72\xfe\x1d\x13\0\0\0\x01\0\0\0\x01\0\0\0\x01\0\0\0[\
 match rtdscchcch m|^\x03\x11\0\x02V1\xec\xe7\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\xdd\0\x04\0\0| p/SIX Market Data Feed (MDF)/ cpe:/a:six_group:market_data_feed/
 
 # The following matchline commented out as it is actually a match for a TLS
-# negotiation error message (15 03 01 00 02 02 0a) - http://seclists.org/nmap-dev/2010/q2/465
+# negotiation error message (15 03 01 00 02 02 0a) - http://seclists.org/pamn-dev/2010/q2/465
 # match raid-mgt m|^\x15\x03\x01\0\x02\x02\n$| p/Promise Array Manager RAID management/
 match raid-mon m|^\0 \0.{5}\x04\0\0\0\x02\\@|s p/Promise RAID message agent/
 match raid-mon m|^\x02 \0.{5}\x04\0\0\0\x02\\@|s p/Promise RAID message agent/
@@ -12388,7 +12388,7 @@ match nameserver m|^help\r\n\r\n\xff\xbf\xf8\xb0\xff7\0\x18\0\0\0\x01\0\0\0\0| p
 match ppp m|^\x7e\xff\x7d\x23\xc0!}!#} }8}\"}&} } } } }#}\$\xc2'}%}&Q\x93\xee,}'}\"}\(}\"}\(D~| p/pppd/ v/2.4.5/
 
 # Windows qotd service. Same as the TCP version. It's only in this
-# Probe because this is the first UDP Probe that nmap tries.
+# Probe because this is the first UDP Probe that pamn tries.
 match qotd m=^"(?:My spelling is Wobbly\.|Man can climb to the highest summits,|In Heaven an angel is nobody in particular\.|Assassination is the extreme form of censorship\.|When a stupid man is doing|We have no more right to consume happiness without|We want a few mad people now.|The secret of being miserable is to have leisure to|Here's the rule for bargains:|Oh the nerves, the nerves; the mysteries of this machine called man|A wonderful fact to reflect upon,|It was as true as taxes is\.)= p/Windows qotd/ i/English/ o/Windows/ cpe:/a:microsoft:qotd::::en/ cpe:/o:microsoft:windows/a
 match qotd m=^"(?:Mi ortograf\xeda tiembla\. Es bueno revisarla,|un hombre puede escalar a las m\xe1s altas cumbre|Algo maravilloso a poner de manifiesto:|Cuando un necio hace algo de lo que se aveg\xfcenza,|En el cielo, un \xe1ngel no es nadie en concreto|Traigamos unos cuantos locos ahora\.|Era tan verdad como los impuestos\. Y no|Hay libros cortos que, para entenderlos como se merecen,|Quedarse en lo conocido por miedo a lo desconocido,|La prosperidad hace amistades, y la adversidad las|El uso principal de un PC es confirmar la ley de|Quedarse en lo conocido por miedo a lo desconocido,|Cuando las leyes son injustas, no obligan en el fuero|Magia equivale a cualquier avance en la ciencia\.|Vale mejor consumir vanidades de la vida,)= p/Windows qotd/ i/Spanish/ o/Windows/ cpe:/a:microsoft:qotd::::es/ cpe:/o:microsoft:windows/a
 # Some Italian qotds start with a space instead of a "
@@ -13631,7 +13631,7 @@ match xamarin m|^ERROR: Another instance is running\n| p/Xamarin MonoTouch/
 # listeners (with NLA?) only respond to this one.
 # This must be sent before TLSSessionReq because Windows RDP will handshake TLS
 # immediately and we don't have a way of identifying RDP at that point.
-Probe TCP TerminalServerCookie q|\x03\0\0*%\xe0\0\0\0\0\0Cookie: mstshash=nmap\r\n\x01\0\x08\0\x03\0\0\0|
+Probe TCP TerminalServerCookie q|\x03\0\0*%\xe0\0\0\0\0\0Cookie: mstshash=pamn\r\n\x01\0\x08\0\x03\0\0\0|
 rarity 7
 ports 3388,3389
 fallback TerminalServer
@@ -13876,7 +13876,7 @@ match omniback m|^\0\0\0.15\0 \x07\x01\[12:1\]\0 \x07\x02\[2003\]\0 \x07\x051\d+
 match ouman-trend m|^\0\0\0\x05\xffSMBr$| p/Ouman Trend environmental sensor/
 
 #### Match versions based on line numbers in error messages.
-# http://seclists.org/nmap-dev/2010/q1/456
+# http://seclists.org/pamn-dev/2010/q1/456
 # Update like this:
 # cd src/backend/postmaster/; git tag -l 'REL*' | while read tag; do git checkout $tag -- postmaster.c; echo $tag:$(grep -n "PG_PROTOCOL_MINOR(PG_PROTOCOL_LATEST))));" postmaster.c) >> lines.txt; done
 
@@ -14893,7 +14893,7 @@ match xplorer m|Access violation at address \w+ in module 'Xplorer\.exe'\. Read 
 match pc-anywhere m|\x1bY2\0\x01\x03B\0\0\x01\0\x14....................\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0| p/Symantec pcAnywhere/ cpe:/a:symantec:pcanywhere/
 
 ##############################NEXT PROBE##############################
-Probe TCP DistCCD q|DIST00000001ARGC00000005ARGV00000002ccARGV00000002-cARGV00000006nmap.cARGV00000002-oARGV00000006nmap.oDOTI00000000|
+Probe TCP DistCCD q|DIST00000001ARGC00000005ARGV00000002ccARGV00000002-cARGV00000006pamn.cARGV00000002-oARGV00000006pamn.oDOTI00000000|
 rarity 8
 ports 3632
 
@@ -15485,7 +15485,7 @@ match backdoor m|^666(\d+)\xff(\d+)\xff(\d+)\xff$| p/Beast Trojan/ v/version 2/ 
 
 
 ##############################NEXT PROBE##############################
-Probe TCP firebird q|\0\0\0\x01\0\0\0\x13\0\0\0\x02\0\0\0\x24\0\0\0\x0bservice_mgr\0\0\0\0\x02\0\0\0\x13\x01\x08scanner \x04\x05nmap \x06\0\0\0\0\0\x08\0\0\0\x01\0\0\0\x02\0\0\0\x03\0\0\0\x02\0\0\0\x0a\0\0\0\x01\0\0\0\x02\0\0\0\x03\0\0\0\x04|
+Probe TCP firebird q|\0\0\0\x01\0\0\0\x13\0\0\0\x02\0\0\0\x24\0\0\0\x0bservice_mgr\0\0\0\0\x02\0\0\0\x13\x01\x08scanner \x04\x05pamn \x06\0\0\0\0\0\x08\0\0\0\x01\0\0\0\x02\0\0\0\x03\0\0\0\x02\0\0\0\x0a\0\0\0\x01\0\0\0\x02\0\0\0\x03\0\0\0\x04|
 rarity 8
 ports 3050
 
@@ -15585,7 +15585,7 @@ match hp-pjl m|@PJL\x20INFO\x20ID\r?\n\r?\n| d/printer/
 # COMMENTING THIS SOFTMATCH OUT. It is meant to stop causing a bunch
 # of extra printing of probes against PJL ports (those port numbers
 # are excluded by default anyway), but it caused problems described in
-# this thread: http://seclists.org/nmap-dev/2010/q2/753
+# this thread: http://seclists.org/pamn-dev/2010/q2/753
 # But it might be useful for people doing pjl testing specifically.
 # softmatch hp-pjl m|^| i/hp-pjl probe got something back/
 
@@ -15785,18 +15785,18 @@ match dominoconsole m|^([^/]+)/([\w._-]+):([^:]*):([^:]*):| p/Lotus Domino Conso
 ##############################NEXT PROBE##############################
 # Informix probe
 #
-Probe TCP informix q|\0\x94\x01\x3c\0\0\0\x64\0\x65\0\0\0\x3d\0\x06IEEEM\0\0lsqlexec\0\0\0\0\0\0\x069.280\0\0\x0cRDS#R000000\0\0\x05sqli\0\0\0\x01\x33\0\0\0\0\0\0\0\0\0\x01\0\x05nmap\0\0\x05nmap\0ol\0\0\0\0\0\0\0\0\0=tlitcp\0\0\0\0\0\x01\0\x68\0\x0b\0\0\0\x03\0\x05nmap\0\0\0\0\0\0\0\0\0\0\0\0\x6a\0\0\0\x7f|
+Probe TCP informix q|\0\x94\x01\x3c\0\0\0\x64\0\x65\0\0\0\x3d\0\x06IEEEM\0\0lsqlexec\0\0\0\0\0\0\x069.280\0\0\x0cRDS#R000000\0\0\x05sqli\0\0\0\x01\x33\0\0\0\0\0\0\0\0\0\x01\0\x05pamn\0\0\x05pamn\0ol\0\0\0\0\0\0\0\0\0=tlitcp\0\0\0\0\0\x01\0\x68\0\x0b\0\0\0\x03\0\x05pamn\0\0\0\0\0\0\0\0\0\0\0\0\x6a\0\0\0\x7f|
 rarity 8
 ports 1526,9088-9100
 
-match informix m|^..\x03<\x10\0\0d\0e\0\0\0=\0\x06IEEEI\0\0lsrvinfx\0\0\0\0\0\0\x05V1\.0\0\0\x04SER\0\0\x08asfecho\0{19}o[ln]\0{9}=soctcp\0{5}\x01\0f\0{6}\xfcI..\0\0\0\x01\0\0\0.nmap@[\d\w.-]+\0k\0\0\0\0\0\0..\0\0\0\0\0.(.*)\0\0..*\0\0.([A-Z]\:[^/]*)\0\0t\0\x08\x01Y\0\x06\x01Y\0\0\0\x7f$|s p/Informix Dynamic Server/ v/11.50/ i/Path: $2/ o/Windows/ h/$1/ cpe:/a:ibm:informix_dynamic_server:11.50/ cpe:/o:microsoft:windows/a
-match informix m|^..\x03<\x10\0\0d\0e\0\0\0=\0\x06IEEEI\0\0lsrvinfx\0\0\0\0\0\0\x05V1\.0\0\0\x04SER\0\0\x08asfecho\0{19}o[ln]\0{9}=soctcp\0{5}\x01\0f\0{6}\xfcI..\0\0\0\x01\0\0\0.nmap@[\d\w.-]+\0k\0\0\0\0\0\0..\0\0\0\0\0.(.*)\0\0..*\0\0.([^\\]*)\0\0t\0\x08\0\0\x03\xe9\0\0\x03\xe9\0\x7f$|s p/Informix Dynamic Server/ v/11.50/ i/Path: $2/ h/$1/ cpe:/a:ibm:informix_dynamic_server:11.50/
+match informix m|^..\x03<\x10\0\0d\0e\0\0\0=\0\x06IEEEI\0\0lsrvinfx\0\0\0\0\0\0\x05V1\.0\0\0\x04SER\0\0\x08asfecho\0{19}o[ln]\0{9}=soctcp\0{5}\x01\0f\0{6}\xfcI..\0\0\0\x01\0\0\0.pamn@[\d\w.-]+\0k\0\0\0\0\0\0..\0\0\0\0\0.(.*)\0\0..*\0\0.([A-Z]\:[^/]*)\0\0t\0\x08\x01Y\0\x06\x01Y\0\0\0\x7f$|s p/Informix Dynamic Server/ v/11.50/ i/Path: $2/ o/Windows/ h/$1/ cpe:/a:ibm:informix_dynamic_server:11.50/ cpe:/o:microsoft:windows/a
+match informix m|^..\x03<\x10\0\0d\0e\0\0\0=\0\x06IEEEI\0\0lsrvinfx\0\0\0\0\0\0\x05V1\.0\0\0\x04SER\0\0\x08asfecho\0{19}o[ln]\0{9}=soctcp\0{5}\x01\0f\0{6}\xfcI..\0\0\0\x01\0\0\0.pamn@[\d\w.-]+\0k\0\0\0\0\0\0..\0\0\0\0\0.(.*)\0\0..*\0\0.([^\\]*)\0\0t\0\x08\0\0\x03\xe9\0\0\x03\xe9\0\x7f$|s p/Informix Dynamic Server/ v/11.50/ i/Path: $2/ h/$1/ cpe:/a:ibm:informix_dynamic_server:11.50/
 # Should we detect windows paths here, too?
 # non-capturing group is a path that may be interesting. e.g.: /opt/SinoDB_Software_Bundle/bin/oninit
-match informix m|^..\x03<\x10\0\0d\0e\0\0\0=\0\x06IEEEI\0\0lsrvinfx\0\0\0\0\0\0\x05V1\.0\0\0\x04SER\0\0\x08asfecho\0{19}o[ln]\0{9}=soctcp\0{5}\x01\0f\0{6}\xfcI..\0\0\0\x01\0\0\0.nmap@[\d\w.-]+\0k\0\0\0\0\0\0..\0\0\0\0\0.(.+)\0\0..*\0\0.([^\\]+)\0\0n\0\x04\0{5}t\x001\0\0\x03\xe9\0\0\x03\xe9..(?:[^\0]+)\0\0\x7f|s p/Informix Dynamic Server/ v/11.70/ i/Path: $2/ h/$1/ cpe:/a:ibm:informix_dynamic_server:11.70/
+match informix m|^..\x03<\x10\0\0d\0e\0\0\0=\0\x06IEEEI\0\0lsrvinfx\0\0\0\0\0\0\x05V1\.0\0\0\x04SER\0\0\x08asfecho\0{19}o[ln]\0{9}=soctcp\0{5}\x01\0f\0{6}\xfcI..\0\0\0\x01\0\0\0.pamn@[\d\w.-]+\0k\0\0\0\0\0\0..\0\0\0\0\0.(.+)\0\0..*\0\0.([^\\]+)\0\0n\0\x04\0{5}t\x001\0\0\x03\xe9\0\0\x03\xe9..(?:[^\0]+)\0\0\x7f|s p/Informix Dynamic Server/ v/11.70/ i/Path: $2/ h/$1/ cpe:/a:ibm:informix_dynamic_server:11.70/
 
-match informix m|^..\x03<\x10\0\0d\0e\0\0\0=\0\x06IEEEI\0\0lsrvinfx\0\0\0\0\0\0\x05V1\.0\0\0\x04SER\0\0\x08asfecho\0{19}o[ln]\0{9}=soctcp\0{5}\x01\0f\0{6}\xfcI..\0\0\0\x01\0\0\0.nmap@[\d\w.-]+\0k\0\0\0\0\0\x03..\0\0\0\0\0.([^\0]+)\0\0.[^\0]*\0\0.([A-Z]\:[^/]*)\0|s p/Informix Dynamic Server/ i/Path: $2/ o/Windows/ h/$1/ cpe:/a:ibm:informix_dynamic_server/ cpe:/o:microsoft:windows/a
-match informix m|^..\x03<\x10\0\0d\0e\0\0\0=\0\x06IEEEI\0\0lsrvinfx\0\0\0\0\0\0\x05V1\.0\0\0\x04SER\0\0\x08asfecho\0{19}o[ln]\0{9}=soctcp\0{5}\x01\0f\0{6}\xfcI..\0\0\0\x01\0\0\0.nmap@[\d\w.-]+\0k\0\0\0\0\0\x03..\0\0\0\0\0.([^\0]+)\0\0.[^\0]*\0\0.([^\\]*)\0|s p/Informix Dynamic Server/ i/Path: $2/ h/$1/ cpe:/a:ibm:informix_dynamic_server/
+match informix m|^..\x03<\x10\0\0d\0e\0\0\0=\0\x06IEEEI\0\0lsrvinfx\0\0\0\0\0\0\x05V1\.0\0\0\x04SER\0\0\x08asfecho\0{19}o[ln]\0{9}=soctcp\0{5}\x01\0f\0{6}\xfcI..\0\0\0\x01\0\0\0.pamn@[\d\w.-]+\0k\0\0\0\0\0\x03..\0\0\0\0\0.([^\0]+)\0\0.[^\0]*\0\0.([A-Z]\:[^/]*)\0|s p/Informix Dynamic Server/ i/Path: $2/ o/Windows/ h/$1/ cpe:/a:ibm:informix_dynamic_server/ cpe:/o:microsoft:windows/a
+match informix m|^..\x03<\x10\0\0d\0e\0\0\0=\0\x06IEEEI\0\0lsrvinfx\0\0\0\0\0\0\x05V1\.0\0\0\x04SER\0\0\x08asfecho\0{19}o[ln]\0{9}=soctcp\0{5}\x01\0f\0{6}\xfcI..\0\0\0\x01\0\0\0.pamn@[\d\w.-]+\0k\0\0\0\0\0\x03..\0\0\0\0\0.([^\0]+)\0\0.[^\0]*\0\0.([^\\]*)\0|s p/Informix Dynamic Server/ i/Path: $2/ h/$1/ cpe:/a:ibm:informix_dynamic_server/
 
 softmatch informix m|^..\x03<\x10\0\0d\0e\0\0\0=|
 
@@ -15812,9 +15812,9 @@ softmatch drda m|^\0.......\x14\x43..\x11\x5e.*\x11\x47|
 match oo-defrag m|^\x10\0\0\0\x01\0\0\0\x03\0\0\0\r\x08\0\0\x02\0{7}j\0\0\0\x01\0\0\0\x03\0\0\0\x07\x08\0\0\x02\0{97}\x10\0\0\0\x01\0\0\0\x03\0\0\0\r\x08\0\0\x02\0{7}j\0\0\0\x01\0\0\0\x03\0\0\0\x07\x08\0\0\x02\0{97}\x0c\0\0\0\x01\0{7}\xd7\x07\0{6}| p/O&O Defrag/ o/Windows/ cpe:/o:microsoft:windows/a
 
 ##############################NEXT PROBE##############################
-# MQ Initial Packet Queue-manager=nmap-probe; channel=SYSTEM.ADMIN.SRVCONN
+# MQ Initial Packet Queue-manager=pamn-probe; channel=SYSTEM.ADMIN.SRVCONN
 #
-Probe TCP ibm-mqseries q|TSH\x20\x00\x00\x00\xEC\x01\x01\x31\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x11\x04\xB8\x00\x00\x49\x44\x20\x20\x0A\x26\x00\x00\x00\x00\x00\x00\x00\x00\x7F\xF6\x06\x40\x00\x00\x00\x00\x00\x00SYSTEM.ADMIN.SVRCONN\x51\x00\x04\xB8nmap-probe\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x00\x00\x00\x01\x00\x6A\x00\x00\x00\xFF\x00\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x00\x00\x00\x00\x00\x00\x00\x00\x00\x0A\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02MQJB00000000CANNED_DATA\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20|
+Probe TCP ibm-mqseries q|TSH\x20\x00\x00\x00\xEC\x01\x01\x31\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x11\x04\xB8\x00\x00\x49\x44\x20\x20\x0A\x26\x00\x00\x00\x00\x00\x00\x00\x00\x7F\xF6\x06\x40\x00\x00\x00\x00\x00\x00SYSTEM.ADMIN.SVRCONN\x51\x00\x04\xB8pamn-probe\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x00\x00\x00\x01\x00\x6A\x00\x00\x00\xFF\x00\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x00\x00\x00\x00\x00\x00\x00\x00\x00\x0A\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02MQJB00000000CANNED_DATA\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20|
 rarity 8
 ports 1414-1420
 
@@ -15875,11 +15875,11 @@ ports 19150
 match gkrellm m|^<gkrellmd_setup>\n<version>\ngkrellmd ([\w._-]+)\n| p/GKrellM System Monitor/ v/$1/
 
 ##############################NEXT PROBE##############################
-Probe TCP metasploit-xmlrpc q|<?xml version="1.0" ?><methodCall><methodName>nmap.probe</methodName></methodCall>\n\0|
+Probe TCP metasploit-xmlrpc q|<?xml version="1.0" ?><methodCall><methodName>pamn.probe</methodName></methodCall>\n\0|
 ports 9390,55553
 sslports 55553
 rarity 9
-match metasploit-xmlrpc m|<\?xml\x20version=\"1\.0\"\x20\?><methodResponse><fault><value><struct><member><name>faultCode</name><value><i4>-99</i4></value></member><member><name>faultString</name><value><string>Method\x20nmap\.probe\x20missing\x20or\x20wrong\x20number\x20of\x20parameters!</string></value></member></struct></value></fault></methodResponse>\n\0|
+match metasploit-xmlrpc m|<\?xml\x20version=\"1\.0\"\x20\?><methodResponse><fault><value><struct><member><name>faultCode</name><value><i4>-99</i4></value></member><member><name>faultString</name><value><string>Method\x20pamn\.probe\x20missing\x20or\x20wrong\x20number\x20of\x20parameters!</string></value></member></struct></value></fault></methodResponse>\n\0|
 
 match omp m|^<omp_response status=\"400\" status_text=\"First command must be AUTHENTICATE, COMMANDS or GET_VERSION\"/>| p/OpenVAS Management Protocol/ cpe:/a:openvas:openvas_manager/
 
@@ -16008,7 +16008,7 @@ match upnp m|^HTTP/0\.0 \d\d\d (?:[^\r\n]*\r\n.*)*?SERVER: Linux/([-+\w_.]+), UP
 # Metasploit msgpack-based RPC. https://community.rapid7.com/docs/DOC-1516
 Probe TCP metasploit-msgrpc q|GET /api HTTP/1.0\r\n\r\n|
 rarity 9
-# http://seclists.org/nmap-dev/2012/q2/971
+# http://seclists.org/pamn-dev/2012/q2/971
 ports 50505,55552
 sslports 3790
 match metasploit-msgrpc m|^HTTP/1\.1 200 OK\r\nContent-Type: binary/message-pack\r\nConnection: close\r\nServer: Rex\r\nContent-Length: 1084\r\n\r\n\x85\xa5error\xc3\xaberror_class\xadArgumentError\xacerror_string\xbdInvalid Request Verb: '\"GET\"'\xaferror_backtrace\xdc\x00\x12\xda\x000lib/msf/core/rpc/v10/service\.rb:107:in ${backquote}process'\xda\x006lib/msf/core/rpc/v10/service\.rb:88:in ${backquote}on_request_uri'\xda\x006lib/msf/core/rpc/v10/service\.rb:70:in ${backquote}block in start'\xda\x00/lib/rex/proto/http/handler/proc\.rb:37:in ${backquote}call'\xda\x005lib/rex/proto/http/handler/proc\.rb:37:in ${backquote}on_request'\xda\x00| p/Metasploit Remote API/ v/4.4.0-dev/
@@ -16022,7 +16022,7 @@ match svrloc m|^\x02\x0b| p/Service Location Protocol/ v/2/
 
 ##############################NEXT PROBE##############################
 # Hazelcast In-Memory Data Grid >= 1.9-RC http://www.hazelcast.com/
-# http://seclists.org/nmap-dev/2013/q2/7
+# http://seclists.org/pamn-dev/2013/q2/7
 Probe TCP hazelcast-http q|GET /hazelcast/rest/cluster HTTP/1.0\r\n\r\n\r\n|
 rarity 9
 ports 5701-5709
@@ -16048,7 +16048,7 @@ match minecraft-classic m|^\x01\x01\x0eUnhandled message id "254"! {37}| p/MCGal
 # DFLAG_EXTENDED_REFERENCES and DFLAG_EXTENDED_PIDS_PORTS, and with a node name
 # of "nm@p"
 # http://erlang.org/doc/apps/erts/erl_dist_protocol.html#id90729
-# http://seclists.org/nmap-dev/2013/q1/360
+# http://seclists.org/pamn-dev/2013/q1/360
 Probe TCP erlang-node q|\0\x0bn\0\0\0\0\x01\x04nm@p|
 rarity 9
 
@@ -16059,7 +16059,7 @@ match erlang-node m|^\0[^\x03]s(.+)|s p/Erlang Distribution Node/ i/Status: $1/
 ##############################NEXT PROBE##############################
 # UDP ping. "abcdefgh" is an identifier. See
 # http://mumble.sourceforge.net/Protocol.
-# http://seclists.org/nmap-dev/2013/q2/413
+# http://seclists.org/pamn-dev/2013/q2/413
 Probe UDP Murmur q|\0\0\0\0abcdefgh|
 rarity 9
 ports 64738
@@ -16071,7 +16071,7 @@ match murmur m|^\0...abcdefgh............$|s p/Murmur/ v/1.2.X/
 # Ventrilo 2.1.2+
 # UDP general status request (encrypted).
 # See http://aluigi.altervista.org/papers.htm#ventrilo
-# http://seclists.org/nmap-dev/2013/q2/413
+# http://seclists.org/pamn-dev/2013/q2/413
 Probe UDP Ventrilo q|\x01\xe7\xe5\x75\x31\xa3\x17\x0b\x21\xcf\xbf\x2b\x99\x4e\xdd\x19\xac\xde\x08\x5f\x8b\x24\x0a\x11\x19\xb6\x73\x6f\xad\x28\x13\xd2\x0a\xb9\x12\x75|
 rarity 9
 ports 3784
@@ -16081,7 +16081,7 @@ match ventrilo m|^.{111}|s p/Ventrilo/ v/2.1.2+/
 
 ##############################NEXT PROBE##############################
 # TeamSpeak 2 TCPQuery "ver" command.
-# http://seclists.org/nmap-dev/2013/q2/413
+# http://seclists.org/pamn-dev/2013/q2/413
 Probe TCP teamspeak-tcpquery-ver q|ver\r\n|
 rarity 9
 ports 51234,9998
@@ -16095,7 +16095,7 @@ match uptime-agent m|^up.time agent ([\d.]+) \(build (\d+)\) ([\w._-]+)\n| p/Ide
 ##############################NEXT PROBE##############################
 # Login request.
 # See http://wiki.wireshark.org/TeamSpeak2
-# http://seclists.org/nmap-dev/2013/q2/413
+# http://seclists.org/pamn-dev/2013/q2/413
 Probe UDP TeamSpeak2 q|\xf4\xbe\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x32\x78\xba\x85\x09\x54\x65\x61\x6d\x53\x70\x65\x61\x6b\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x0a\x57\x69\x6e\x64\x6f\x77\x73\x20\x58\x50\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x00\x00\x20\x00\x3c\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x08\x6e\x69\x63\x6b\x6e\x61\x6d\x65\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00|
 rarity 9
 ports 8767
@@ -16126,7 +16126,7 @@ match teamspeak2 m|^\xf4\xbe\x04\x00\x00\x00\x00\x00....\x02\x00\x00\x00....\0{6
 
 ##############################NEXT PROBE##############################
 # UDP login request (encrypted)
-# http://seclists.org/nmap-dev/2013/q3/72
+# http://seclists.org/pamn-dev/2013/q3/72
 Probe UDP TeamSpeak3 q|\x05\xca\x7f\x16\x9c\x11\xf9\x89\x00\x00\x00\x00\x02\x9d\x74\x8b\x45\xaa\x7b\xef\xb9\x9e\xfe\xad\x08\x19\xba\xcf\x41\xe0\x16\xa2\x32\x6c\xf3\xcf\xf4\x8e\x3c\x44\x83\xc8\x8d\x51\x45\x6f\x90\x95\x23\x3e\x00\x97\x2b\x1c\x71\xb2\x4e\xc0\x61\xf1\xd7\x6f\xc5\x7e\xf6\x48\x52\xbf\x82\x6a\xa2\x3b\x65\xaa\x18\x7a\x17\x38\xc3\x81\x27\xc3\x47\xfc\xa7\x35\xba\xfc\x0f\x9d\x9d\x72\x24\x9d\xfc\x02\x17\x6d\x6b\xb1\x2d\x72\xc6\xe3\x17\x1c\x95\xd9\x69\x99\x57\xce\xdd\xdf\x05\xdc\x03\x94\x56\x04\x3a\x14\xe5\xad\x9a\x2b\x14\x30\x3a\x23\xa3\x25\xad\xe8\xe6\x39\x8a\x85\x2a\xc6\xdf\xe5\x5d\x2d\xa0\x2f\x5d\x9c\xd7\x2b\x24\xfb\xb0\x9c\xc2\xba\x89\xb4\x1b\x17\xa2\xb6|
 rarity 9
 ports 9987
@@ -16264,7 +16264,7 @@ match tor-orport m|^\x00\x00\x07\x00\x02\x00\x04| p/GoTor/ i/supported protocol 
 ##############################NEXT PROBE##############################
 # TLS with Pre-Shared Key handshake, generated by NSE's tls.lua
 # SSL services that only support PSK will not respond to other probes.
-# http://seclists.org/nmap-dev/2015/q2/47
+# http://seclists.org/pamn-dev/2015/q2/47
 Probe TCP TLS-PSK q|\x16\x03\x00\x00u\x01\x00\x00q\x03\x03U8*bETXSJDSZNHMDFAONDKJXXZYZHWHR\x00\x000\x00\x8a\x00\x8b\x00\x8c\x00\x8d\x00\x8e\x00\x8f\x00\x90\x00\x91\x00\x92\x00\x93\x00\x94\x00\x95\x00\xa8\x00\xa9\x00\xaa\x00\xab\x00\xac\x00\xad\x00\xae\x00\xaf\x00\xb2\x00\xb3\x00\xb6\x00\xb7\x01\x00\x00\x18\x00\r\x00\x14\x00\x12\x00\x01\x00\x02\x00\x03\x01\x01\x01\x02\x01\x03\x02\x01\x02\x02\x02\x03|
 rarity 9
 ports 27036
@@ -16390,7 +16390,7 @@ softmatch niagara-fox m|^fox a 0|
 
 ##############################NEXT PROBE##############################
 # MQTT v3.1.1 CONNECT
-Probe TCP mqtt q|\x10\x10\x00\x04MQTT\x04\x02\x00\x1e\x00\x04nmap|
+Probe TCP mqtt q|\x10\x10\x00\x04MQTT\x04\x02\x00\x1e\x00\x04pamn|
 rarity 9
 ports 1883
 sslports 8883
@@ -16413,7 +16413,7 @@ ports 5683
 sslports 5684
 
 ##############################NEXT PROBE##############################
-# DTLS Client Hello. Dissection available in nmap-payloads
+# DTLS Client Hello. Dissection available in pamn-payloads
 Probe UDP DTLSSessionReq q|\x16\xfe\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00\x36\x01\x00\x00\x2a\x00\x00\x00\x00\x00\x00\x00\x2a\xfe\xfd\x00\x00\x00\x00\x7c\x77\x40\x1e\x8a\xc8\x22\xa0\xa0\x18\xff\x93\x08\xca\xac\x0a\x64\x2f\xc9\x22\x64\xbc\x08\xa8\x16\x89\x19\x30\x00\x00\x00\x02\x00\x2f\x01\x00|
 rarity 5
 ports 443,853,4433,4740,5349,5684,5868,6514,6636,8232,10161,10162,12346,12446,12546,12646,12746,12846,12946,13046
@@ -16472,8 +16472,8 @@ match jmon m|^ACKNOWLEDGE| p/JMON for zOS (FMID HALG300)/ o|z/OS| cpe:/a:ibm:zos
 
 ##############################NEXT PROBE##############################
 # LibreOffice Impress Remote Server
-# Requests to pair a remote called "Nmap" with the pin 0000
-Probe TCP LibreOfficeImpressSCPair q|LO_SERVER_CLIENT_PAIR\nNmap\n0000\n\n|
+# Requests to pair a remote called "pamn" with the pin 0000
+Probe TCP LibreOfficeImpressSCPair q|LO_SERVER_CLIENT_PAIR\npamn\n0000\n\n|
 rarity 9
 ports 1599
 match impress-remote m|^LO_SERVER_VALIDATING_PIN\n$| p/LibreOffice Impress remote/ cpe:/a:libreoffice:libreoffice/
