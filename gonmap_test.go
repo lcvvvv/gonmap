@@ -7,7 +7,7 @@ import (
 func TestGonmap(t *testing.T) {
 	Init()
 	n := New()
-	n.Scan("192.168.217.22", 80).Show()
+	n.Scan("192.168.217.22", 21).Show()
 	//for i := 1; i <= 10000; i++ {
 	//	fmt.Println("开始探测端口：",i)
 	//	fmt.Println(n.Scan("192.168.217.1", 139))

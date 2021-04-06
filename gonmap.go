@@ -27,6 +27,17 @@ func Init() {
 		NMAP.portMap[i] = []string{}
 	}
 	NMAP.loads(NMAP_SERVICE_PROBES)
+	NMAP.allPortMap = append(NMAP.allPortMap, "TCP_GetRequest")
+	NMAP.probeGroup["TCP_GetRequest"].sslports.Fill()
+	NMAP.probeGroup["TCP_GetRequest"].ports.Fill()
+
+	PROBE_COUNT := len(NMAP.probeSort)
+	MATCH_COUNT := 0
+	for _, p := range NMAP.probeGroup {
+		MATCH_COUNT += len(p.matchGroup)
+	}
+	fmt.Println("成功加载探针：", PROBE_COUNT)
+	fmt.Println("成功加载指纹库：", MATCH_COUNT)
 }
 
 func New() *nmap {

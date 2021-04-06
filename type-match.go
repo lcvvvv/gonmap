@@ -97,24 +97,28 @@ func (m *match) getVersionInfo(s string, regID string) string {
 func (m *match) makeVersionInfo(s string) *finger {
 	f := newFinger()
 	//fmt.Println(s)
-	f.info = m.makeVersionInfoSubHelper(s, m.versioninfo.info, m.patternRegexp)
-	f.devicetype = m.makeVersionInfoSubHelper(s, m.versioninfo.devicetype, m.patternRegexp)
-	f.hostname = m.makeVersionInfoSubHelper(s, m.versioninfo.hostname, m.patternRegexp)
-	f.operatingsystem = m.makeVersionInfoSubHelper(s, m.versioninfo.operatingsystem, m.patternRegexp)
-	f.productname = m.makeVersionInfoSubHelper(s, m.versioninfo.productname, m.patternRegexp)
-	f.version = m.makeVersionInfoSubHelper(s, m.versioninfo.version, m.patternRegexp)
-	f.service = m.makeVersionInfoSubHelper(s, m.versioninfo.service, m.patternRegexp)
+	f.info = m.makeVersionInfoSubHelper(s, m.versioninfo.info)
+	f.devicetype = m.makeVersionInfoSubHelper(s, m.versioninfo.devicetype)
+	f.hostname = m.makeVersionInfoSubHelper(s, m.versioninfo.hostname)
+	f.operatingsystem = m.makeVersionInfoSubHelper(s, m.versioninfo.operatingsystem)
+	f.productname = m.makeVersionInfoSubHelper(s, m.versioninfo.productname)
+	f.version = m.makeVersionInfoSubHelper(s, m.versioninfo.version)
+	f.service = m.makeVersionInfoSubHelper(s, m.versioninfo.service)
 	return f
 }
 
-func (m *match) makeVersionInfoSubHelper(s string, pattern string, matchPatternRegexp *regexp.Regexp) string {
+func (m *match) makeVersionInfoSubHelper(s string, pattern string) string {
 	if MATCH_VERSIONINFO_HELPER_P_REGEXP.MatchString(pattern) {
 		pattern = MATCH_VERSIONINFO_HELPER_P_REGEXP.ReplaceAllStringFunc(pattern, func(repl string) string {
 			s := MATCH_VERSIONINFO_HELPER_P_REGEXP.FindStringSubmatch(repl)[1]
 			return "$" + s
 		})
 	}
+	if len(m.patternRegexp.FindStringSubmatch(s)) == 1 {
+		return pattern
+	}
+	pattern = m.patternRegexp.ReplaceAllString(s, pattern)
 	pattern = strings.ReplaceAll(pattern, "\n", "")
 	pattern = strings.ReplaceAll(pattern, "\r", "")
-	return matchPatternRegexp.ReplaceAllString(s, pattern)
+	return pattern
 }

@@ -55,6 +55,7 @@ func (p *probe) scan(t *target) (string, error) {
 	var data string
 	var err error
 	if p.ports.Exist(t.port) {
+		fmt.Println("开始TCP探测")
 		data, err = simplenet.Send(p.request.protocol, t.uri, p.request.string, p.totalwaitms, 512)
 		if err != nil {
 			//fmt.Println(err.Error())
@@ -63,6 +64,7 @@ func (p *probe) scan(t *target) (string, error) {
 		}
 	}
 	if p.sslports.Exist(t.port) {
+		fmt.Println("开始TLS探测")
 		data, err = simplenet.TLSSend(p.request.protocol, t.uri, p.request.string, p.totalwaitms, 512)
 	}
 	return data, err
@@ -77,7 +79,7 @@ func (p *probe) match(s string) *finger {
 				continue
 			}
 		}
-		fmt.Println("开始匹配正则：", m.service, m.patternRegexp.String())
+		//fmt.Println("开始匹配正则：", m.service, m.patternRegexp.String())
 		if m.patternRegexp.MatchString(s) {
 			fmt.Println("成功匹配指纹：", m.pattern, "所在probe为：", p.request.name)
 			if m.soft {
@@ -93,8 +95,9 @@ func (p *probe) match(s string) *finger {
 			}
 		}
 	}
-	//如果最终没匹配到硬匹配，则直接返回软匹配结果
+	//清空软匹配过滤器
 	p.softMatchFilter = ""
+	//如果最终没匹配到硬匹配，则直接返回软匹配结果
 	if f.service != "" {
 		return f
 	} else {
