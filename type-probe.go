@@ -51,23 +51,14 @@ func (p *probe) loads(sArr []string) {
 	}
 }
 
-func (p *probe) scan(t *target) (string, error) {
-	var data string
-	var err error
-	if p.ports.Exist(t.port) {
-		fmt.Println("开始TCP探测")
-		data, err = simplenet.Send(p.request.protocol, t.uri, p.request.string, p.totalwaitms, 512)
-		if err != nil {
-			//fmt.Println(err.Error())
-		} else {
-			return data, err
-		}
-	}
-	if p.sslports.Exist(t.port) {
+func (p *probe) scan(t *target, ssl bool) (string, error) {
+	if ssl {
 		fmt.Println("开始TLS探测")
-		data, err = simplenet.TLSSend(p.request.protocol, t.uri, p.request.string, p.totalwaitms, 512)
+		return simplenet.TLSSend(p.request.protocol, t.uri, p.request.string, p.totalwaitms, 512)
+	} else {
+		fmt.Println("开始TCP探测")
+		return simplenet.Send(p.request.protocol, t.uri, p.request.string, p.totalwaitms, 512)
 	}
-	return data, err
 }
 
 func (p *probe) match(s string) *finger {
@@ -97,12 +88,7 @@ func (p *probe) match(s string) *finger {
 	}
 	//清空软匹配过滤器
 	p.softMatchFilter = ""
-	//如果最终没匹配到硬匹配，则直接返回软匹配结果
-	if f.service != "" {
-		return f
-	} else {
-		return nil
-	}
+	return f
 }
 
 func (p *probe) load(s string) {

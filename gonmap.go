@@ -62,54 +62,72 @@ type nmap struct {
 	finger   *finger
 }
 
-func (n *nmap) Scan(ip string, port int) *finger {
+func (n *nmap) Scan(ip string, port int) *portinfo {
 	n.target.host = ip
 	n.target.port = port
 	n.target.uri = fmt.Sprintf("%s:%d", ip, port)
 
 	//fmt.Println(n.portMap[port])
 	//拼接端口探测队列，全端口探测放在最后
-	requestList := n.portMap[port]
-	requestList = append(requestList, n.allPortMap...)
-	//开始端口探测
-	for _, requestName := range requestList {
-		if n.probeGroup[requestName].rarity > n.filter {
-			continue
-		}
+	portinfo := newPortInfo()
+	//开始特定端口探测
+	for _, requestName := range n.portMap[port] {
 		fmt.Println("开始探测：", requestName, "权重为", n.probeGroup[requestName].rarity)
-		data, err := n.probeGroup[requestName].scan(n.target)
-		if err != nil {
-			if strings.Contains(err.Error(), "refused") {
-				return nil
-			}
-			if strings.Contains(err.Error(), "close") {
-				return nil
-			}
-			fmt.Println(err)
-			continue
-		} else {
-			//若存在返回包，则开始捕获指纹
-			fmt.Printf("成功捕获到返回包，返回包为：%x\n", data)
-			fmt.Printf("成功捕获到返回包，返回包长度为：%x\n", len(data))
-			f := n.getFinger(data, requestName)
-			//如果成功匹配指纹，则直接返回指纹
-			if f != nil {
-				return f
-			}
-			fmt.Println("未捕获到指纹")
+		tls := n.probeGroup[requestName].sslports.Exist(n.target.port)
+		portinfo = n.getPortInfo(n.probeGroup[requestName], n.target, tls)
+		if portinfo.status == "CLOSE" || portinfo.status == "MATCHED" {
+			break
 		}
 	}
-	return nil
+	if portinfo.status == "CLOSE" || portinfo.status == "MATCHED" {
+		return portinfo
+	}
+	//开始全端口探测
+	for _, requestName := range n.allPortMap {
+		fmt.Println("开始全端口探测：", requestName, "权重为", n.probeGroup[requestName].rarity)
+		portinfo = n.getPortInfo(n.probeGroup[requestName], n.target, false)
+		if portinfo.status == "CLOSE" || portinfo.status == "MATCHED" {
+			break
+		}
+		portinfo = n.getPortInfo(n.probeGroup[requestName], n.target, true)
+		if portinfo.status == "CLOSE" || portinfo.status == "MATCHED" {
+			break
+		}
+	}
+	return portinfo
 }
 
-func (n *nmap) Filter(i int) {
-	n.filter = i
+func (n *nmap) getPortInfo(p *probe, target *target, tls bool) *portinfo {
+	portinfo := newPortInfo()
+	data, err := p.scan(target, tls)
+	if err != nil {
+		if strings.Contains(err.Error(), "refused") {
+			return portinfo.CLOSED()
+		}
+		if strings.Contains(err.Error(), "close") {
+			return nil
+		}
+		fmt.Println(err)
+		return portinfo
+	} else {
+		portinfo.response.string = data
+		//若存在返回包，则开始捕获指纹
+		fmt.Printf("成功捕获到返回包，返回包为：%x\n", data)
+		fmt.Printf("成功捕获到返回包，返回包长度为：%x\n", len(data))
+		portinfo.finger = n.getFinger(data, p.request.name)
+		if portinfo.finger.service == "" {
+			return portinfo.OPEN()
+		} else {
+			return portinfo.MATCHED()
+		}
+		//如果成功匹配指纹，则直接返回指纹
+	}
 }
 
 func (n *nmap) getFinger(data string, requestName string) *finger {
 	data = n.convResponse(data)
 	f := n.probeGroup[requestName].match(data)
-	if f == nil {
+	if f.service == "" {
 		if n.probeGroup[requestName].fallback != "" {
 			return n.probeGroup["TCP_"+n.probeGroup[requestName].fallback].match(data)
 		}
@@ -177,13 +195,16 @@ func (n *nmap) pushProbe(p *probe) {
 
 	//建立端口扫描对应表，将根据端口号决定使用何种请求包
 	//如果端口列表为空，则为全端口
+	if p.rarity > n.filter {
+		return
+	}
 	if p.ports.length+p.sslports.length == 0 {
 		p.ports.Fill()
 		p.sslports.Fill()
 		n.allPortMap = append(n.allPortMap, p.request.name)
 		return
 	}
-	//分别亚茹sslports,ports
+	//分别压入sslports,ports
 	for _, i := range p.ports.value {
 		n.portMap[i] = append(n.portMap[i], p.request.name)
 	}
@@ -212,4 +233,8 @@ func (n *nmap) isCommand(line string) bool {
 		}
 	}
 	return false
+}
+
+func (n *nmap) Filter(i int) {
+	n.filter = i
 }

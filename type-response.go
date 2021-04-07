@@ -9,3 +9,7 @@ func newResponse() *response {
 		string: "",
 	}
 }
+
+func (r *response) Length() int {
+	return len(r.string)
+}

@@ -1,13 +1,15 @@
 package gonmap
 
 import (
+	"fmt"
 	"testing"
 )
 
 func TestGonmap(t *testing.T) {
 	Init()
 	n := New()
-	n.Scan("192.168.217.22", 21).Show()
+	r := n.Scan("www.baidu.com", 443)
+	fmt.Println(r)
 	//for i := 1; i <= 10000; i++ {
 	//	fmt.Println("开始探测端口：",i)
 	//	fmt.Println(n.Scan("192.168.217.1", 139))
