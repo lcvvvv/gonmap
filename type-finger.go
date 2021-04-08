@@ -28,6 +28,18 @@ func newFinger() *finger {
 	}
 }
 
+func (f *finger) Map() map[string]string {
+	r := make(map[string]string)
+	r["service"] = f.service
+	r["productname"] = f.productname
+	r["version"] = f.version
+	r["info"] = f.info
+	r["hostname"] = f.hostname
+	r["operatingsystem"] = f.operatingsystem
+	r["devicetype"] = f.devicetype
+	return r
+}
+
 //func (f *finger) Show() {
 //	fmt.Println("service:", f.service)
 //	fmt.Println("productname:", f.productname)

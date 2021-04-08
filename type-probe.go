@@ -2,8 +2,7 @@ package gonmap
 
 import (
 	"errors"
-	"fmt"
-	"gonmap/simplenet"
+	"github.com/lcvvvv/gonmap/simplenet"
 	"regexp"
 	"strconv"
 	"strings"
@@ -53,10 +52,10 @@ func (p *probe) loads(sArr []string) {
 
 func (p *probe) scan(t *target, ssl bool) (string, error) {
 	if ssl {
-		fmt.Println("开始TLS探测")
+		//fmt.Println("开始TLS探测")
 		return simplenet.TLSSend(p.request.protocol, t.uri, p.request.string, p.totalwaitms, 512)
 	} else {
-		fmt.Println("开始TCP探测")
+		//fmt.Println("开始TCP探测")
 		return simplenet.Send(p.request.protocol, t.uri, p.request.string, p.totalwaitms, 512)
 	}
 }
@@ -72,7 +71,7 @@ func (p *probe) match(s string) *finger {
 		}
 		//fmt.Println("开始匹配正则：", m.service, m.patternRegexp.String())
 		if m.patternRegexp.MatchString(s) {
-			fmt.Println("成功匹配指纹：", m.pattern, "所在probe为：", p.request.name)
+			//fmt.Println("成功匹配指纹：", m.pattern, "所在probe为：", p.request.name)
 			if m.soft {
 				//如果为软捕获，这设置筛选器
 				f.service = m.service

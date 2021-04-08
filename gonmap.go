@@ -8,8 +8,10 @@ import (
 
 var NMAP *nmap
 
-func Init() {
-	fmt.Println("初始化了")
+//r["PROBE"] 总探针数、r["MATCH"] 总指纹数 、r["USED_PROBE"] 已使用探针数、r["USED_MATCH"] 已使用指纹数
+func Init(filter int) map[string]int {
+	//fmt.Println("初始化了")
+	r := make(map[string]int)
 	NMAP_SERVICE_PROBES = strings.Replace(NMAP_SERVICE_PROBES, "${backquote}", "`", -1)
 	NMAP = &nmap{
 		exclude:     newPort(),
@@ -23,21 +25,26 @@ func Init() {
 		finger:      nil,
 		filter:      5,
 	}
-	for i := 1; i <= 65535; i++ {
+	NMAP.filter = filter
+	for i := 0; i <= 65535; i++ {
 		NMAP.portMap[i] = []string{}
 	}
 	NMAP.loads(NMAP_SERVICE_PROBES)
 	NMAP.allPortMap = append(NMAP.allPortMap, "TCP_GetRequest")
-	NMAP.probeGroup["TCP_GetRequest"].sslports.Fill()
-	NMAP.probeGroup["TCP_GetRequest"].ports.Fill()
 
-	PROBE_COUNT := len(NMAP.probeSort)
-	MATCH_COUNT := 0
+	r["PROBE"] = len(NMAP.probeSort)
+	r["MATCH"] = 0
 	for _, p := range NMAP.probeGroup {
-		MATCH_COUNT += len(p.matchGroup)
+		r["MATCH"] += len(p.matchGroup)
 	}
-	fmt.Println("成功加载探针：", PROBE_COUNT)
-	fmt.Println("成功加载指纹库：", MATCH_COUNT)
+	//fmt.Printf("成功加载探针：【%d】个,指纹【%d】条\n", PROBE_COUNT,MATCH_COUNT)
+	r["USED_PROBE"] = len(NMAP.portMap[0])
+	r["USED_MATCH"] = 0
+	for _, p := range NMAP.portMap[0] {
+		r["USED_MATCH"] += len(NMAP.probeGroup[p].matchGroup)
+	}
+	//fmt.Printf("本次扫描将使用探针:[%d]个,指纹[%d]条\n", USED_PROBE_COUNT,USED_MATCH_COUNT)
+	return r
 }
 
 func New() *nmap {
@@ -72,7 +79,7 @@ func (n *nmap) Scan(ip string, port int) *portinfo {
 	portinfo := newPortInfo()
 	//开始特定端口探测
 	for _, requestName := range n.portMap[port] {
-		fmt.Println("开始探测：", requestName, "权重为", n.probeGroup[requestName].rarity)
+		//fmt.Println("开始探测：", requestName, "权重为", n.probeGroup[requestName].rarity)
 		tls := n.probeGroup[requestName].sslports.Exist(n.target.port)
 		portinfo = n.getPortInfo(n.probeGroup[requestName], n.target, tls)
 		if portinfo.status == "CLOSE" || portinfo.status == "MATCHED" {
@@ -112,8 +119,8 @@ func (n *nmap) getPortInfo(p *probe, target *target, tls bool) *portinfo {
 	} else {
 		portinfo.response.string = data
 		//若存在返回包，则开始捕获指纹
-		fmt.Printf("成功捕获到返回包，返回包为：%x\n", data)
-		fmt.Printf("成功捕获到返回包，返回包长度为：%x\n", len(data))
+		//fmt.Printf("成功捕获到返回包，返回包为：%x\n", data)
+		//fmt.Printf("成功捕获到返回包，返回包长度为：%x\n", len(data))
 		portinfo.finger = n.getFinger(data, p.request.name)
 		if portinfo.finger.service == "" {
 			return portinfo.OPEN()
@@ -198,6 +205,9 @@ func (n *nmap) pushProbe(p *probe) {
 	if p.rarity > n.filter {
 		return
 	}
+	//0记录所有使用的探针
+	n.portMap[0] = append(n.portMap[0], p.request.name)
+
 	if p.ports.length+p.sslports.length == 0 {
 		p.ports.Fill()
 		p.sslports.Fill()

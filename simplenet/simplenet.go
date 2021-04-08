@@ -22,7 +22,7 @@ func Send(protocol string, netloc string, data string, duration time.Duration, s
 		return "", err
 	}
 	length, err := conn.Read(buf)
-	if err != nil {
+	if err != nil && err.Error() != "EOF" {
 		_ = conn.Close()
 		return "", err
 	}
@@ -54,7 +54,7 @@ func TLSSend(protocol string, netloc string, data string, duration time.Duration
 	}
 	buf := make([]byte, size)
 	length, err := conn.Read(buf)
-	if err != nil {
+	if err != nil && err.Error() != "EOF" {
 		_ = conn.Close()
 		return "", err
 	}
