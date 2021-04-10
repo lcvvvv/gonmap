@@ -6,14 +6,14 @@ import (
 	"strings"
 )
 
-var NMAP *nmap
+var NMAP *Nmap
 
 //r["PROBE"] 总探针数、r["MATCH"] 总指纹数 、r["USED_PROBE"] 已使用探针数、r["USED_MATCH"] 已使用指纹数
 func Init(filter int) map[string]int {
 	//fmt.Println("初始化了")
 	r := make(map[string]int)
 	NMAP_SERVICE_PROBES = strings.Replace(NMAP_SERVICE_PROBES, "${backquote}", "`", -1)
-	NMAP = &nmap{
+	NMAP = &Nmap{
 		exclude:     newPort(),
 		probeGroup:  make(map[string]*probe),
 		probeSort:   []string{},
@@ -47,13 +47,13 @@ func Init(filter int) map[string]int {
 	return r
 }
 
-func New() *nmap {
-	n := &nmap{}
+func New() *Nmap {
+	n := &Nmap{}
 	*n = *NMAP
 	return n
 }
 
-type nmap struct {
+type Nmap struct {
 	exclude *port
 
 	probeGroup  map[string]*probe
@@ -69,7 +69,7 @@ type nmap struct {
 	finger   *finger
 }
 
-func (n *nmap) Scan(ip string, port int) *portinfo {
+func (n *Nmap) Scan(ip string, port int) *portinfo {
 	n.target.host = ip
 	n.target.port = port
 	n.target.uri = fmt.Sprintf("%s:%d", ip, port)
@@ -104,7 +104,7 @@ func (n *nmap) Scan(ip string, port int) *portinfo {
 	return portinfo
 }
 
-func (n *nmap) getPortInfo(p *probe, target *target, tls bool) *portinfo {
+func (n *Nmap) getPortInfo(p *probe, target *target, tls bool) *portinfo {
 	portinfo := newPortInfo()
 	data, err := p.scan(target, tls)
 	if err != nil {
@@ -131,7 +131,7 @@ func (n *nmap) getPortInfo(p *probe, target *target, tls bool) *portinfo {
 	}
 }
 
-func (n *nmap) getFinger(data string, requestName string) *finger {
+func (n *Nmap) getFinger(data string, requestName string) *finger {
 	data = n.convResponse(data)
 	f := n.probeGroup[requestName].match(data)
 	if f.service == "" {
@@ -142,7 +142,7 @@ func (n *nmap) getFinger(data string, requestName string) *finger {
 	return f
 }
 
-func (n *nmap) convResponse(s1 string) string {
+func (n *Nmap) convResponse(s1 string) string {
 	//	为了适配go语言的沙雕正则，只能讲二进制强行转换成UTF-8
 	b1 := []byte(s1)
 	r1 := []rune{}
@@ -153,7 +153,7 @@ func (n *nmap) convResponse(s1 string) string {
 	return s2
 }
 
-func (n *nmap) loads(s string) {
+func (n *Nmap) loads(s string) {
 	lines := strings.Split(s, "\n")
 	probeArr := []string{}
 	p := newProbe()
@@ -180,7 +180,7 @@ func (n *nmap) loads(s string) {
 	n.pushProbe(p)
 }
 
-func (n *nmap) loadExclude(expr string) {
+func (n *Nmap) loadExclude(expr string) {
 	var exclude = newPort()
 	expr = expr[strings.Index(expr, " ")+1:]
 	for _, s := range strings.Split(expr, ",") {
@@ -191,7 +191,7 @@ func (n *nmap) loadExclude(expr string) {
 	n.exclude = exclude
 }
 
-func (n *nmap) pushProbe(p *probe) {
+func (n *Nmap) pushProbe(p *probe) {
 	PROBE := newProbe()
 	*PROBE = *p
 	//if p.ports.length == 0 && p.sslports.length == 0 {
@@ -224,7 +224,7 @@ func (n *nmap) pushProbe(p *probe) {
 
 }
 
-func (n *nmap) isCommand(line string) bool {
+func (n *Nmap) isCommand(line string) bool {
 	//删除注释行和空行
 	if len(line) < 2 {
 		return false
@@ -245,6 +245,6 @@ func (n *nmap) isCommand(line string) bool {
 	return false
 }
 
-func (n *nmap) Filter(i int) {
+func (n *Nmap) Filter(i int) {
 	n.filter = i
 }
