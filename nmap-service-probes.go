@@ -12974,7 +12974,7 @@ match nameserver m|^\x03\x03\x02$| p/Solaris Internet Name Server/ i/IEN 116/ o/
 match nameserver m|^\0\x06\x01\0\0\x01\0\0\x03\x03\x02$| p/Solaris Internet Name Server/ i/IEN 116/ o/Solaris/ cpe:/o:sun:sunos/a
 
 match valve-steam m|^\xff\xff\xff\xff!L_\xa0.{28}\0\0\0\x08\x06\x10\x06\x18\x9c\xd3\x01\".([\w.-]+)0\x028| p/Valve Steam In-Home Streaming service/ h/$1/
-match valve-steam m|^\xff\xff\xff\xff!L_\xa0| p/Valve Steam In-Home Streaming Service/
+match valve-steam m|^\xff\xff\xff\xff!L_\xa0| p/Valve Steam In-Home Streaming service/
 
 ##############################NEXT PROBE##############################
 Probe TCP Hello q|EHLO\r\n|
@@ -12986,7 +12986,7 @@ totalwaitms 7500
 match exalead m|^\? 1 illegal command\n\0| p/Exalead search appliance/
 
 match smtp m|^220\s+(DP-\d+)\r\n250-Hello\r\n250-DSN\r\n| p/Panasonic smtpd/ v/$1/ i/Panasonic printer/ d/printer/
-match smtp m|^220 ESMTP Service ready\r\n250\x20ok\r\n| p/Rustock smtp backdoor/ i/**BACKDOOR**/ o/Windows/ cpe:/o:microsoft:windows/a
+match smtp m|^220 ESMTP service ready\r\n250\x20ok\r\n| p/Rustock smtp backdoor/ i/**BACKDOOR**/ o/Windows/ cpe:/o:microsoft:windows/a
 match smtp m|^220 Hello [A-Z][a-z]{2}, .*\r\n501 Command \"EHLO\" requires an argument\r\n| p/Lotus Notes smtpd/ cpe:/a:ibm:lotus_notes/
 match smtp m|^220 ([\w_.-]+) ESMTP\r\n250-[-\w_.]+\r\n250-AUTH LOGIN CRAM-MD5 PLAIN\r\n250-AUTH=LOGIN CRAM-MD5 PLAIN\r\n250-PIPELINING\r\n250 8BITMIME\r\n| p/Access Remote PC smtpd/ o/Windows/ h/$1/ cpe:/o:microsoft:windows/a
 match smtp m|^220 \[[\w_.-]+\] FTGate Server Ready\r\n250-([\w._-]+)\r\n| p/Floosietek FTGate smtpd/ o/Windows/ h/$1/ cpe:/o:microsoft:windows/a
@@ -13045,7 +13045,7 @@ match caldav m|^<head>\n<title>Error response</title>\n</head>\n<body>\n<h1>Erro
 
 match chat m|^\r\n>STATUS\tset status\r\nINVISIBLE\tset invisible mode\r\nMAINWINDOW\tshow/hide main window\r\n| p/Simple Instant Messenger control plugin/
 
-# CVSD (cvs chrooting Service for pserver) cvsd 0.9.18
+# CVSD (cvs chrooting service for pserver) cvsd 0.9.18
 # CVS 1.11.5 pserver
 match cvspserver m|^cvs \[pserver aborted\]: bad auth protocol start: HELP\r\n\n?$| p/cvs pserver/
 # CVSNT pserver
@@ -13103,7 +13103,7 @@ match ftp m|^220 Private ftp server, anonymous login not allowed\.\r\n214-The fo
 match ftp m|^220.*\r\n214-The following commands are recognized:\r\n   USER   PASS   QUIT   CWD    PWD    PORT   PASV   TYPE\r\n   LIST   REST   CDUP   RETR   STOR   SIZE   DELE   RMD \r\n   MKD    RNFR   RNTO   ABOR   SYST   NOOP   APPE   NLST\r\n   MDTM   XPWD   XCUP   XMKD   XRMD   NOP    EPSV   EPRT\r\n   AUTH   ADAT   PBSZ   PROT   FEAT   MODE   OPTS   HELP\r\n   ALLO   MLST   MLSD\r\n214 Have a nice day\.\r\n| p/FileZilla ftpd/ o/Windows/ cpe:/a:filezilla-project:filezilla_server/ cpe:/o:microsoft:windows/a
 # OpenVMS 7.3-1
 match ftp m|^220 ([-\w_.]+) FTP Server \(Version ([\d.]+)\) Ready\.\r\n214-The following commands are recognized:\r\n   USER    TYPE    RETR    RNFR    NLST    PWD     ALLO    EPSV \r\n   PASS    STRU    STOR    RNTO    CWD     CDUP    SYST    QUIT \r\n   SITE    PORT    STOU    DELE    MKD     NOOP    STAT    HELP \r\n   MODE    EPRT    APPE    LIST    RMD     ABOR    PASV \r\n214 End of Help\.\r\n| p/OpenVMS ftpd/ v/$2/ h/$1/
-match ftp m|^220 SMTP Service ready\r\n214-Commands:\r\r\n214-\tDATA\tRCPT\tMAIL\tQUIT\tRSET\r\r\n214 \tHELO\tVRFY\tEXPN\tHELP\tNOOP\r\n| p/WatchGuard Firebox II firewall ftpd/ d/firewall/
+match ftp m|^220 SMTP service ready\r\n214-Commands:\r\r\n214-\tDATA\tRCPT\tMAIL\tQUIT\tRSET\r\r\n214 \tHELO\tVRFY\tEXPN\tHELP\tNOOP\r\n| p/WatchGuard Firebox II firewall ftpd/ d/firewall/
 
 match ftp m|^220 Speak friend, and enter\r\n214-\r\n  ftpd\.bin - Round-robin File Transfer Server, version ([\w.]+)\r\n| p/ftpd.bin round-robin file server/ v/$1/
 match ftp m|^220 FTP server ready\.  \r\n214-Ethernet Interface\r\n    \r\n    To access help, cd to the help directory then enter a \"dir\" command\.\r\n    \r\n    \r\n| p|QMS/Minolta Magicolor 2200 DeskLaser printer ftpd| d/printer/
@@ -13249,7 +13249,7 @@ match irc m|^:([-\w_.]+) 290  :\.-----------------=#\[ euIRCd HelpSystem \]#=---
 
 match jabber m|^</stream:stream>$| p/Zimbra 6 jabberd/
 
-match laserfiche m|^HLO 0 0 \. 0 71\r\nContent-type: application/vnd\.laserfiche\.lrnp\r\n\r\nLRNP/1\.1\r\n\r\nlistener\r\nEND\r\nERR 0 1 \. 71 80\r\nContent-type: application/vnd\.laserfiche\.lrnp\r\n\r\n451 0 Invalid message \(-2001\)\r\nEND\r\nMSG 0 2 \. 151 58\r\nContent-type: application/vnd\.laserfiche\.lrnp\r\n\r\nCLOSE 0\r\nEND\r\n$| p/Laserfiche document Service/
+match laserfiche m|^HLO 0 0 \. 0 71\r\nContent-type: application/vnd\.laserfiche\.lrnp\r\n\r\nLRNP/1\.1\r\n\r\nlistener\r\nEND\r\nERR 0 1 \. 71 80\r\nContent-type: application/vnd\.laserfiche\.lrnp\r\n\r\n451 0 Invalid message \(-2001\)\r\nEND\r\nMSG 0 2 \. 151 58\r\nContent-type: application/vnd\.laserfiche\.lrnp\r\n\r\nCLOSE 0\r\nEND\r\n$| p/Laserfiche document service/
 
 match lmtp m|^220 ([\w.-]+) LMTP\r\n214-This is DBMail-LMTP\.\r\n214-The following commands are supported:\r\n214-LHLO, RSET, NOOP, QUIT, HELP\.\r\n214-VRFY, EXPN, MAIL, RCPT, DATA\.\r\n214-For more information about a command:\r\n214 Use HELP <command>\.\r\n| p/DBMail lmtpd/ h/$1/ cpe:/a:paul_j_stevens:dbmail/
 
@@ -13258,7 +13258,7 @@ match nntp m|^200 ([\w._-]+) news server ready - posting ok\r\n100 Help text fol
 
 match pop3pw m|^200 Welcome to ([\w.-]+) password daemon\.\r\n214-Commands:\r\n214-\tUSER\tPASS\tNEWPASS\tQUIT\tHELP\r\n214-\r\n214-For more info use \"HELP <topic>\"\r\n214 End of HELP info\r\n$| p/Gattaca PASS Server/ o/Windows/ h/$1/ cpe:/o:microsoft:windows/a
 
-match printer m|^([-\w_.]+): lpd: Illegal Service request\n$| p/lpd/ h/$1/
+match printer m|^([-\w_.]+): lpd: Illegal service request\n$| p/lpd/ h/$1/
 match printer m|^\x01Socket \d+ received unknown command 0x48 with arguments ELP$| p/RPM Print Manager lpd/ o/Windows/ cpe:/o:microsoft:windows/a
 match printer m|^Command 48 is not supported\n| p/BusyBox lpd/ cpe:/a:busybox:busybox/
 
@@ -13354,7 +13354,7 @@ match smtp m|^220 ([-\w_.]+) Service ready\.\r\n214- Valid commands are:\r\n214-
 match smtp m|^220 Simple Mail Tranfer Service Ready \r\n502 Commande not implement \r\n| p/Brother printer smtpd/ d/printer/
 match smtp m|^220 ([-\w_.]+) ESMTP server is ready\r\n.*214-Copyright \(c\) 1995-2004, Stalker Software, Inc\.\r\n|s p/Stalker Software CommuniGate smtpd/ h/$1/ cpe:/a:stalker:communigate/
 match smtp m|^220 ([-\w_.]+) ESMTP\r\n211 DATA HELO EHLO MAIL NOOP QUIT RCPT RSET SAML TURN VRFY\r\n| p/hMailServer smtpd/ o/Windows/ h/$1/ cpe:/o:microsoft:windows/a
-match smtp m|^220 \[[-\w_.]+\] Courier Mail Server ([-\w_.]+) ESMTP Service ready\r\n| p/Courier MSA smtpd/ v/$1/
+match smtp m|^220 \[[-\w_.]+\] Courier Mail Server ([-\w_.]+) ESMTP service ready\r\n| p/Courier MSA smtpd/ v/$1/
 match smtp m|^220 ([-\w_.]+) ESMTP\r\n214-This is qpsmtpd \r\n214-See http://smtpd\.develooper\.com/\r\n| p/qpsmtpd smtpd/ h/$1/ cpe:/a:ask_bjorn_hansen:qpsmtpd/
 match smtp m|^220 ([-\w_.]+) ESMTP Generic Ready\r\n502 Command not implemented\.\r\n| p/MailMarshal smtpd/ h/$1/
 match smtp m|^220 ([-\w_.]+) ESMTP SubEthaSMTP\r\n214-This is the SubEthaSMTP ([\w._-]+) server| p/SubEtha smtpd/ v/$2/ h/$1/ cpe:/a:voodoodyne:subethasmtp:$2/
@@ -13369,7 +13369,7 @@ match smtp m|^220 ([\w_.-]+)\r\n211 DATA HELO EHLO MAIL NOOP QUIT RCPT RSET SAML
 match smtp m|^220 .+\r\n211 DATA HELO EHLO MAIL NOOP QUIT RCPT RSET SAML TURN VRFY\r\n\r\n| p/hMailServer/
 match smtp m|^220 ([\w._-]+) -=- ESMTP\r\n502 unknown command\.\r\n| p/PineApp SeCure SoHo smtpd/ h/$1/ cpe:/a:pineapp:mail-secure/
 match smtp m|^220 Ready to receive mail2 -=- ESMTP\r\n502 unknown command\.\r\n| p/PineApp SeCure SoHo smtpd/ cpe:/a:pineapp:mail-secure/
-match smtp m|^220 ([\w._-]+) ESMTP Service ready\r\n214 2\.0\.0 try reading the RFCs: http://www\.imc\.org/rfcs\.html\r\n| p/PowerMTA smtpd/ h/$1/
+match smtp m|^220 ([\w._-]+) ESMTP service ready\r\n214 2\.0\.0 try reading the RFCs: http://www\.imc\.org/rfcs\.html\r\n| p/PowerMTA smtpd/ h/$1/
 match smtp m|^220 SMTP\r\n214-Usage: HELP <topic>\r\n214-Topics:\r\n214-\tHELO EHLO MAIL RCPT DATA\r\n214-\tVRFY EXPN RSET NOOP QUIT\r\n214 End of HELP info\r\n| p/Trend Micro IMSS smtpd/ v/7.0/ o/Windows/ cpe:/o:microsoft:windows/a
 match smtp m|^220 ([\w._-]+) ESMTP\r\n214-2\.0\.0 These commands are recognised:\r\n214 2\.0\.0     DATA EHLO HELO HELP MAIL NOOP QUIT RCPT RSET\r\n| p/Koto Internet Services smtpd/ h/$1/
 match smtp m|^220 ([\w._-]+) ESMTP\r\n250 2\.0\.0 See http://www\.ietf\.org/rfc/rfc2821\r\n| p|Plan 9 upas/smtpd| o/Plan 9/ h/$1/ cpe:/o:belllabs:plan_9/a
@@ -13377,9 +13377,9 @@ match smtp m|^220 ([\w._-]+) Service ready\r\n214-Commands:\r\n214-\tHELO\tEHLO\
 match smtp m|^250 Ok, but unimplemented\r\n220 EventMachine SMTP Server\r\n| p/Mailcatcher smtpd/
 match smtp m|^220 uniFLOW SMTP Email Gateway\r\n500 Sorry, not implemented\r\n| p|NT-ware uniFLOW/MOM smtpd|
 
-match smtp-proxy m|^220 SMTP Service ready\r\n214-Commands:\r\n214-\tDATA\tRCPT\tMAIL\tQUIT\tRSET\r\n214 \tHELO\tVRFY\tEXPN\tHELP\tNOOP\r\n| p/WatchGuard smtp proxy/ d/firewall/
+match smtp-proxy m|^220 SMTP service ready\r\n214-Commands:\r\n214-\tDATA\tRCPT\tMAIL\tQUIT\tRSET\r\n214 \tHELO\tVRFY\tEXPN\tHELP\tNOOP\r\n| p/WatchGuard smtp proxy/ d/firewall/
 match smtp-proxy m|^220 ready\r\n214-Commands:\r\n214-    HELO    MAIL    RCPT    DATA\r\n214-    RSET    NOOP    QUIT    HELP\r\n214-    VRFY    EXPN\r\n214-For more info use HELP <topic>\r\n214 End of HELP info\r\n| p/602LAN Suite smtpd/ o/Windows/ cpe:/o:microsoft:windows/a
-match smtp-proxy m|^220 ([-\w_.]+) SMTP Service ready\r\n214 Help message\r\n| p/CA Secure Content smtp proxy/ h/$1/
+match smtp-proxy m|^220 ([-\w_.]+) SMTP service ready\r\n214 Help message\r\n| p/CA Secure Content smtp proxy/ h/$1/
 match smtp-proxy m|^421 ([-\w_.]+) is too busy\. Please try again later\.\r\n| p/Surfcontrol smtp proxy/ h/$1/
 match smtp-proxy m|^220 ([-\w_.]+) SMTP; .*\r\n500 Syntax error, command unrecognized\.\r\n| p/Anti-Spam SMTP Proxy/ h/$1/
 match smtp-proxy m|^220 WebShield SMTP MR2\r\n| p/McAfee WebShield smtp proxy/ o/Windows/ cpe:/a:mcafee:webshield_smtp/ cpe:/o:microsoft:windows/a
@@ -13387,7 +13387,7 @@ match smtp-proxy m|^220 SMTP Proxy Server Ready\r\n250 \+OK entry follows, ends 
 match smtp-proxy m|^220 SMTP SDC Ready\r\n250 \+OK entry follows, ends in \.\r\n| p/IronMail SMTP proxy/ cpe:/a:ciphertrust:ironmail/
 match smtp-proxy m|^220 ([-\w_.]+) SMTP; .* \+\d{4}\r\n500 Syntax error, command unrecognized\r\n| p/Symantec Mail Security smtp proxy/ o/Windows/ h/$1/ cpe:/a:symantec:mail_security/ cpe:/o:microsoft:windows/a
 match smtp-proxy m|^220 ([\w._-]+) Symantec Mail Security | p/Symantec Mail Security smtp proxy/ o/Windows/ h/$1/ cpe:/a:symantec:mail_security/ cpe:/o:microsoft:windows/a
-match smtp-proxy m|^220 ([-\w_.]+) ESMTP smtprelay Service ready\.\r\n214-This is smtprelay\r\n214-Topics:| p/Genua smtprelay/ d/security-misc/ h/$1/
+match smtp-proxy m|^220 ([-\w_.]+) ESMTP smtprelay service ready\.\r\n214-This is smtprelay\r\n214-Topics:| p/Genua smtprelay/ d/security-misc/ h/$1/
 match smtp-proxy m|^220 SMTP ESMTP ready at .*0\r\n214-\r\n214 End of HELP info\r\n| p/SurfControl smtp proxy/ o/Windows/ cpe:/o:microsoft:windows/a
 match smtp-proxy m|^220 ([-\w_.]+)\r\n214-HELO domain\r\n214-EHLO domain\r\n214-QUIT\r\n214-MAIL FROM:<reverse-path> \[options\]\r\n| p/RedCondor smtp proxy/ h/$1/
 match smtp-proxy m|^220 ([-\w_.]+) ESMTP Ready\r\n211 Help:->Supported Commands: HELO,EHLO,QUIT,HELP,RCPT,MAIL,DATA,RSET,NOOP\r\n| p/NoSpamToday! smtp proxy/ h/$1/
@@ -13427,7 +13427,7 @@ rarity 1
 ports 261,271,322,324,443,444,448,465,548,563,585,636,684,853,989,990,992-995,1241,1311,1443,2000,2221,2252,2376,2443,3443,4433,4443,4444,4911,5061,5443,5550,5868,5986,6251,6443,6679,6697,7000,7210,7272,7443,8009,8181,8194,8443,8531,8883,9001,9443,10443,14443,15002,44443,60443
 fallback GetRequest
 
-# Unknown Service on Vingtor-Stentofon IP intercom echoes only up to the first \n, so softmatching until we know more.
+# Unknown service on Vingtor-Stentofon IP intercom echoes only up to the first \n, so softmatching until we know more.
 softmatch echo m|^\x16\x03\0\0S\x01\0\0O\x03\0\?G\xd7\xf7\xba,\xee\xea\xb2${backquote}~\xf3\0\xfd\x82\{\xb9\xd5\x96\xc8w\x9b\xe6\xc4\xdb<=\xdbo\xef\x10n\0\0\(\0\x16\0\x13\0\n|
 
 # OpenSSL/0.9.7aa, 0.9.8e
@@ -13593,7 +13593,7 @@ match pbx-alarm m|^1\x0c5\x0c9\x0c\x0b\x03$| p/Aastra Open Interfaces Platform P
 
 match pop3-proxy m|^ERR concurrent connection limit in avast! exceeded\(pass:\d+, processes:([\w._-]+)\[\d+\]\)\r\n| p/Avast! anti-virus pop3 proxy/ i/connection limit exceeded by $1/ o/Windows/ cpe:/o:microsoft:windows/
 
-# This funny Service runs on port 9001 and seems to echo other Service probes,
+# This funny service runs on port 9001 and seems to echo other service probes,
 # however they don't seem to come in any obvious order. Examples:
 # ---------- GenericLines ----------
 # m|^GET / HTTP/1\.0|
@@ -13622,7 +13622,7 @@ match tor m|^\x16\x03\0\0\*\x02\0\0&\x03\0.*T[oO][rR]1.*[\x00-\x20]([-\w_.]+) <i
 
 match storagecraft-image m|^\x15\x01\0\0\x08\0\0\0\0\x80\t\x03\x08\.NET\x01\0\x02\0\0\0\0\0\0\0\x02\0\x03\x01\0\x03\0\x01\x01 \0\0\0Authentication failure on server\x05\0\0\0\0$| p/StorageCraft Image Manager/
 
-match vmware-print m|^\r\0\0+$| p/VMware virtual printing Service/
+match vmware-print m|^\r\0\0+$| p/VMware virtual printing service/
 
 match xamarin m|^ERROR: Another instance is running\n| p/Xamarin MonoTouch/
 
@@ -13643,7 +13643,7 @@ match ms-wbt-server m|^\x03\0\0\x0b\x06\xd0\0\0\x124\0$| p/Microsoft Terminal Se
 ##############################NEXT PROBE##############################
 # TLSv1.2 ClientHello probe. TLS implementations may choose to ignore (close
 # silently) incompatible ClientHello messages like the one in SSLSessionReq.
-# This one should be widely compatible, and if we avoid adding non-ssl Service
+# This one should be widely compatible, and if we avoid adding non-ssl service
 # matches here, we can continue to upgrade it (bytes 10 and 11 and the ranges
 # in the match lines)
 Probe TCP TLSSessionReq q|\x16\x03\0\0\x69\x01\0\0\x65\x03\x03U\x1c\xa7\xe4random1random2random3random4\0\0\x0c\0/\0\x0a\0\x13\x009\0\x04\0\xff\x01\0\0\x30\0\x0d\0,\0*\0\x01\0\x03\0\x02\x06\x01\x06\x03\x06\x02\x02\x01\x02\x03\x02\x02\x03\x01\x03\x03\x03\x02\x04\x01\x04\x03\x04\x02\x01\x01\x01\x03\x01\x02\x05\x01\x05\x03\x05\x02|
@@ -13738,7 +13738,7 @@ match ajp13 m|^\0\0\0\x01\0\x0cUnauthorized| p/Oracle Containers for J2EE/ i/una
 
 match bmc-tmart m=^\x15uBMC TM ART Version ([\w._-]+, Build \d+ from [\d-]+), Copyright \? [\d-]+ BMC Software, Inc\. \| All Rights Reserved\.= p/BMC Transaction Management Application Response Time/ v/$1/ cpe:/a:bmc:transaction_management_application_response_time:$1/
 
-match brassmonkey m|^\x08\0\0\0\0\0\x08\x01\0\0\t\0$| p/Brass Monkey controller Service/
+match brassmonkey m|^\x08\0\0\0\0\0\x08\x01\0\0\t\0$| p/Brass Monkey controller service/
 
 match byond m|^\0\0\0\x02\0\0$| p/BYOND game platform/
 
@@ -13748,7 +13748,7 @@ match caigos-fundus m|^\0\0\0\0\0\0\0;r\0\0\0\0\0\0\0h\xd52\t\x10\0\0\0FUNDUS_PG
 match caigos-paratus m|^\0\0\0\0\0\0\0;r\0\0\0\0\0\0\0XL\)\x01\x11\0\0\0PARATUS_PG([\w._-]+)\x1a\0\0\0unbekannter Code: 19483736$| p/Paratus/ v/$1/ i/Caigos GIS/
 match caigos-conspectus m|^\0\0\0\0\0\0\0>r\0\0\0\0\0\0\0\xf8\x926\x01\x14\0\0\0CONSPECTUS_PG([\w._-]+)\x1a\0\0\0unbekannter Code: 20353784$| p/Conspectus/ v/$1/ i/Caigos GIS/
 
-match digitalwatchdog m|^\x01\0\0\0\0\0\0\(PSPROTOCOL\0\0\0\0\0\0\xa0\0\0\x01\0\0\0\x0c\0\0\0\0\0\0\0\0\xe0\0\0\x04\0\0\0\0\0\0\0\0| p/Digital Watchdog IP camera unknown Service/ d/webcam/
+match digitalwatchdog m|^\x01\0\0\0\0\0\0\(PSPROTOCOL\0\0\0\0\0\0\xa0\0\0\x01\0\0\0\x0c\0\0\0\0\0\0\0\0\xe0\0\0\x04\0\0\0\0\0\0\0\0| p/Digital Watchdog IP camera unknown service/ d/webcam/
 # Need more matches. Same response to Kerberos, runs on 1489 and 1490(secure)
 match docbroker m|^\0\0\0\x080\x06\x02\x01\0\x02\x01i| p/Documentum Content Server/ cpe:/a:emc:documentum_content_server/
 match fastobjects-db m|^\xce\xfa\x01\0\x16\0\0\0\0\0\0\x003\xf6\0\0\0\0\0\0\0\0$| p/Versant FastObjects database/
@@ -14112,9 +14112,9 @@ match sap-gui m|^\0\0\0\x0e\*\*DPTMMSG\*\*\0\0\xf8| p/SAP Gui Dispatcher/ cpe:/a
 match serversettingsd m|^\0\0\x004main\0\0\x01\0\0\0\0\x0c\0\0\0\0\0\0\0\x0c\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0quit\xff\xff\xff\xffcrpt$| p/Apple serversettingsd administration daemon/ o/Mac OS X/ cpe:/o:apple:mac_os_x/a
 match spotify-login m|^\x01\0$| p/Spotify login server/
 match symantec-esm m|^\0\x01[#,]$| p/Symantec Enterprise Security Manager agent/ cpe:/a:symantec:enterprise_security_manager/
-# Windows 2000 Server Wins name resolution Service
+# Windows 2000 Server Wins name resolution service
 # Windows NT 4.0 Wins
-# Windows 2003 WINS Service
+# Windows 2003 WINS service
 match wins m|^\0\0\0\x1e\xffS\xad\x80\0\0\0\x01\0\0\0\0\0\0\0\0\0\0\0...\0\0\x01\0\0\x81\0\x02|s p/Microsoft Windows Wins/ o/Windows/ cpe:/o:microsoft:windows/a
 
 match sap-its m|^\0\0\0\x0c\x01\x03\0\0\0\0\x07.\0\0\0\0\0\0\x07.Content-Type:  text/html; charset=Windows-\d+\r\n\r\n<!--\r\n This page was created by the \r\n SAP Internet Transaction Server|s p/SAP Internet Transaction Server/
@@ -14152,14 +14152,14 @@ match apcupsd m|^\0\0\x02\0\0\0\0\0\0\0\0\0\x06\0\0\0\0@\x0c\0\x9c\x18\0\0X Cons
 match fastcgi m|^\x01\x0b\0\0\0\x08\0\0\0\0\0\0\0...|s p/HHVM FastCGI/ cpe:/a:hiphop_virtual_machine_for_php_project:hiphop_virtual_machine_for_php/
 
 # retroclient 6.5.108 on Linux
-match font-Service m|^\0\0\x02\0\0\0\0\0\0\0\0\0\x06\0\0\0\0@\x0c\0p\x17\0\0X Consortium\x01\n\x01\0\x05\0\0\0....\0\0..\0\0\0\0$|s p/Sun Solaris fs.auto/ o/Solaris/ cpe:/o:sun:sunos/a
+match font-service m|^\0\0\x02\0\0\0\0\0\0\0\0\0\x06\0\0\0\0@\x0c\0p\x17\0\0X Consortium\x01\n\x01\0\x05\0\0\0....\0\0..\0\0\0\0$|s p/Sun Solaris fs.auto/ o/Solaris/ cpe:/o:sun:sunos/a
 # HP-UX 11.11
-match font-Service m|^\0\0\x02\0\0\0\0\0\0\0\0\0\x06\0\0\0\0@\x0c\0\xd4\x17\0\0X Consortium\x01\n\x01\0\x05\0\0\0....\0\0..\0\0\0\0$|s p/HP-UX X Font Server/ o/HP-UX/ cpe:/o:hp:hp-ux/a
-match font-Service m|^\0\0\x02\0\0\0\0\0\0\0\0\0\x0e\0\0\0\0 \*\0.\x19\0\0The XFree86 Project[-.\w() ]+..\x01\n\x01\0\x05\0\0\0....\0\0..\0\0\0|s p/XFree86 X Font Server/ o/Unix/ cpe:/a:xfree86:xfree86/
-match font-Service m|^\0\0\x02\0\0\0\0\0\0\0\0\0\x07\0\0\0\0 \x10\0....X\.Org Foundation\x01\n|s p/X.Org X Font Server/ o/Unix/ cpe:/a:x:x.org_x11/
-match font-Service m|^\0\0\x02\0\0\0\0\0\0\0\0\0\x07\0\0\0\0.......The X\.Org Group|s p/X.Org X Font Server/ o/Unix/ cpe:/a:x:x.org_x11/
-match font-Service m|^\0\0\x02\0\0\0\0\0\0\0\0\0\x04\0\0\0\0.......HD\0@|s p/X Font Server for TrueType Fonts/ o/Unix/
-match font-Service m|^\0\0\x02\0\0\0\0\0\0\0\0\0\r\0\0\0\0.......International Business Machines Corp\.|s p/IBM AIX X Font Server/ o/AIX/ cpe:/o:ibm:aix/a
+match font-service m|^\0\0\x02\0\0\0\0\0\0\0\0\0\x06\0\0\0\0@\x0c\0\xd4\x17\0\0X Consortium\x01\n\x01\0\x05\0\0\0....\0\0..\0\0\0\0$|s p/HP-UX X Font Server/ o/HP-UX/ cpe:/o:hp:hp-ux/a
+match font-service m|^\0\0\x02\0\0\0\0\0\0\0\0\0\x0e\0\0\0\0 \*\0.\x19\0\0The XFree86 Project[-.\w() ]+..\x01\n\x01\0\x05\0\0\0....\0\0..\0\0\0|s p/XFree86 X Font Server/ o/Unix/ cpe:/a:xfree86:xfree86/
+match font-service m|^\0\0\x02\0\0\0\0\0\0\0\0\0\x07\0\0\0\0 \x10\0....X\.Org Foundation\x01\n|s p/X.Org X Font Server/ o/Unix/ cpe:/a:x:x.org_x11/
+match font-service m|^\0\0\x02\0\0\0\0\0\0\0\0\0\x07\0\0\0\0.......The X\.Org Group|s p/X.Org X Font Server/ o/Unix/ cpe:/a:x:x.org_x11/
+match font-service m|^\0\0\x02\0\0\0\0\0\0\0\0\0\x04\0\0\0\0.......HD\0@|s p/X Font Server for TrueType Fonts/ o/Unix/
+match font-service m|^\0\0\x02\0\0\0\0\0\0\0\0\0\r\0\0\0\0.......International Business Machines Corp\.|s p/IBM AIX X Font Server/ o/AIX/ cpe:/o:ibm:aix/a
 
 match modbus m|^l\0\0\0\0\x03\0\x80\x01| p/Modbus TCP/
 
@@ -14245,7 +14245,7 @@ softmatch X11 m|^\x01\0\x0b\0\0......\0\0\0.|s
 
 match xfs m|^\0\0\x02\0\0\0\x01\0\x04\0\0\0\0\r([\w._-]+):\d+\0\x07\0\0\0\0 \x10\0,\x1a\0\0X\.Org Foundation\x01\n\x01\0\x05\0\0\0\xe6\xbf\xc0\xb5\0\0\0\0\0\0\0\0$| p/X.Org xfs font server/ h/$1/ cpe:/a:x:x.org_x11/
 
-match giop m|^GIOP\x01\0\x01\x06\0\0\0\0$| p/omniORB omniNames/ i/Corba naming Service/
+match giop m|^GIOP\x01\0\x01\x06\0\0\0\0$| p/omniORB omniNames/ i/Corba naming service/
 match domain m|^\x80\xf0\x80\x12\0\x01\0\0\0\0\0\0\x20CKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\0\0!\0\x01| p/Microsoft DNS/ o/Windows/ cpe:/a:microsoft:dns/ cpe:/o:microsoft:windows/a
 match gadu m|^UDAG$| p/Kadu polish IM client/ cpe:/a:kadu:kadu/
 
@@ -14342,7 +14342,7 @@ match http m|^HTTP/1\.1 404 Not Found\r\nServer: ReeCam IP Camera\r\n| p/ReeCam 
 match http m|^HTTP/1\.1 301 Moved Permanently\r\nLocation: /error\r\n$| p/Enphase httpd/ d/power-device/
 match http m|^HTTP/1\.1 404 Not Found\r\nSet-Cookie: sid=[0-9a-f]{128}; path=/; httponly\r\nContent-Type: application/json\r\nDate: .*\r\nConnection: close\r\n\r\n{\"message\":\"Resource Not Found\",\"status\":404}| p/Node.js/ cpe:/a:nodejs:node.js/
 match http m|^HTTP/1\.0 200 OK\r\nLast-modified: .*\r\nServer: ESERV-10/([\d.]+)\n| p/Viola ESERV-10 httpd/ v/$1/
-match http m|^HTTP/1\.1 503 DNS error for hostname nice%20ports%2C: Name or Service not known\. If nice%20ports%2C refers to a configured cache repository, please check the corresponding configuration file\.\r\nContent-Length: 478\r\nContent-Type: text/html\r\nDate: .*\r\nServer: Debian Apt-Cacher NG/([\w._-]+)\r\nConnection: close\r\n\r\n| p/Debian Apt-Cacher NG/ v/$1/ cpe:/a:debian:apt-cacher:$1/
+match http m|^HTTP/1\.1 503 DNS error for hostname nice%20ports%2C: Name or service not known\. If nice%20ports%2C refers to a configured cache repository, please check the corresponding configuration file\.\r\nContent-Length: 478\r\nContent-Type: text/html\r\nDate: .*\r\nServer: Debian Apt-Cacher NG/([\w._-]+)\r\nConnection: close\r\n\r\n| p/Debian Apt-Cacher NG/ v/$1/ cpe:/a:debian:apt-cacher:$1/
 match http m|^HTTP/1\.1 404 Not Found\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n<html>\r\n<head>\r\n<title>(SPA\d\d\d[\w._-]*) Configuration Utility</title>| p/Cisco $1 http config/ d/VoIP phone/ cpe:/h:cisco:$1/a
 match http m|^HTTP/1\.0 \d\d\d \r\n(?:[^\r\n]+\r\n)*?server: CubeCoders-McMyAdmin/IAWS\r\n.*<p id=\"verinfo\">McMyAdmin Enterprise - Web Backend v([\d.]+)</p>|s p/CubeCoders McMyAdmin Enterprise Minecraft control panel/ v/$1/
 match http m|^HTTP/1\.1 404 Not Found\r\nContent-Type: text/plain\r\nDate: .*\r\nConnection: close\r\n\r\nCannot GET /nice%20ports%2C/Tri%6Eity\.txt%2ebak| p/Express.js httpd/
@@ -14407,14 +14407,14 @@ match printer m|^VSE Line Printer Daemon has rejected this request\.\0\0| p/VSE 
 match printer m|^no queue to check\n\0$| p/Wyse Winterm 1200 LE terminal lpd/ d/terminal/
 match printer m|^/usr/local/helios/sbin/lpd Printer default doesn't exist! \n$| p/Helios lpd/
 match printer m|^\0\x01\r\n                     Century LPD Service\r\nUnknown printer 'default'\n$| p/Century TinyTERM lpd/
-match printer m|^Cirrato printing Service \(with PayEx support\)\0| p/Cirrato lpd/ i/with PayEx support/ cpe:/a:cirrato:cirrato/
+match printer m|^Cirrato printing service \(with PayEx support\)\0| p/Cirrato lpd/ i/with PayEx support/ cpe:/a:cirrato:cirrato/
 match rbnb m|^EXM {EXC \0\x1fcom\.rbnb\.api\.SerializeExceptionMSG \0JUnrecognizable parameter read from input stream\.\nElement read was \x01default}\r\nPNG {}\r\n| p/Ring Buffered Network Bus/ i|http://outlet.creare.com/rbnb/|
 match rfactor-monitor m|^\x02rFactorMonitor\x000400\0$| p/rFactor game monitor/
 match gpsd m|^GPSD,D=\?,E=\?,F=([-\w_./]+),A=\?,U=\?,L=\d ([-\w_.]+) abcdefgiklmnopqrstuvwxyz,T=\?\r\n| p/gpsd/ v/$2/ i/Serial port $1/ cpe:/a:gpsd_project:gpsd:$2/
 
 match winlog m|^\xd0\xb7\x07\x01$| p/Sielco Sistemi Winlog Pro/ cpe:/a:sielcosistemi:winlog_pro/
 
-# Ldap searchRequest for objectClass = * over TCP - elicits response that allows fingerprinting of distinct Service and gathering target info, unlike LDAPBindReq
+# Ldap searchRequest for objectClass = * over TCP - elicits response that allows fingerprinting of distinct service and gathering target info, unlike LDAPBindReq
 ##############################NEXT PROBE##############################
 Probe TCP LDAPSearchReq q|\x30\x84\x00\x00\x00\x2d\x02\x01\x07\x63\x84\x00\x00\x00\x24\x04\x00\x0a\x01\x00\x0a\x01\x00\x02\x01\x00\x02\x01\x64\x01\x01\x00\x87\x0b\x6f\x62\x6a\x65\x63\x74\x43\x6c\x61\x73\x73\x30\x84\x00\x00\x00\x00|
 rarity 6
@@ -14446,7 +14446,7 @@ match oo-defrag m|^h\0\0\0\x01\0\0\0\x03\0\0\0\x07\x08\0\0\x02\0\0\0\0d\0\0\0\0\
 match drobo-dsvc m|^(?:DRIDDSVC\x07\x01.\0\0\0..[^\0]*\0)?DRIDDSVC\x07\x01.\0\0\0..<ESATMUpdate>\r\n\t<mESAUpdateSignature>ESAINFO</mESAUpdateSignature>\r\n\t<mESAUpdateVersion>\d+</mESAUpdateVersion>\r\n\t<mESAUpdateSize>\d+</mESAUpdateSize>\r\n\t<mESAID>\w+</mESAID>\r\n\t<mSerial>\w+</mSerial>\r\n\t<mName>Drobo(?:-FS)?</mName>\r\n\t<mVersion>([][\w._ ]+)</mVersion>\r\n\t<mReleaseDate>([^<]+)</mReleaseDate>\r\n|s p/Drobo-FS DDSVC/ v/$1 ($2)/
 
 match fw1-secureremote m|^[AQ]\0\0\0\0\0\0[^\0]| p/Check Point Firewall-1 SecureRemote/ d/firewall/ cpe:/a:checkpoint:firewall-1/
-match fw1-log m|^\0\0\0\t51000000\0\0\0\0[^\0]| p/Check Point Firewall-1 logging Service/ d/firewall/ cpe:/a:checkpoint:firewall-1/
+match fw1-log m|^\0\0\0\t51000000\0\0\0\0[^\0]| p/Check Point Firewall-1 logging service/ d/firewall/ cpe:/a:checkpoint:firewall-1/
 # OpenLDAP 2.0.15 on RH Linux 7.3
 match ldap m|^0%\x02\x01\x01a \n\x010\x04\0\x04\x19anonymous bind disallowed$| p/OpenLDAP/ i/access denied/ cpe:/a:openldap:openldap/
 # OpenLDAP 2.1.22 - doesn't by default allow LDAPv2 request
@@ -14467,7 +14467,7 @@ match ldap m|^0\x84\0\0\0\x10\x02\x01\x01a\x84\0\0\0\x07\n\x01\0\x04\0\x04\0$|
 #  PGP LDAP Server 8.x
 match ldap m|^0\x17\x02\x01\x01a\x12\n\x01\0\x04\0\x04\x0bPGPError #0$| p/PGP Corp. PGP Keyserver/ cpe:/a:pgp:keyserver/
 # OctetString VDE Enterprise Edition on Linux 2.4
-match ldap m|^0\x0e\x02\x01\x01a\t\n\x01\0\x04\0\x04\0\x87\0$| p/OctetString VDE directory Service/
+match ldap m|^0\x0e\x02\x01\x01a\t\n\x01\0\x04\0\x04\0\x87\0$| p/OctetString VDE directory service/
 # Lotus Notes 6.5.3 LDAP on W2K3, anonymous bind not allowed, port 637 (ssl)
 match ldap m|^0\.\x02\x01\x01a\)\n\x010\x04\0\x04\"Failed, anonymous bind not allowed$| p/Lotus Domino 6.x LDAP/ i/access denied/ cpe:/a:ibm:lotus_domino/
 
@@ -14669,7 +14669,7 @@ match webdav m|^HTTP/1\.1 200 OK\r\n(?:[^\r\n]+\r\n)*?Server: cPanel\r\nPersiste
 
 match xmpp m|^<stream:error><bad-format xmlns='urn:ietf:params:xml:ns:xmpp-streams'/></stream:error></stream:stream>$| p/Isode M-Link XMPP/ cpe:/a:isode:m-link/
 
-# internal communication Service of Yamaha RX-V2067 AV-Receiver
+# internal communication service of Yamaha RX-V2067 AV-Receiver
 match yamaha-comm m|^@SYS:INPNAMEMULTICH=MULTI CH\r\n@SYS:INPNAMEPHONO=PHONO\r\n@SYS:INPNAMEAV1=Blu-ray\r\n@SYS:INPNAMEAV2=Dreambox\r\n@SYS:INPNAMEAV3=PS 3\r\n@SYS:INPNAMEAV4=AV4\r\n@SYS:INPNAMEAV5=AV5\r\n@SYS:INPNAMEAV6=AV6\r\n@SYS:INPNAMEAV7=AV7\r\n@SYS:INPNAMEVAUX=V-AUX\r\n@SYS:INPNAMEAUDIO1=TV\r\n@SYS:INPNAMEAUDIO2=AUDIO2\r\n@SYS:INPNAMEAUDIO3=AUDIO3\r\n@SYS:INPNAMEAUDIO4=AUDIO4\r\n@SYS:INPNAMEDOCK=DOCK\r\n@SYS:INPNAMEUSB=USB\r\n@TUN:AVAIL=Not Ready\r\n@MAIN:ZONENAME=Main\r\n| p/Yamaha RX-V2067 AV receiver/ d/media device/ cpe:/h:yamaha:rx-v2067/
 
 match zabbix m|^OK$| p/Zabbix Monitoring System/ cpe:/a:zabbix:zabbix/
@@ -14779,7 +14779,7 @@ match lineage-ii m|^\x03\0.$| p/Lineage II game server/
 # TODO: Dissect this; probably too specific
 match lineage-ii m|^G\0\0\x01\0\0\0\xce\x1e\0\0\xce\x1e\0\0\xce\x1e\0\0/\x04\0\x000\0,\x006\0,\x003\x003\x003\x002\0,\x003\x003\x003\x003\0\0\0\x81\x8d\0\0\x81\x8d\0\0\x91\x91\0\0\0\0\0\0\x02\0\0\0| p/L2J Lineage II game server/
 
-# \x03 is queue status comRPCCheckand for LPD Service.  Should be terminated
+# \x03 is queue status comRPCCheckand for LPD service.  Should be terminated
 # by \n, but apparently some dumb lpds allow \0.  For now I will keep
 # 515 in the common ports line, I suppose
 match printer m|^no entries\n$| p/Xerox lpd/ d/printer/
@@ -14808,7 +14808,7 @@ match ms-wbt-server-proxy m|^nmproxy: Procotol byte is not 8\n$| p/nmproxy NetMe
 # Semi-open protocol from Adobe: http://www.adobe.com/devnet/rtmp/.
 # Some reverse engineering at http://wiki.gnashdev.org/RTMP says the server
 # handshake is a 0x03 byte followed by 1536 seeming-random bytes. However
-# Service scan only gets 900 or 1300 bytes, so just check for as much as
+# service scan only gets 900 or 1300 bytes, so just check for as much as
 # possible up to 1536.
 # match rtmp m|^\x03.{600,1536}$|s p/Real-Time Messaging Protocol/
 
@@ -14874,7 +14874,7 @@ match megaraid-monitor m|^\x02\0\0\0\0\0\0/\0\0\0\0\0\0\0\0\0@\x1f\0\0\0\0\0\0\0
 
 match routeros-api m|^\x06!fatal\rnot logged in\0| p/MikroTik RouterOS API/ o/RouterOS/ cpe:/o:mikrotik:routeros/
 
-# Interesting Service: Not sure if it's RPC
+# Interesting service: Not sure if it's RPC
 match rpcbind m|^\x18\0\x01\x02Invalid packet length\0| p/Amanda voicemail system/ d/telecom-misc/
 # Moved this from SSLSessionReq because it seems more reliable.
 # May need to generalize and grab the language if we see non-"en" responses
@@ -14918,7 +14918,7 @@ match java-rmi m|^\x4e..[0-9a-f:.]+\0\0..$|s p/Java RMI/
 match java-rmi m|^\x4e..[\w._-]+\0\0..$|s p/GNU Classpath grmiregistry/
 
 # https://github.com/quine/GoProGTFO
-match gopro-json m|^\{"rval": -7, "param_size": 0 \}\0| p/GoPro or similar camera json Service/ d/webcam/
+match gopro-json m|^\{"rval": -7, "param_size": 0 \}\0| p/GoPro or similar camera json service/ d/webcam/
 
 ##############################NEXT PROBE##############################
 Probe TCP Radmin q|\x01\x00\x00\x00\x01\x00\x00\x00\x08\x08|
@@ -14999,7 +14999,7 @@ match sip m|^SIP/2\.0 200 OK\r\n(?:[^\r\n]+\r\n)*?Allow: INVITE, ACK, CANCEL, OP
 # non-default ports.
 #
 # These probes have a high likelihood of triggering false positives because
-# any Service that echos your command back can match.  The docs on the
+# any service that echos your command back can match.  The docs on the
 # the protocol make me think a ^ anchor can be added to the response so
 # this should cut down on the the false positives. (Brandon)
 #
@@ -15060,62 +15060,62 @@ match H.323-gatekeeper-discovery m|^8\x02\x01\x10\0$| p/GNU Gatekeeper discovery
 match snmp m|^..\x02\x01\x030.\x02\x02Ji\x02.{3,4}\x04\x01.\x02\x01\x03\x04.{5,6}\0\x00\x00|s
 
 # Cisco - SNMP Engine ID 9 (CiscoSystems) = \x00\x09
-match snmp m|^..\x02\x01\x030.\x02\x02Ji\x02.{3,4}\x04\x01.\x02\x01\x03\x04.{5,6}\0\x00\x09|s p/Cisco SNMP Service/
+match snmp m|^..\x02\x01\x030.\x02\x02Ji\x02.{3,4}\x04\x01.\x02\x01\x03\x04.{5,6}\0\x00\x09|s p/Cisco SNMP service/
 
 # Cisco - SNMP Engine ID 99 (SNMP Research) = \x00\x63
-match snmp m|^..\x02\x01\x030.\x02\x02Ji\x02.{3,4}\x04\x01.\x02\x01\x03\x04.{5,6}\0\x00\x63|s p/Cisco SNMP Service/
+match snmp m|^..\x02\x01\x030.\x02\x02Ji\x02.{3,4}\x04\x01.\x02\x01\x03\x04.{5,6}\0\x00\x63|s p/Cisco SNMP service/
 
 # Xerox - SNMP Engine ID 253 (Xerox) = \x00\xfd
-match snmp m|^..\x02\x01\x030.\x02\x02Ji\x02.{3,4}\x04\x01.\x02\x01\x03\x04.{5,6}\0\x00\xfd|s p/Xerox SNMP Service/
+match snmp m|^..\x02\x01\x030.\x02\x02Ji\x02.{3,4}\x04\x01.\x02\x01\x03\x04.{5,6}\0\x00\xfd|s p/Xerox SNMP service/
 
 # Scientific Atlanta - SNMP Engine ID 1429 = \x05\x95
-match snmp m|^..\x02\x01\x030.\x02\x02Ji\x02.{3,4}\x04\x01.\x02\x01\x03\x04.{5,6}\0\x05\x95|s p/Scientific Atlanta SNMP Service/
+match snmp m|^..\x02\x01\x030.\x02\x02Ji\x02.{3,4}\x04\x01.\x02\x01\x03\x04.{5,6}\0\x05\x95|s p/Scientific Atlanta SNMP service/
 
 # Brocade - SNMP Engine ID 1588 (Brocade Communications Systems, Inc.) = \x06\x34
-match snmp m|^..\x02\x01\x030.\x02\x02Ji\x02.{3,4}\x04\x01.\x02\x01\x03\x04.{5,6}\0\x06\x34|s p/Brocade SNMP Service/
+match snmp m|^..\x02\x01\x030.\x02\x02Ji\x02.{3,4}\x04\x01.\x02\x01\x03\x04.{5,6}\0\x06\x34|s p/Brocade SNMP service/
 
 # QLogic - SNMP Engine ID 1663 (Ancor Communications) = \x06\x7f
-match snmp m|^..\x02\x01\x030.\x02\x02Ji\x02.{3,4}\x04\x01.\x02\x01\x03\x04.{5,6}\0\x06\x7f|s p/QLogic SNMP Service/
+match snmp m|^..\x02\x01\x030.\x02\x02Ji\x02.{3,4}\x04\x01.\x02\x01\x03\x04.{5,6}\0\x06\x7f|s p/QLogic SNMP service/
 
 # IBM - SNMP Engine ID 1104 (First Virtual Holdins Incorporated) = \x04\x50
-match snmp m|^..\x02\x01\x030.\x02\x02Ji\x02.{3,4}\x04\x01.\x02\x01\x03\x04.{5,6}\0\x04\x50|s p/IBM SNMP Service/
+match snmp m|^..\x02\x01\x030.\x02\x02Ji\x02.{3,4}\x04\x01.\x02\x01\x03\x04.{5,6}\0\x04\x50|s p/IBM SNMP service/
 
 # Huawei - SNMP Engine ID 2011 (HUAWEI Technology Co.,Ltd) = \x07\xdb
-match snmp m|^..\x02\x01\x030.\x02\x02Ji\x02.{3,4}\x04\x01.\x02\x01\x03\x04.{5,6}\0\x07\xdb|s p/Huawei SNMP Service/
+match snmp m|^..\x02\x01\x030.\x02\x02Ji\x02.{3,4}\x04\x01.\x02\x01\x03\x04.{5,6}\0\x07\xdb|s p/Huawei SNMP service/
 
 # Lexmark - SNMP Engine ID 2021 (Engine Enterprise ID: U.C. Davis, ECE Dept. Tom) = \x07\xe5
-match snmp m|^..\x02\x01\x030.\x02\x02Ji\x02.{3,4}\x04\x01.\x02\x01\x03\x04.{5,6}\0\x07\xe5|s p/Lexmark SNMP Service/
+match snmp m|^..\x02\x01\x030.\x02\x02Ji\x02.{3,4}\x04\x01.\x02\x01\x03\x04.{5,6}\0\x07\xe5|s p/Lexmark SNMP service/
 
 # Thomson Inc. - SNMP Engine ID 2863 (Thomson Inc.) = \x0b\x2f
-match snmp m|^..\x02\x01\x030.\x02\x02Ji\x02.{3,4}\x04\x01.\x02\x01\x03\x04.{5,6}\0\x0b\x2f|s p/Thomson SNMP Service/
+match snmp m|^..\x02\x01\x030.\x02\x02Ji\x02.{3,4}\x04\x01.\x02\x01\x03\x04.{5,6}\0\x0b\x2f|s p/Thomson SNMP service/
 
 # Blue Coat - SNMP Engine ID 3417 (CacheFlow Inc.) = \x0d\x59
-match snmp m|^..\x02\x01\x030.\x02\x02Ji\x02.{3,4}\x04\x01.\x02\x01\x03\x04.{5,6}\0\x0d\x59|s p/Blue Coat SNMP Service/
+match snmp m|^..\x02\x01\x030.\x02\x02Ji\x02.{3,4}\x04\x01.\x02\x01\x03\x04.{5,6}\0\x0d\x59|s p/Blue Coat SNMP service/
 
 # Canon - SNMP Engine ID 4976 (Agent++) = \x13\x70
-match snmp m|^..\x02\x01\x030.\x02\x02Ji\x02.{3,4}\x04\x01.\x02\x01\x03\x04.{5,6}\0\x13\x70|s p/Canon SNMP Service/
+match snmp m|^..\x02\x01\x030.\x02\x02Ji\x02.{3,4}\x04\x01.\x02\x01\x03\x04.{5,6}\0\x13\x70|s p/Canon SNMP service/
 
 # net-snmp (net-snmp.org) - SNMP Engine ID 8072 (net-snmp) = \x1f\x88
 match snmp m|^..\x02\x01\x030.\x02\x02Ji\x02.{3,4}\x04\x01.\x02\x01\x03\x04.{5,6}\0\x1f\x88|s p/net-snmp/ cpe:/a:net-snmp:net-snmp/
 
 # Fortigate-310B v4.0,build0324,110520 (MR2 Patch 7)
 # Fortinet, Inc. - SNMP Engine ID 12356 = \x30\x44
-match snmp m|^..\x02\x01\x030.\x02\x02Ji\x02.{3,4}\x04\x01.\x02\x01\x03\x04.{5,6}\x80\0\x30\x44|s p/Fortinet SNMP Service/ d/firewall/
+match snmp m|^..\x02\x01\x030.\x02\x02Ji\x02.{3,4}\x04\x01.\x02\x01\x03\x04.{5,6}\x80\0\x30\x44|s p/Fortinet SNMP service/ d/firewall/
 
 # Aruba Networks - SNMP Engine ID 14823 = \x39\xe7
-match snmp m|^..\x02\x01\x030.\x02\x02Ji\x02.{3,4}\x04\x01.\x02\x01\x03\x04.{5,6}\0\x39\xe7|s p/Aruba Networks SNMP Service/
+match snmp m|^..\x02\x01\x030.\x02\x02Ji\x02.{3,4}\x04\x01.\x02\x01\x03\x04.{5,6}\0\x39\xe7|s p/Aruba Networks SNMP service/
 
 # OpenBSD Project - SNMP Engine ID 30155 = \x75\xcb
-match snmp m|^..\x02\x01\x030.\x02\x02Ji\x02.{3,4}\x04\x01.\x02\x01\x03\x04.{5,6}\0\x75\xcb|s p/OpenBSD SNMP Service/
+match snmp m|^..\x02\x01\x030.\x02\x02Ji\x02.{3,4}\x04\x01.\x02\x01\x03\x04.{5,6}\0\x75\xcb|s p/OpenBSD SNMP service/
 
 # Wireshark says <MISSING> for the SNMP Engine ID.
-match snmp m|^..\x02\x01\x030.\x02\x02Ji\x02.{3,4}\x04\x01.\x02\x01\x03\x04.{5,6}\x01\0\x02\x03|s p/MikroTik router SNMP Service/ d/router/
+match snmp m|^..\x02\x01\x030.\x02\x02Ji\x02.{3,4}\x04\x01.\x02\x01\x03\x04.{5,6}\x01\0\x02\x03|s p/MikroTik router SNMP service/ d/router/
 
 # Tandberg Video Conferencing equipment
 match snmp m|^0\x82\0\x37\x02\x01\0\x04\x06public\xa2\x82\0\x28\x02.{41,43}\nSoftW:\x20([^\0\n]+)\nMCU:\x20([^\0\n]+)\n|s p/$2/ i/$1/
 
 # Zebra GX430T label printer
-match snmp m|^0\x82\0\x37\x02\x01\0\x04\x06public\xa2\x82\0\x28.{20}\x2b\x06\x01\x02\x01\x01\x05\0\x04\nZBR_SPICE0|s p/Zebra GX430T label printer SNMP Service/ d/printer/ cpe:/h:zebra:gx430t/
+match snmp m|^0\x82\0\x37\x02\x01\0\x04\x06public\xa2\x82\0\x28.{20}\x2b\x06\x01\x02\x01\x01\x05\0\x04\nZBR_SPICE0|s p/Zebra GX430T label printer SNMP service/ d/printer/ cpe:/h:zebra:gx430t/
 
 # P-660HW-D1 from Zyxel
 match snmp m|^0\x82\0\x3a\x02\x01\0\x04\x06public\xa2\x82\0\x2b.{20}\x06\x08\x2b\x06\x01\x02\x01\x01\x05\0\x04\x0bcfr25657985|s p/ZyXEL Prestige 660HW ADSL router/ d/broadband router/ cpe:/h:zyxel:prestige_660hw/
@@ -15171,7 +15171,7 @@ match oracle m|^\0\x20\0\0\x02\0\0\0\x016\0\0\x08\0\x7f\xff\x01\0\0\0\0\x20|s p/
 match oracle m|^\+\0\0\0$| p/Oracle Database/ cpe:/a:oracle:database_server/
 match oracle-tns m|^..\0\0\x04\0\0\0\"\0..\(DESCRIPTION=\(TMP=\)\(VSNNUM=\d+\)\(ERR=1189\)\(ERROR_STACK=\(ERROR=\(CODE=1189\)\(EMFI=4\)\)| p/Oracle TNS Listener/ i/unauthorized/
 match oracle-tns m|^..\0\0\x04\0\0\0\"\0..\(DESCRIPTION=\(TMP=\)\(VSNNUM=\d+\)\(ERR=1194\)\(ERROR_STACK=\(ERROR=\(CODE=1194\)\(EMFI=4\)\)\)\)| p/Oracle TNS Listener/ i/insecure transport/
-match oracle-tns m|^..\0\0\x04\0\0\0\"\0..\(DESCRIPTION=\(ERR=12504\)\)\0| p/Oracle TNS listener/ i/requires Service name/
+match oracle-tns m|^..\0\0\x04\0\0\0\"\0..\(DESCRIPTION=\(ERR=12504\)\)\0| p/Oracle TNS listener/ i/requires service name/
 softmatch oracle-tns m|^\0.\0\0[\x02\x04]\0\0\0.*\([ABD-Z]|s p/Oracle TNS Listener/
 match dbsnmp m|^\0,\0\0\x04\0\0\0\"\0\0 \(CONNECT_DATA=\(COMMAND=version\)\)| p/Oracle DBSNMP/
 
@@ -15216,7 +15216,7 @@ match dtls m|^\x15\xfe\xff\0\0\0\0\0\0\0\0\0\x07\x02\x16\0\0\0\0\0$| p/OpenSSL D
 
 match H.323-gatekeeper-discovery m|^\x04\x80\x03\xe7\0\x08\0D\0E\0U\0G\0K\0......$|s p/GNU Gatekeeper discovery/ cpe:/a:gnugk:gnu_gatekeeper/
 match H.323-gatekeeper-discovery m|^\x04\x80\x03\xe7\0\x10\0D\0E\0U\0C\0O\0S\0R\0V\x003\0\n\x08\x01\x03\x06\xb7$| p/GNU Gatekeeper discovery/ v/2.3.2/ cpe:/a:gnugk:gnu_gatekeeper:2.3.2/
-match H.323-gatekeeper-discovery m|^\x06\x80\x03\xe7\x06\0\x08\x91J\0\x05\x12\0G\0A\0T\0E\0K\0E\0E\0P\0E\0R\0......| p/Cisco Unified Communications Manager Gatekeeper RAS Service/ cpe:/a:cisco:unified_communications_manager/
+match H.323-gatekeeper-discovery m|^\x06\x80\x03\xe7\x06\0\x08\x91J\0\x05\x12\0G\0A\0T\0E\0K\0E\0E\0P\0E\0R\0......| p/Cisco Unified Communications Manager Gatekeeper RAS service/ cpe:/a:cisco:unified_communications_manager/
 
 ### do not slow down the scan
 
@@ -15225,7 +15225,7 @@ rarity 9
 ports 706,3127-3198
 match mydoom m|\x04\x5b\0\0\0\0\0\0| p/MyDoom virus backdoor/ v/v012604/
 
-match silc m|^\0\x13\0\x01\r\0\x08\0\x01S\x96Rz\xc2\x02\0\xff\0.............4$|s p/SILCd conferencing Service/
+match silc m|^\0\x13\0\x01\r\0\x08\0\x01S\x96Rz\xc2\x02\0\xff\0.............4$|s p/SILCd conferencing service/
 
 Probe TCP WWWOFFLEctrlstat q|WWWOFFLE STATUS\r\n|
 rarity 9
@@ -15233,7 +15233,7 @@ ports 706,8081
 match http-proxy-ctrl m|^WWWOFFLE Server Status\n-*\nVersion *: (\d.*)\n| p/WWWOFFLE proxy control/ v/$1/
 match http-proxy-ctrl m|^WWWOFFLE Incorrect Password\n| p/WWWOFFLE proxy control/ i/Unauthorized/
 
-match silc m|^\0\x13\0\x01\r\0\x08\0\x01S\x96Rz\xc2\x02\0\xff\0.............4$|s p/SILCd conferencing Service/
+match silc m|^\0\x13\0\x01\r\0\x08\0\x01S\x96Rz\xc2\x02\0\xff\0.............4$|s p/SILCd conferencing service/
 
 ##########################################################################################################
 # Cross Match Verifier E TCP/IP fingerprint reader (http://www.crossmatch.com/products_singlescan_vE.html)
@@ -15553,7 +15553,7 @@ match ajp13 m|^\x41\x42\x00\x01\x09$| p/Apache Jserv/ i/Protocol v1.3/
 
 
 ##############################NEXT PROBE##############################
-# DNS-based Service discovery (DNS-SD). Asks for all services on the host.
+# DNS-based service discovery (DNS-SD). Asks for all services on the host.
 # http://files.dns-sd.org/draft-cheshire-dnsext-dns-sd.txt, section 9.
 Probe UDP DNS-SD q|\0\0\0\0\0\x01\0\0\0\0\0\0\x09_services\x07_dns-sd\x04_udp\x05local\0\0\x0c\0\x01|
 rarity 4
@@ -15561,7 +15561,7 @@ ports 5353
 
 # mDNSResponder-176.3
 # Avahi under Ubuntu
-match mdns m|^\0\0\x84\0\0\x01..\0\0\0\0\x09_services\x07_dns-sd\x04_udp\x05local\0\0\x0c\0\x01|s p/DNS-based Service discovery/
+match mdns m|^\0\0\x84\0\0\x01..\0\0\0\0\x09_services\x07_dns-sd\x04_udp\x05local\0\0\x0c\0\x01|s p/DNS-based service discovery/
 match hbn3 m|^\0\0\x84\0\0\0\0\x01\0\0\0\0.Lexmark (\w+)\x0c_host-config\x04_udp\x05local\0\0\x10\0\x01\0\0\0<\x01\x19.IPADDRESS [\d.]+.IPNETMASK [\d.]+.IPGATEWAY [\d.]+.IPNAME \"([\w._-]+)\"\x15MACLAA \"000000000000\"\x15MACUAA \"([0-9A-F]{12})\"|s p/Lexmark hbn3 (DNS-SD-like configuration)/ i/Lexmark $1 printer; MAC $3/ d/printer/ h/$2/ cpe:/h:lexmark:$1/a
 
 match isakmp m|^\0\0\0\0\0\x01\0\0\0\0\0\0\t_servic\x0b\x10\x05\0\0\0\0\0\0\0\0\(\0\0\0\x0c\0\0\0\x01\x01\0\0\x05| p/Openswan ISAKMP/ cpe:/a:openswan:openswan/
@@ -15590,7 +15590,7 @@ match hp-pjl m|@PJL\x20INFO\x20ID\r?\n\r?\n| d/printer/
 # softmatch hp-pjl m|^| i/hp-pjl probe got something back/
 
 ##############################NEXT PROBE##############################
-# Citrix MetaFrame application discovery Service
+# Citrix MetaFrame application discovery service
 # http://sh0dan.org/oldfiles/hackingcitrix.html
 Probe UDP Citrix q|\x1e\0\x01\x30\x02\xfd\xa8\xe3\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0|
 rarity 5
@@ -16011,11 +16011,11 @@ rarity 9
 # http://seclists.org/pamn-dev/2012/q2/971
 ports 50505,55552
 sslports 3790
-match metasploit-msgrpc m|^HTTP/1\.1 200 OK\r\nContent-Type: binary/message-pack\r\nConnection: close\r\nServer: Rex\r\nContent-Length: 1084\r\n\r\n\x85\xa5error\xc3\xaberror_class\xadArgumentError\xacerror_string\xbdInvalid Request Verb: '\"GET\"'\xaferror_backtrace\xdc\x00\x12\xda\x000lib/msf/core/rpc/v10/Service\.rb:107:in ${backquote}process'\xda\x006lib/msf/core/rpc/v10/Service\.rb:88:in ${backquote}on_request_uri'\xda\x006lib/msf/core/rpc/v10/Service\.rb:70:in ${backquote}block in start'\xda\x00/lib/rex/proto/http/handler/proc\.rb:37:in ${backquote}call'\xda\x005lib/rex/proto/http/handler/proc\.rb:37:in ${backquote}on_request'\xda\x00| p/Metasploit Remote API/ v/4.4.0-dev/
+match metasploit-msgrpc m|^HTTP/1\.1 200 OK\r\nContent-Type: binary/message-pack\r\nConnection: close\r\nServer: Rex\r\nContent-Length: 1084\r\n\r\n\x85\xa5error\xc3\xaberror_class\xadArgumentError\xacerror_string\xbdInvalid Request Verb: '\"GET\"'\xaferror_backtrace\xdc\x00\x12\xda\x000lib/msf/core/rpc/v10/service\.rb:107:in ${backquote}process'\xda\x006lib/msf/core/rpc/v10/service\.rb:88:in ${backquote}on_request_uri'\xda\x006lib/msf/core/rpc/v10/service\.rb:70:in ${backquote}block in start'\xda\x00/lib/rex/proto/http/handler/proc\.rb:37:in ${backquote}call'\xda\x005lib/rex/proto/http/handler/proc\.rb:37:in ${backquote}on_request'\xda\x00| p/Metasploit Remote API/ v/4.4.0-dev/
 
 ##############################NEXT PROBE##############################
 # svrloc
-Probe UDP svrloc q|\x02\x01\x00\x006 \x00\x00\x00\x00\x00\x01\x00\x02en\x00\x00\x00\x15service:Service-agent\x00\x07default\x00\x00\x00\x00|
+Probe UDP svrloc q|\x02\x01\x00\x006 \x00\x00\x00\x00\x00\x01\x00\x02en\x00\x00\x00\x15service:service-agent\x00\x07default\x00\x00\x00\x00|
 rarity 8
 ports 427
 match svrloc m|^\x02\x0b| p/Service Location Protocol/ v/2/
@@ -16155,7 +16155,7 @@ ports 2302
 
 match freelancer m|^\x00\x03\xf1\x26.{88}(.*)\0\0(?:.*?:){5}(.*)\0\0$|s p/Freelancer/ i/name: $P(1); description: $P(2)/
 
-# All-Seeing Eye Service provided by some game servers for querying
+# All-Seeing Eye service provided by some game servers for querying
 # the server's status
 # For more info on the protocol see:
 # http://int64.org/docs/gamestat-protocols/ase.html
@@ -16269,7 +16269,7 @@ Probe TCP TLS-PSK q|\x16\x03\x00\x00u\x01\x00\x00q\x03\x03U8*bETXSJDSZNHMDFAONDK
 rarity 9
 ports 27036
 
-match ssl/steam m|^\x16\x03\x03\0.\x02\0\0.\x03\x03.*\x16\x03\x03\0\x0b\x0c\0\0\x07\0\x05steam|s p/Valve Steam In-Home Streaming Service/ i/TLSv1.2 PSK/
+match ssl/steam m|^\x16\x03\x03\0.\x02\0\0.\x03\x03.*\x16\x03\x03\0\x0b\x0c\0\0\x07\0\x05steam|s p/Valve Steam In-Home Streaming service/ i/TLSv1.2 PSK/
 
 match ssl m=^\x16\x03[\0-\x03]..\x02\0\0.\x03[\0-\x03].*\x16\x03[\0-\x03]\0.\x0c.....(.+?)(?:\x16\x03[\0-\x03]|$)=s p/TLS PSK/ i/PSK identity hint: $P(1)/
 
@@ -16334,9 +16334,9 @@ ports 2481
 sslports 2482
 
 # Filemaker Pro Advanced 11
-match giop m|^GIOP\x01\0\x01\x01@\0\0\0\0\0\0\0\x01\0\0\0\x02\0\0\0'\0\0\0IDL:omg\.org/CORBA/OBJECT_NOT_EXIST:1\.0\0| p/omg.org CORBA naming Service/
+match giop m|^GIOP\x01\0\x01\x01@\0\0\0\0\0\0\0\x01\0\0\0\x02\0\0\0'\0\0\0IDL:omg\.org/CORBA/OBJECT_NOT_EXIST:1\.0\0| p/omg.org CORBA naming service/
 # Mitel networks IIOP
-match giop m|^GIOP\x01\0\0\x01\0\0\0@\0\0\0\0\0\0\0\x01\0\0\0\x02\0\0\0'IDL:omg\.org/CORBA/OBJECT_NOT_EXIST:1\.0\0\0OM\0\x02\0\0\0\x01| p/omg.org CORBA naming Service/
+match giop m|^GIOP\x01\0\0\x01\0\0\0@\0\0\0\0\0\0\0\x01\0\0\0\x02\0\0\0'IDL:omg\.org/CORBA/OBJECT_NOT_EXIST:1\.0\0\0OM\0\x02\0\0\0\x01| p/omg.org CORBA naming service/
 softmatch giop m|^GIOP\x01\x00\x01\x01........\x01\x00\x00\x00|
 softmatch giop m|^GIOP.*IDL:omg\.org|s
 
