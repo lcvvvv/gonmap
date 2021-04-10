@@ -72,3 +72,7 @@ func (p *PortInfomation) MATCHED() *PortInfomation {
 	p.status = "MATCHED"
 	return p
 }
+
+func (p *PortInfomation) Finger() *Finger {
+	return p.finger
+}
