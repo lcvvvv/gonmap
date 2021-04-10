@@ -91,7 +91,7 @@ func (n *Nmap) Scan(ip string, port int) *PortInfomation {
 	}
 	//开始全端口探测
 	for _, requestName := range n.allPortMap {
-		fmt.Println("开始全端口探测：", requestName, "权重为", n.probeGroup[requestName].rarity)
+		//fmt.Println("开始全端口探测：", requestName, "权重为", n.probeGroup[requestName].rarity)
 		portinfo = n.getPortInfo(n.probeGroup[requestName], n.target, false)
 		if portinfo.status == "CLOSE" || portinfo.status == "MATCHED" {
 			break
@@ -114,7 +114,7 @@ func (n *Nmap) getPortInfo(p *probe, target *target, tls bool) *PortInfomation {
 		if strings.Contains(err.Error(), "close") {
 			return nil
 		}
-		fmt.Println(err)
+		//fmt.Println(err)
 		return portinfo
 	} else {
 		portinfo.response.string = data
