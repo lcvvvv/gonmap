@@ -60,7 +60,7 @@ func (p *probe) scan(t *target, ssl bool) (string, error) {
 	}
 }
 
-func (p *probe) match(s string) *finger {
+func (p *probe) match(s string) *Finger {
 	var f = newFinger()
 	for _, m := range p.matchGroup {
 		//实现软筛选
@@ -69,18 +69,18 @@ func (p *probe) match(s string) *finger {
 				continue
 			}
 		}
-		//fmt.Println("开始匹配正则：", m.service, m.patternRegexp.String())
+		//fmt.Println("开始匹配正则：", m.Service, m.patternRegexp.String())
 		if m.patternRegexp.MatchString(s) {
 			//fmt.Println("成功匹配指纹：", m.pattern, "所在probe为：", p.request.name)
 			if m.soft {
 				//如果为软捕获，这设置筛选器
-				f.service = m.service
+				f.Service = m.service
 				p.softMatchFilter = m.service
 				continue
 			} else {
 				//如果为硬捕获则直接获取指纹信息
 				f = m.makeVersionInfo(s)
-				f.service = m.service
+				f.Service = m.service
 				return f
 			}
 		}
@@ -141,7 +141,7 @@ func (p *probe) loadProbe(s string) {
 func (p *probe) loadMatch(s string, soft bool) {
 	m := newMatch()
 	//"match": misc.MakeRegexpCompile("^([a-zA-Z0-9-_./]+) m\\|([^|]+)\\|([is]{0,2}) (.*)$"),
-	//match <service> <pattern>|<patternopt> [<versioninfo>]
+	//match <Service> <pattern>|<patternopt> [<versioninfo>]
 	//	"matchVersioninfoProductname": misc.MakeRegexpCompile("p/([^/]+)/"),
 	//	"matchVersioninfoVersion":     misc.MakeRegexpCompile("v/([^/]+)/"),
 	//	"matchVersioninfoInfo":        misc.MakeRegexpCompile("i/([^/]+)/"),
@@ -210,7 +210,7 @@ func (p *probe) Clean() {
 //	var finger = newFinger()
 //	for _, match := range this.matchGroup {
 //		if this.softMatchFilter != "" {
-//			if match.service != this.softMatchFilter {
+//			if match.Service != this.softMatchFilter {
 //				continue
 //			}
 //		}
@@ -222,18 +222,18 @@ func (p *probe) Clean() {
 //		if regular.matchGrouptring(this.response.string) {
 //			if match.soft {
 //				//如果为软捕获，这设置筛选器
-//				finger.service = match.service
-//				this.softMatchFilter = match.service
+//				finger.Service = match.Service
+//				this.softMatchFilter = match.Service
 //			} else {
 //				//如果为硬捕获则直接设置指纹信息
 //				finger = this.makeFinger(regular.FindStringSubmatch(this.response.string), match.versioninfo)
-//				finger.service = match.service
+//				finger.Service = match.Service
 //				this.response.finger = finger
 //				return true
 //			}
 //		}
 //	}
-//	if finger.service != "" {
+//	if finger.Service != "" {
 //		this.response.finger = finger
 //		return true
 //	} else {

@@ -66,10 +66,10 @@ type Nmap struct {
 	filter int
 
 	response *response
-	finger   *finger
+	finger   *Finger
 }
 
-func (n *Nmap) Scan(ip string, port int) *portinfo {
+func (n *Nmap) Scan(ip string, port int) *PortInfomation {
 	n.target.host = ip
 	n.target.port = port
 	n.target.uri = fmt.Sprintf("%s:%d", ip, port)
@@ -104,7 +104,7 @@ func (n *Nmap) Scan(ip string, port int) *portinfo {
 	return portinfo
 }
 
-func (n *Nmap) getPortInfo(p *probe, target *target, tls bool) *portinfo {
+func (n *Nmap) getPortInfo(p *probe, target *target, tls bool) *PortInfomation {
 	portinfo := newPortInfo()
 	data, err := p.scan(target, tls)
 	if err != nil {
@@ -122,7 +122,7 @@ func (n *Nmap) getPortInfo(p *probe, target *target, tls bool) *portinfo {
 		//fmt.Printf("成功捕获到返回包，返回包为：%x\n", data)
 		//fmt.Printf("成功捕获到返回包，返回包长度为：%x\n", len(data))
 		portinfo.finger = n.getFinger(data, p.request.name)
-		if portinfo.finger.service == "" {
+		if portinfo.finger.Service == "" {
 			return portinfo.OPEN()
 		} else {
 			return portinfo.MATCHED()
@@ -131,10 +131,10 @@ func (n *Nmap) getPortInfo(p *probe, target *target, tls bool) *portinfo {
 	}
 }
 
-func (n *Nmap) getFinger(data string, requestName string) *finger {
+func (n *Nmap) getFinger(data string, requestName string) *Finger {
 	data = n.convResponse(data)
 	f := n.probeGroup[requestName].match(data)
-	if f.service == "" {
+	if f.Service == "" {
 		if n.probeGroup[requestName].fallback != "" {
 			return n.probeGroup["TCP_"+n.probeGroup[requestName].fallback].match(data)
 		}

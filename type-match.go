@@ -7,12 +7,12 @@ import (
 )
 
 type match struct {
-	//match <service> <pattern> <patternopt> [<versioninfo>]
+	//match <Service> <pattern> <patternopt> [<versioninfo>]
 	soft          bool
 	service       string
 	pattern       string
 	patternRegexp *regexp.Regexp
-	versioninfo   *finger
+	versioninfo   *Finger
 }
 
 var MATCH_LOAD_REGEXPS = []*regexp.Regexp{
@@ -56,13 +56,13 @@ func (m *match) load(s string, soft bool) bool {
 	m.soft = soft
 	m.service = args[1]
 	m.pattern = args[2]
-	m.versioninfo.service = m.service
-	m.versioninfo.productname = m.getVersionInfo(s, "PRODUCTNAME")
-	m.versioninfo.version = m.getVersionInfo(s, "VERSION")
-	m.versioninfo.info = m.getVersionInfo(s, "INFO")
-	m.versioninfo.hostname = m.getVersionInfo(s, "HOSTNAME")
-	m.versioninfo.operatingsystem = m.getVersionInfo(s, "OS")
-	m.versioninfo.devicetype = m.getVersionInfo(s, "INFO")
+	m.versioninfo.Service = m.service
+	m.versioninfo.ProductName = m.getVersionInfo(s, "PRODUCTNAME")
+	m.versioninfo.Version = m.getVersionInfo(s, "VERSION")
+	m.versioninfo.Info = m.getVersionInfo(s, "INFO")
+	m.versioninfo.Hostname = m.getVersionInfo(s, "HOSTNAME")
+	m.versioninfo.OperatingSystem = m.getVersionInfo(s, "OS")
+	m.versioninfo.DeviceType = m.getVersionInfo(s, "INFO")
 
 	m.patternRegexp = m.getPatternRegexp(m.pattern, args[3])
 	return true
@@ -94,16 +94,16 @@ func (m *match) getVersionInfo(s string, regID string) string {
 	}
 }
 
-func (m *match) makeVersionInfo(s string) *finger {
+func (m *match) makeVersionInfo(s string) *Finger {
 	f := newFinger()
 	//fmt.Println(s)
-	f.info = m.makeVersionInfoSubHelper(s, m.versioninfo.info)
-	f.devicetype = m.makeVersionInfoSubHelper(s, m.versioninfo.devicetype)
-	f.hostname = m.makeVersionInfoSubHelper(s, m.versioninfo.hostname)
-	f.operatingsystem = m.makeVersionInfoSubHelper(s, m.versioninfo.operatingsystem)
-	f.productname = m.makeVersionInfoSubHelper(s, m.versioninfo.productname)
-	f.version = m.makeVersionInfoSubHelper(s, m.versioninfo.version)
-	f.service = m.makeVersionInfoSubHelper(s, m.versioninfo.service)
+	f.Info = m.makeVersionInfoSubHelper(s, m.versioninfo.Info)
+	f.DeviceType = m.makeVersionInfoSubHelper(s, m.versioninfo.DeviceType)
+	f.Hostname = m.makeVersionInfoSubHelper(s, m.versioninfo.Hostname)
+	f.OperatingSystem = m.makeVersionInfoSubHelper(s, m.versioninfo.OperatingSystem)
+	f.ProductName = m.makeVersionInfoSubHelper(s, m.versioninfo.ProductName)
+	f.Version = m.makeVersionInfoSubHelper(s, m.versioninfo.Version)
+	f.Service = m.makeVersionInfoSubHelper(s, m.versioninfo.Service)
 	return f
 }
 

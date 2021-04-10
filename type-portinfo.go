@@ -2,55 +2,55 @@ package gonmap
 
 import "fmt"
 
-type portinfo struct {
+type PortInfomation struct {
 	response *response
-	finger   *finger
+	finger   *Finger
 	status   string
 }
 
-func newPortInfo() *portinfo {
-	return &portinfo{
+func newPortInfo() *PortInfomation {
+	return &PortInfomation{
 		response: newResponse(),
 		finger:   newFinger(),
 		status:   "UNKNOW",
 	}
 }
 
-func (p *portinfo) Length() int {
+func (p *PortInfomation) Length() int {
 	return p.response.Length()
 }
 
-func (p *portinfo) Response() string {
+func (p *PortInfomation) Response() string {
 	return p.response.string
 }
 
-func (p *portinfo) Status() string {
+func (p *PortInfomation) Status() string {
 	return p.status
 }
 
-func (p *portinfo) Service() string {
-	return p.finger.service
+func (p *PortInfomation) Service() string {
+	return p.finger.Service
 }
 
-func (p *portinfo) Info() string {
+func (p *PortInfomation) Info() string {
 	var s string
-	if p.finger.productname != "" {
-		s += fmt.Sprintf("Product:%s,", p.finger.productname)
+	if p.finger.ProductName != "" {
+		s += fmt.Sprintf("Product:%s,", p.finger.ProductName)
 	}
-	if p.finger.version != "" {
-		s += fmt.Sprintf("Version:%s,", p.finger.version)
+	if p.finger.Version != "" {
+		s += fmt.Sprintf("Version:%s,", p.finger.Version)
 	}
-	if p.finger.operatingsystem != "" {
-		s += fmt.Sprintf("OS:%s,", p.finger.operatingsystem)
+	if p.finger.OperatingSystem != "" {
+		s += fmt.Sprintf("OS:%s,", p.finger.OperatingSystem)
 	}
-	if p.finger.hostname != "" {
-		s += fmt.Sprintf("HostName:%s,", p.finger.hostname)
+	if p.finger.Hostname != "" {
+		s += fmt.Sprintf("HostName:%s,", p.finger.Hostname)
 	}
-	if p.finger.devicetype != "" {
-		s += fmt.Sprintf("DeviceType:%s,", p.finger.devicetype)
+	if p.finger.DeviceType != "" {
+		s += fmt.Sprintf("DeviceType:%s,", p.finger.DeviceType)
 	}
-	if p.finger.info != "" {
-		s += fmt.Sprintf("OtherInfo:%s,", p.finger.info)
+	if p.finger.Info != "" {
+		s += fmt.Sprintf("OtherInfo:%s,", p.finger.Info)
 	}
 	if s != "" {
 		s = s[:len(s)-1]
@@ -58,21 +58,17 @@ func (p *portinfo) Info() string {
 	return s
 }
 
-func (p *portinfo) Map() map[string]string {
-	return p.finger.Map()
-}
-
-func (p *portinfo) CLOSED() *portinfo {
+func (p *PortInfomation) CLOSED() *PortInfomation {
 	p.status = "CLOSED"
 	return p
 }
 
-func (p *portinfo) OPEN() *portinfo {
+func (p *PortInfomation) OPEN() *PortInfomation {
 	p.status = "OPEN"
 	return p
 }
 
-func (p *portinfo) MATCHED() *portinfo {
+func (p *PortInfomation) MATCHED() *PortInfomation {
 	p.status = "MATCHED"
 	return p
 }
