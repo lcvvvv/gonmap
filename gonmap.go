@@ -1,9 +1,11 @@
 package gonmap
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 )
 
 var NMAP *Nmap
@@ -69,6 +71,27 @@ type Nmap struct {
 	finger   *Finger
 }
 
+func (n *Nmap) SafeScan(ip string, port int, timeout time.Duration) *PortInfomation {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+	resChan := make(chan *PortInfomation)
+	go n.safeScanSub(ip, port, ctx, resChan)
+	for {
+		select {
+		case <-ctx.Done():
+			return newPortInfo()
+		case res := <-resChan:
+			return res
+		}
+	}
+}
+
+func (n *Nmap) safeScanSub(ip string, port int, ctx context.Context, resChan chan *PortInfomation) {
+	r := n.Scan(ip, port)
+	resChan <- r
+	ctx.Done()
+}
+
 func (n *Nmap) Scan(ip string, port int) *PortInfomation {
 	n.target.host = ip
 	n.target.port = port
@@ -113,7 +136,7 @@ func (n *Nmap) getPortInfo(p *probe, target *target, tls bool) *PortInfomation {
 			return portinfo.CLOSED()
 		}
 		if strings.Contains(err.Error(), "close") {
-			return nil
+			return portinfo
 		}
 		//fmt.Println(err)
 		return portinfo
