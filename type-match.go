@@ -3,6 +3,7 @@ package gonmap
 import (
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -32,6 +33,7 @@ var MATCH_VARSIONINFO_REGEXPS = map[string]*regexp.Regexp{
 }
 
 var MATCH_VERSIONINFO_HELPER_P_REGEXP = regexp.MustCompile(`\$P\((\d)\)`)
+var MATCH_VERSIONINFO_HELPER_REGEXP = regexp.MustCompile(`\$(\d)`)
 
 func newMatch() *match {
 	return &match{
@@ -108,16 +110,27 @@ func (m *match) makeVersionInfo(s string) *Finger {
 }
 
 func (m *match) makeVersionInfoSubHelper(s string, pattern string) string {
-	if MATCH_VERSIONINFO_HELPER_P_REGEXP.MatchString(pattern) {
-		pattern = MATCH_VERSIONINFO_HELPER_P_REGEXP.ReplaceAllStringFunc(pattern, func(repl string) string {
-			s := MATCH_VERSIONINFO_HELPER_P_REGEXP.FindStringSubmatch(repl)[1]
-			return "$" + s
-		})
-	}
 	if len(m.patternRegexp.FindStringSubmatch(s)) == 1 {
 		return pattern
 	}
-	pattern = m.patternRegexp.ReplaceAllString(s, pattern)
+	if pattern == "" {
+		return pattern
+	}
+	sArr := m.patternRegexp.FindStringSubmatch(s)
+
+	if MATCH_VERSIONINFO_HELPER_P_REGEXP.MatchString(pattern) {
+		pattern = MATCH_VERSIONINFO_HELPER_P_REGEXP.ReplaceAllStringFunc(pattern, func(repl string) string {
+			a := MATCH_VERSIONINFO_HELPER_P_REGEXP.FindStringSubmatch(repl)[1]
+			return "$" + a
+		})
+	}
+
+	if MATCH_VERSIONINFO_HELPER_REGEXP.MatchString(pattern) {
+		pattern = MATCH_VERSIONINFO_HELPER_REGEXP.ReplaceAllStringFunc(pattern, func(repl string) string {
+			i, _ := strconv.Atoi(MATCH_VERSIONINFO_HELPER_REGEXP.FindStringSubmatch(repl)[1])
+			return sArr[i]
+		})
+	}
 	pattern = strings.ReplaceAll(pattern, "\n", "")
 	pattern = strings.ReplaceAll(pattern, "\r", "")
 	return pattern

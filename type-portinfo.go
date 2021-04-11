@@ -1,7 +1,5 @@
 package gonmap
 
-import "fmt"
-
 type PortInfomation struct {
 	response *response
 	finger   *Finger
@@ -30,32 +28,6 @@ func (p *PortInfomation) Status() string {
 
 func (p *PortInfomation) Service() string {
 	return p.finger.Service
-}
-
-func (p *PortInfomation) Info() string {
-	var s string
-	if p.finger.ProductName != "" {
-		s += fmt.Sprintf("Product:%s,", p.finger.ProductName)
-	}
-	if p.finger.Version != "" {
-		s += fmt.Sprintf("Version:%s,", p.finger.Version)
-	}
-	if p.finger.OperatingSystem != "" {
-		s += fmt.Sprintf("OS:%s,", p.finger.OperatingSystem)
-	}
-	if p.finger.Hostname != "" {
-		s += fmt.Sprintf("HostName:%s,", p.finger.Hostname)
-	}
-	if p.finger.DeviceType != "" {
-		s += fmt.Sprintf("DeviceType:%s,", p.finger.DeviceType)
-	}
-	if p.finger.Info != "" {
-		s += fmt.Sprintf("OtherInfo:%s,", p.finger.Info)
-	}
-	if s != "" {
-		s = s[:len(s)-1]
-	}
-	return s
 }
 
 func (p *PortInfomation) CLOSED() *PortInfomation {

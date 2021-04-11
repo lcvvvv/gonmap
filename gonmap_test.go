@@ -7,13 +7,12 @@ import (
 )
 
 func TestGonmap(t *testing.T) {
-
 	status := Init(9)
 	fmt.Printf("[INFO] 成功加载探针:[%d]个,指纹[%d]条\n", status["PROBE"], status["MATCH"])
 	fmt.Printf("[INFO] 本次扫描将使用探针:[%d]个,指纹[%d]条\n", status["USED_PROBE"], status["USED_MATCH"])
 	n := New()
-	r := n.SafeScan("10.158.3.42", 139, 5*time.Second)
-	fmt.Printf("%s\t%s\t%s\t%s\n", n.target.uri, r.status, r.Service(), r.Info())
+	r := n.SafeScan("193.112.63.109", 80, 5*time.Second)
+	fmt.Printf("%s\t%s\t%s\t%s\n", n.target.uri, r.status, r.Service(), r.finger.Information())
 
 	//for i := 1; i <= 10000; i++ {
 	//	fmt.Println("开始探测端口：",i)
