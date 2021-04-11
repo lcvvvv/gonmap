@@ -79,8 +79,9 @@ func (n *Nmap) Scan(ip string, port int) *PortInfomation {
 	portinfo := newPortInfo()
 	//开始特定端口探测
 	for _, requestName := range n.portMap[port] {
-		//fmt.Println("开始探测：", requestName, "权重为", n.probeGroup[requestName].rarity)
+		fmt.Println("开始探测：", requestName, "权重为", n.probeGroup[requestName].rarity)
 		tls := n.probeGroup[requestName].sslports.Exist(n.target.port)
+		fmt.Println(tls)
 		portinfo = n.getPortInfo(n.probeGroup[requestName], n.target, tls)
 		if portinfo.status == "CLOSE" || portinfo.status == "MATCHED" {
 			break
@@ -125,6 +126,11 @@ func (n *Nmap) getPortInfo(p *probe, target *target, tls bool) *PortInfomation {
 		if portinfo.finger.Service == "" {
 			return portinfo.OPEN()
 		} else {
+			if tls {
+				if portinfo.finger.Service == "http" {
+					portinfo.finger.Service = "https"
+				}
+			}
 			return portinfo.MATCHED()
 		}
 		//如果成功匹配指纹，则直接返回指纹
