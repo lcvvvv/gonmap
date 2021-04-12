@@ -34,6 +34,7 @@ func Init(filter int, timeout int) map[string]int {
 	NMAP.loads(NMAP_SERVICE_PROBES)
 	NMAP.AddAllProbe("TCP_GetRequest")
 	NMAP.setTimeout(timeout)
+	NMAP.AddMatch("TCP_GetRequest", `http m|^HTTP/1\.[01] \d\d\d (?:[^\r\n]+\r\n)*?Server: ([^\r\n]+)| p/$1/`)
 	return NMAP.Status()
 }
 
@@ -42,7 +43,7 @@ func InitNMAP() {
 	NMAP_SERVICE_PROBES = strings.ReplaceAll(NMAP_SERVICE_PROBES, `\1`, `$1`)
 	NMAP_SERVICE_PROBES = strings.ReplaceAll(NMAP_SERVICE_PROBES, `(?=\\)`, `(?:\\)`)
 	NMAP_SERVICE_PROBES = strings.ReplaceAll(NMAP_SERVICE_PROBES, `(?=[\w._-]{5,15}\r?\n$)`, `(?:[\w._-]{5,15}\r?\n$)`)
-	NMAP_SERVICE_PROBES = strings.ReplaceAll(NMAP_SERVICE_PROBES, `(?:[^\r\n]*r\n(?!\r\n))`, `(?:[^\r\n]*\r\n(?!\r\n))`)
+	NMAP_SERVICE_PROBES = strings.ReplaceAll(NMAP_SERVICE_PROBES, `(?:[^\r\n]*r\n(?!\r\n))*?`, `(?:[^\r\n]+\r\n)*?`)
 	NMAP_SERVICE_PROBES = strings.ReplaceAll(NMAP_SERVICE_PROBES, `(?:[^\r\n]*\r\n(?!\r\n))*?`, `(?:[^\r\n]+\r\n)*?`)
 	NMAP_SERVICE_PROBES = strings.ReplaceAll(NMAP_SERVICE_PROBES, `(?:[^\r\n]+\r\n(?!\r\n))*?`, `(?:[^\r\n]+\r\n)*?`)
 	NMAP_SERVICE_PROBES = strings.ReplaceAll(NMAP_SERVICE_PROBES, `(?!2526)`, ``)
@@ -111,9 +112,10 @@ func (n *Nmap) Scan(ip string, port int) *PortInfomation {
 	portinfo := newPortInfo()
 	//开始特定端口探测
 	for _, requestName := range n.portMap[port] {
-		//fmt.Println("开始探测：", requestName, "权重为", n.probeGroup[requestName].rarity)
 		tls := n.probeGroup[requestName].sslports.Exist(n.target.port)
 		//fmt.Println(tls)
+		//fmt.Println("开始探测：", requestName, "权重为", n.probeGroup[requestName].rarity)
+
 		portinfo = n.getPortInfo(n.probeGroup[requestName], n.target, tls)
 		if portinfo.status == "CLOSE" || portinfo.status == "MATCHED" {
 			break
@@ -177,6 +179,7 @@ func (n *Nmap) getPortInfo(p *probe, target *target, tls bool) *PortInfomation {
 
 func (n *Nmap) getFinger(data string, requestName string) *Finger {
 	data = n.convResponse(data)
+	//fmt.Println(data)
 	f := n.probeGroup[requestName].match(data)
 	if f.Service == "" {
 		if n.probeGroup[requestName].fallback != "" {
@@ -322,4 +325,8 @@ func (n *Nmap) setTimeout(timeout int) {
 		p.totalwaitms = time.Duration(timeout) * time.Second
 		p.tcpwrappedms = time.Duration(timeout) * time.Second
 	}
+}
+
+func (n *Nmap) AddMatch(probeName string, expr string) {
+	n.probeGroup[probeName].loadMatch(expr, false)
 }
