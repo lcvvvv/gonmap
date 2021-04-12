@@ -35,6 +35,7 @@ func Init(filter int, timeout int) map[string]int {
 	NMAP.AddAllProbe("TCP_GetRequest")
 	NMAP.setTimeout(timeout)
 	NMAP.AddMatch("TCP_GetRequest", `http m|^HTTP/1\.[01] \d\d\d (?:[^\r\n]+\r\n)*?Server: ([^\r\n]+)| p/$1/`)
+	NMAP.AddMatch("TCP_GetRequest", `http m|^HTTP/1\.[01] \d\d\d|`)
 	return NMAP.Status()
 }
 
@@ -114,25 +115,26 @@ func (n *Nmap) Scan(ip string, port int) *PortInfomation {
 	for _, requestName := range n.portMap[port] {
 		tls := n.probeGroup[requestName].sslports.Exist(n.target.port)
 		//fmt.Println(tls)
-		//fmt.Println("开始探测：", requestName, "权重为", n.probeGroup[requestName].rarity)
+		//fmt.Println("开始探测：", requestName, "权重为", tls,n.probeGroup[requestName].rarity)
 
 		portinfo = n.getPortInfo(n.probeGroup[requestName], n.target, tls)
 		if portinfo.status == "CLOSE" || portinfo.status == "MATCHED" {
 			break
 		}
 	}
-	if portinfo.status == "CLOSE" || portinfo.status == "MATCHED" {
+	fmt.Println(portinfo.status)
+	if portinfo.status == "MATCHED" {
 		return portinfo
 	}
 	//开始全端口探测
 	for _, requestName := range n.allPortMap {
-		//fmt.Println("开始全端口探测：", requestName, "权重为", n.probeGroup[requestName].rarity)
+		fmt.Println("开始全端口探测：", requestName, "权重为", n.probeGroup[requestName].rarity)
 		portinfo = n.getPortInfo(n.probeGroup[requestName], n.target, false)
-		if portinfo.status == "CLOSE" || portinfo.status == "MATCHED" {
+		if portinfo.status == "MATCHED" {
 			break
 		}
 		portinfo = n.getPortInfo(n.probeGroup[requestName], n.target, true)
-		if portinfo.status == "CLOSE" || portinfo.status == "MATCHED" {
+		if portinfo.status == "MATCHED" {
 			break
 		}
 	}
@@ -143,6 +145,7 @@ func (n *Nmap) getPortInfo(p *probe, target *target, tls bool) *PortInfomation {
 	portinfo := newPortInfo()
 	data, err := p.scan(target, tls)
 	if err != nil {
+		//fmt.Println(err)
 		if strings.Contains(err.Error(), "STEP1") {
 			return portinfo.CLOSED()
 		}
@@ -155,7 +158,6 @@ func (n *Nmap) getPortInfo(p *probe, target *target, tls bool) *PortInfomation {
 		//if strings.Contains(err.Error(), "timeout") {
 		//	return portinfo.CLOSED()
 		//}
-		//fmt.Println(err)
 		return portinfo
 	} else {
 		portinfo.response.string = data
