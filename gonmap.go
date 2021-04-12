@@ -11,9 +11,33 @@ import (
 var NMAP *Nmap
 
 //r["PROBE"] 总探针数、r["MATCH"] 总指纹数 、r["USED_PROBE"] 已使用探针数、r["USED_MATCH"] 已使用指纹数
-func Init(filter int) map[string]int {
+func Init(filter int, timeout int) map[string]int {
+	//初始化NMAP探针库
+	InitNMAP()
 	//fmt.Println("初始化了")
-	r := make(map[string]int)
+	NMAP = &Nmap{
+		exclude:     newPort(),
+		probeGroup:  make(map[string]*probe),
+		probeSort:   []string{},
+		portMap:     make(map[int][]string),
+		allPortMap:  []string{},
+		probeFilter: 0,
+		target:      newTarget(),
+		response:    nil,
+		finger:      nil,
+		filter:      5,
+	}
+	NMAP.filter = filter
+	for i := 0; i <= 65535; i++ {
+		NMAP.portMap[i] = []string{}
+	}
+	NMAP.loads(NMAP_SERVICE_PROBES)
+	NMAP.AddAllProbe("TCP_GetRequest")
+	NMAP.setTimeout(timeout)
+	return NMAP.Status()
+}
+
+func InitNMAP() {
 	NMAP_SERVICE_PROBES = strings.ReplaceAll(NMAP_SERVICE_PROBES, "${backquote}", "`")
 	NMAP_SERVICE_PROBES = strings.ReplaceAll(NMAP_SERVICE_PROBES, `\1`, `$1`)
 	NMAP_SERVICE_PROBES = strings.ReplaceAll(NMAP_SERVICE_PROBES, `(?=\\)`, `(?:\\)`)
@@ -32,38 +56,6 @@ func Init(filter int) map[string]int {
 	NMAP_SERVICE_PROBES = strings.ReplaceAll(NMAP_SERVICE_PROBES, `(?<=.)`, `(?:.)`)
 	NMAP_SERVICE_PROBES = strings.ReplaceAll(NMAP_SERVICE_PROBES, `(?<=\?)`, `(?:\?)`)
 	NMAP_SERVICE_PROBES = strings.ReplaceAll(NMAP_SERVICE_PROBES, `{899,1536}`, `*`)
-	NMAP = &Nmap{
-		exclude:     newPort(),
-		probeGroup:  make(map[string]*probe),
-		probeSort:   []string{},
-		portMap:     make(map[int][]string),
-		allPortMap:  []string{},
-		probeFilter: 0,
-		target:      newTarget(),
-		response:    nil,
-		finger:      nil,
-		filter:      5,
-	}
-	NMAP.filter = filter
-	for i := 0; i <= 65535; i++ {
-		NMAP.portMap[i] = []string{}
-	}
-	NMAP.loads(NMAP_SERVICE_PROBES)
-	NMAP.allPortMap = append(NMAP.allPortMap, "TCP_GetRequest")
-
-	r["PROBE"] = len(NMAP.probeSort)
-	r["MATCH"] = 0
-	for _, p := range NMAP.probeGroup {
-		r["MATCH"] += len(p.matchGroup)
-	}
-	//fmt.Printf("成功加载探针：【%d】个,指纹【%d】条\n", PROBE_COUNT,MATCH_COUNT)
-	r["USED_PROBE"] = len(NMAP.portMap[0])
-	r["USED_MATCH"] = 0
-	for _, p := range NMAP.portMap[0] {
-		r["USED_MATCH"] += len(NMAP.probeGroup[p].matchGroup)
-	}
-	//fmt.Printf("本次扫描将使用探针:[%d]个,指纹[%d]条\n", USED_PROBE_COUNT,USED_MATCH_COUNT)
-	return r
 }
 
 func New() *Nmap {
@@ -149,12 +141,18 @@ func (n *Nmap) getPortInfo(p *probe, target *target, tls bool) *PortInfomation {
 	portinfo := newPortInfo()
 	data, err := p.scan(target, tls)
 	if err != nil {
-		if strings.Contains(err.Error(), "refused") {
+		if strings.Contains(err.Error(), "STEP1") {
 			return portinfo.CLOSED()
 		}
-		if strings.Contains(err.Error(), "close") {
-			return portinfo
-		}
+		//if strings.Contains(err.Error(), "refused") {
+		//	return portinfo.CLOSED()
+		//}
+		//if strings.Contains(err.Error(), "close") {
+		//	return portinfo.CLOSED()
+		//}
+		//if strings.Contains(err.Error(), "timeout") {
+		//	return portinfo.CLOSED()
+		//}
 		//fmt.Println(err)
 		return portinfo
 	} else {
@@ -201,7 +199,7 @@ func (n *Nmap) convResponse(s1 string) string {
 
 func (n *Nmap) loads(s string) {
 	lines := strings.Split(s, "\n")
-	probeArr := []string{}
+	var probeArr []string
 	p := newProbe()
 	for _, line := range lines {
 		if !n.isCommand(line) {
@@ -224,6 +222,10 @@ func (n *Nmap) loads(s string) {
 	}
 	p.loads(probeArr)
 	n.pushProbe(p)
+}
+
+func (n *Nmap) AddAllProbe(probeName string) {
+	n.allPortMap = append(n.allPortMap, probeName)
 }
 
 func (n *Nmap) loadExclude(expr string) {
@@ -293,4 +295,31 @@ func (n *Nmap) isCommand(line string) bool {
 
 func (n *Nmap) Filter(i int) {
 	n.filter = i
+}
+
+func (n *Nmap) Status() map[string]int {
+	r := make(map[string]int)
+	r["PROBE"] = len(NMAP.probeSort)
+	r["MATCH"] = 0
+	for _, p := range NMAP.probeGroup {
+		r["MATCH"] += len(p.matchGroup)
+	}
+	//fmt.Printf("成功加载探针：【%d】个,指纹【%d】条\n", PROBE_COUNT,MATCH_COUNT)
+	r["USED_PROBE"] = len(NMAP.portMap[0])
+	r["USED_MATCH"] = 0
+	for _, p := range NMAP.portMap[0] {
+		r["USED_MATCH"] += len(NMAP.probeGroup[p].matchGroup)
+	}
+	//fmt.Printf("本次扫描将使用探针:[%d]个,指纹[%d]条\n", USED_PROBE_COUNT,USED_MATCH_COUNT)
+	return r
+}
+
+func (n *Nmap) setTimeout(timeout int) {
+	if timeout == 0 {
+		return
+	}
+	for _, p := range n.probeGroup {
+		p.totalwaitms = time.Duration(timeout) * time.Second
+		p.tcpwrappedms = time.Duration(timeout) * time.Second
+	}
 }

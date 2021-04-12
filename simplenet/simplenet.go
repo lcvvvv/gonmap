@@ -13,18 +13,18 @@ func Send(protocol string, netloc string, data string, duration time.Duration, s
 	protocol = strings.ToLower(protocol)
 	conn, err := net.DialTimeout(protocol, netloc, duration)
 	if err != nil {
-		return "", err
+		return "", errors.New(err.Error() + "STEP1:CONNECT")
 	}
 	buf := make([]byte, size)
 	_, err = io.WriteString(conn, data)
 	if err != nil {
 		_ = conn.Close()
-		return "", err
+		return "", errors.New(err.Error() + "STEP2:WRITE")
 	}
 	length, err := conn.Read(buf)
 	if err != nil && err.Error() != "EOF" {
 		_ = conn.Close()
-		return "", err
+		return "", errors.New(err.Error() + "STEP3:READ")
 	}
 	_ = conn.Close()
 	if length == 0 {
@@ -45,18 +45,18 @@ func TLSSend(protocol string, netloc string, data string, duration time.Duration
 	}
 	conn, err := tls.DialWithDialer(dial, protocol, netloc, config)
 	if err != nil {
-		return "", err
+		return "", errors.New(err.Error() + "STEP1:CONNECT")
 	}
 	_, err = io.WriteString(conn, data)
 	if err != nil {
 		_ = conn.Close()
-		return "", err
+		return "", errors.New(err.Error() + "STEP2:WRITE")
 	}
 	buf := make([]byte, size)
 	length, err := conn.Read(buf)
 	if err != nil && err.Error() != "EOF" {
 		_ = conn.Close()
-		return "", err
+		return "", errors.New(err.Error() + "STEP3:READ")
 	}
 	_ = conn.Close()
 	if length == 0 {
