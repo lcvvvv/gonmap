@@ -117,23 +117,23 @@ func (n *Nmap) Scan(ip string, port int) *PortInfomation {
 		//fmt.Println(tls)
 		//fmt.Println("开始探测：", requestName, "权重为", tls,n.probeGroup[requestName].rarity)
 
-		portinfo = n.getPortInfo(n.probeGroup[requestName], n.target, tls)
+		portinfo.Load(n.getPortInfo(n.probeGroup[requestName], n.target, tls))
 		if portinfo.status == "CLOSE" || portinfo.status == "MATCHED" {
 			break
 		}
 	}
-	fmt.Println(portinfo.status)
+	//fmt.Println(portinfo.status)
 	if portinfo.status == "MATCHED" {
 		return portinfo
 	}
 	//开始全端口探测
 	for _, requestName := range n.allPortMap {
-		fmt.Println("开始全端口探测：", requestName, "权重为", n.probeGroup[requestName].rarity)
-		portinfo = n.getPortInfo(n.probeGroup[requestName], n.target, false)
+		//fmt.Println("开始全端口探测：", requestName, "权重为", n.probeGroup[requestName].rarity)
+		portinfo.Load(n.getPortInfo(n.probeGroup[requestName], n.target, false))
 		if portinfo.status == "MATCHED" {
 			break
 		}
-		portinfo = n.getPortInfo(n.probeGroup[requestName], n.target, true)
+		portinfo.Load(n.getPortInfo(n.probeGroup[requestName], n.target, true))
 		if portinfo.status == "MATCHED" {
 			break
 		}
@@ -143,12 +143,14 @@ func (n *Nmap) Scan(ip string, port int) *PortInfomation {
 
 func (n *Nmap) getPortInfo(p *probe, target *target, tls bool) *PortInfomation {
 	portinfo := newPortInfo()
+	//fmt.Println("开始发送数据:",p.request.name,"超时时间为：",p.totalwaitms,p.tcpwrappedms)
 	data, err := p.scan(target, tls)
 	if err != nil {
 		//fmt.Println(err)
 		if strings.Contains(err.Error(), "STEP1") {
 			return portinfo.CLOSED()
 		}
+
 		//if strings.Contains(err.Error(), "refused") {
 		//	return portinfo.CLOSED()
 		//}
@@ -158,7 +160,7 @@ func (n *Nmap) getPortInfo(p *probe, target *target, tls bool) *PortInfomation {
 		//if strings.Contains(err.Error(), "timeout") {
 		//	return portinfo.CLOSED()
 		//}
-		return portinfo
+		return portinfo.OPEN()
 	} else {
 		portinfo.response.string = data
 		//若存在返回包，则开始捕获指纹

@@ -10,8 +10,21 @@ func newPortInfo() *PortInfomation {
 	return &PortInfomation{
 		response: newResponse(),
 		finger:   newFinger(),
-		status:   "UNKNOW",
+		status:   "UNKNOWN",
 	}
+}
+
+func (p *PortInfomation) Load(np *PortInfomation) {
+	if p.status == "CLOSED" || p.status == "MATCHED" {
+		return
+	}
+	if p.status == "UNKNOWN" {
+		*p = *np
+	}
+	if p.status == "OPEN" && np.status != "CLOSED" && np.status != "UNKNOWN" {
+		*p = *np
+	}
+	//fmt.Println("加载完成后端口状态为：",p.status)
 }
 
 func (p *PortInfomation) Length() int {
