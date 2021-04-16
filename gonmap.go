@@ -118,23 +118,23 @@ func (n *Nmap) Scan(ip string, port int) *PortInfomation {
 		//fmt.Println("开始探测：", requestName, "权重为", tls,n.probeGroup[requestName].rarity)
 
 		portinfo.Load(n.getPortInfo(n.probeGroup[requestName], n.target, tls))
-		if portinfo.status == "CLOSE" || portinfo.status == "MATCHED" {
+		if portinfo.status == "CLOSED" || portinfo.status == "MATCHED" {
 			break
 		}
 	}
 	//fmt.Println(portinfo.status)
-	if portinfo.status == "MATCHED" {
+	if portinfo.status == "MATCHED" || portinfo.status == "CLOSED" {
 		return portinfo
 	}
 	//开始全端口探测
 	for _, requestName := range n.allPortMap {
 		//fmt.Println("开始全端口探测：", requestName, "权重为", n.probeGroup[requestName].rarity)
 		portinfo.Load(n.getPortInfo(n.probeGroup[requestName], n.target, false))
-		if portinfo.status == "MATCHED" {
+		if portinfo.status == "CLOSED" || portinfo.status == "MATCHED" {
 			break
 		}
 		portinfo.Load(n.getPortInfo(n.probeGroup[requestName], n.target, true))
-		if portinfo.status == "MATCHED" {
+		if portinfo.status == "CLOSED" || portinfo.status == "MATCHED" {
 			break
 		}
 	}
