@@ -112,11 +112,11 @@ func (n *Nmap) Scan(ip string, port int) *PortInfomation {
 	//拼接端口探测队列，全端口探测放在最后
 	portinfo := newPortInfo()
 	//开始特定端口探测
+	//fmt.Println(n.portMap[port])
 	for _, requestName := range n.portMap[port] {
 		tls := n.probeGroup[requestName].sslports.Exist(n.target.port)
 		//fmt.Println(tls)
 		//fmt.Println("开始探测：", requestName, "权重为", tls,n.probeGroup[requestName].rarity)
-
 		portinfo.Load(n.getPortInfo(n.probeGroup[requestName], n.target, tls))
 		if portinfo.status == "CLOSED" || portinfo.status == "MATCHED" {
 			break
@@ -145,8 +145,9 @@ func (n *Nmap) getPortInfo(p *probe, target *target, tls bool) *PortInfomation {
 	portinfo := newPortInfo()
 	//fmt.Println("开始发送数据:",p.request.name,"超时时间为：",p.totalwaitms,p.tcpwrappedms)
 	data, err := p.scan(target, tls)
-	//fmt.Println(err)
+	//fmt.Println(data,err)
 	if err != nil {
+		portinfo.errorMsg = err
 		if strings.Contains(err.Error(), "STEP1") {
 			return portinfo.CLOSED()
 		}
