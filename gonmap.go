@@ -145,12 +145,14 @@ func (n *Nmap) getPortInfo(p *probe, target *target, tls bool) *PortInfomation {
 	portinfo := newPortInfo()
 	//fmt.Println("开始发送数据:",p.request.name,"超时时间为：",p.totalwaitms,p.tcpwrappedms)
 	data, err := p.scan(target, tls)
+	//fmt.Println(err)
 	if err != nil {
-		//fmt.Println(err)
 		if strings.Contains(err.Error(), "STEP1") {
 			return portinfo.CLOSED()
 		}
-
+		if p.request.protocol == "UDP" {
+			return portinfo.CLOSED()
+		}
 		//if strings.Contains(err.Error(), "refused") {
 		//	return portinfo.CLOSED()
 		//}
