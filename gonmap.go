@@ -147,7 +147,7 @@ func (n *Nmap) getPortInfo(p *probe, target *target, tls bool) *PortInfomation {
 	data, err := p.scan(target, tls)
 	//fmt.Println(data,err)
 	if err != nil {
-		portinfo.errorMsg = err
+		portinfo.ErrorMsg = err
 		if strings.Contains(err.Error(), "STEP1") {
 			return portinfo.CLOSED()
 		}

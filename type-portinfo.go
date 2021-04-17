@@ -4,7 +4,7 @@ type PortInfomation struct {
 	response *response
 	finger   *Finger
 	status   string
-	errorMsg error
+	ErrorMsg error
 }
 
 func newPortInfo() *PortInfomation {
@@ -12,7 +12,7 @@ func newPortInfo() *PortInfomation {
 		response: newResponse(),
 		finger:   newFinger(),
 		status:   "UNKNOWN",
-		errorMsg: nil,
+		ErrorMsg: nil,
 	}
 }
 
