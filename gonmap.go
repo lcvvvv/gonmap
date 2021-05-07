@@ -98,9 +98,20 @@ func (n *Nmap) SafeScan(ip string, port int, timeout time.Duration) *PortInfomat
 }
 
 func (n *Nmap) safeScanSub(ip string, port int, ctx context.Context, resChan chan *PortInfomation) {
-	r := n.Scan(ip, port)
-	resChan <- r
-	ctx.Done()
+	isDone := make(chan int)
+	go func() {
+		defer func() {
+			if err := recover(); err != nil {
+				//log.E(this.Ctx, "Skip panic", "tmpInfo=[%+v]", tmpInfo)
+				//Skip panic
+			}
+			isDone <- 1
+		}()
+		r := n.Scan(ip, port)
+		resChan <- r
+		ctx.Done()
+	}()
+	<-isDone
 }
 
 func (n *Nmap) Scan(ip string, port int) *PortInfomation {
