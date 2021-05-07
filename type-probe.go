@@ -62,6 +62,9 @@ func (p *probe) scan(t *target, ssl bool) (string, error) {
 
 func (p *probe) match(s string) *Finger {
 	var f = newFinger()
+	if p.matchGroup == nil {
+		return f
+	}
 	for _, m := range p.matchGroup {
 		//实现软筛选
 		if p.softMatchFilter != "" {
