@@ -2,7 +2,7 @@ package gonmap
 
 import (
 	"errors"
-	"github.com/lcvvvv/gonmap/simplenet"
+	"kscan/lib/gonmap/simplenet"
 	"regexp"
 	"strconv"
 	"strings"

@@ -67,8 +67,7 @@ func New() *Nmap {
 }
 
 type Nmap struct {
-	exclude *port
-
+	exclude     *port
 	probeGroup  map[string]*probe
 	probeSort   []string
 	probeFilter int
@@ -102,8 +101,6 @@ func (n *Nmap) safeScanSub(ip string, port int, ctx context.Context, resChan cha
 	go func() {
 		defer func() {
 			if err := recover(); err != nil {
-				//log.E(this.Ctx, "Skip panic", "tmpInfo=[%+v]", tmpInfo)
-				//Skip panic
 			}
 			isDone <- 1
 		}()
