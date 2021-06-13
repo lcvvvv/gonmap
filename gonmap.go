@@ -1,7 +1,6 @@
 package gonmap
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -11,7 +10,7 @@ import (
 var NMAP *Nmap
 
 //r["PROBE"] 总探针数、r["MATCH"] 总指纹数 、r["USED_PROBE"] 已使用探针数、r["USED_MATCH"] 已使用指纹数
-func Init(filter int, timeout int) map[string]int {
+func Init(filter int, timeout time.Duration) map[string]int {
 	//初始化NMAP探针库
 	InitNMAP()
 	//fmt.Println("初始化了")
@@ -23,7 +22,7 @@ func Init(filter int, timeout int) map[string]int {
 		allPortMap:  []string{},
 		probeFilter: 0,
 		target:      newTarget(),
-		response:    nil,
+		response:    newResponse(),
 		finger:      nil,
 		filter:      5,
 	}
@@ -74,125 +73,150 @@ type Nmap struct {
 	portMap     map[int][]string
 	allPortMap  []string
 
-	target *target
+	target target
 	filter int
 
-	response *response
-	finger   *Finger
+	response response
+	finger   *TcpFinger
 }
 
-func (n *Nmap) SafeScan(ip string, port int, timeout time.Duration) *PortInfomation {
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
-	resChan := make(chan *PortInfomation)
-	go n.safeScanSub(ip, port, ctx, resChan)
-	for {
-		select {
-		case <-ctx.Done():
-			return newPortInfo()
-		case res := <-resChan:
-			return res
-		}
-	}
-}
-
-func (n *Nmap) safeScanSub(ip string, port int, ctx context.Context, resChan chan *PortInfomation) {
-	isDone := make(chan int)
-	go func() {
-		defer func() {
-			if err := recover(); err != nil {
-			}
-			isDone <- 1
-		}()
-		r := n.Scan(ip, port)
-		resChan <- r
-		ctx.Done()
-	}()
-	<-isDone
-}
-
-func (n *Nmap) Scan(ip string, port int) *PortInfomation {
+func (n *Nmap) Scan(ip string, port int) TcpBanner {
 	n.target.host = ip
 	n.target.port = port
 	n.target.uri = fmt.Sprintf("%s:%d", ip, port)
 
 	//fmt.Println(n.portMap[port])
 	//拼接端口探测队列，全端口探测放在最后
-	portinfo := newPortInfo()
+	b := NewTcpBanner(n.target.uri)
 	//开始特定端口探测
-	//fmt.Println(n.portMap[port])
 	for _, requestName := range n.portMap[port] {
 		tls := n.probeGroup[requestName].sslports.Exist(n.target.port)
 		//fmt.Println(tls)
 		//fmt.Println("开始探测：", requestName, "权重为", tls,n.probeGroup[requestName].rarity)
-		portinfo.Load(n.getPortInfo(n.probeGroup[requestName], n.target, tls))
-		if portinfo.status == "CLOSED" || portinfo.status == "MATCHED" {
+		b.Load(n.getTcpBanner(n.probeGroup[requestName], n.target, tls))
+		if b.Status == "CLOSED" || b.Status == "MATCHED" {
 			break
 		}
 	}
-	//fmt.Println(portinfo.status)
-	if portinfo.status == "MATCHED" || portinfo.status == "CLOSED" {
-		return portinfo
+	//fmt.Println(b.status)
+	if b.Status == "MATCHED" || b.Status == "CLOSED" {
+		return b
 	}
 	//开始全端口探测
 	for _, requestName := range n.allPortMap {
 		//fmt.Println("开始全端口探测：", requestName, "权重为", n.probeGroup[requestName].rarity)
-		portinfo.Load(n.getPortInfo(n.probeGroup[requestName], n.target, false))
-		if portinfo.status == "CLOSED" || portinfo.status == "MATCHED" {
+		b.Load(n.getTcpBanner(n.probeGroup[requestName], n.target, false))
+		if b.Status == "CLOSED" || b.Status == "MATCHED" {
 			break
 		}
-		portinfo.Load(n.getPortInfo(n.probeGroup[requestName], n.target, true))
-		if portinfo.status == "CLOSED" || portinfo.status == "MATCHED" {
+		b.Load(n.getTcpBanner(n.probeGroup[requestName], n.target, true))
+		if b.Status == "CLOSED" || b.Status == "MATCHED" {
 			break
 		}
 	}
-	return portinfo
+
+	//进行最后输出修饰
+	if b.TcpFinger.Service == "ssl/http" {
+		b.TcpFinger.Service = "https"
+	}
+	return b
 }
 
-func (n *Nmap) getPortInfo(p *probe, target *target, tls bool) *PortInfomation {
-	portinfo := newPortInfo()
+func (n *Nmap) getTcpBanner(p *probe, target target, tls bool) *TcpBanner {
+	b := NewTcpBanner(target.uri)
 	//fmt.Println("开始发送数据:",p.request.name,"超时时间为：",p.totalwaitms,p.tcpwrappedms)
 	data, err := p.scan(target, tls)
 	//fmt.Println(data,err)
 	if err != nil {
-		portinfo.ErrorMsg = err
+		b.ErrorMsg = err
 		if strings.Contains(err.Error(), "STEP1") {
-			return portinfo.CLOSED()
+			return b.CLOSED()
 		}
 		if p.request.protocol == "UDP" {
-			return portinfo.CLOSED()
+			return b.CLOSED()
 		}
-		//if strings.Contains(err.Error(), "refused") {
-		//	return portinfo.CLOSED()
-		//}
-		//if strings.Contains(err.Error(), "close") {
-		//	return portinfo.CLOSED()
-		//}
-		//if strings.Contains(err.Error(), "timeout") {
-		//	return portinfo.CLOSED()
-		//}
-		return portinfo.OPEN()
+		return b.OPEN()
 	} else {
-		portinfo.response.string = data
+		b.Response.string = data
 		//若存在返回包，则开始捕获指纹
 		//fmt.Printf("成功捕获到返回包，返回包为：%x\n", data)
 		//fmt.Printf("成功捕获到返回包，返回包长度为：%x\n", len(data))
-		portinfo.finger = n.getFinger(data, p.request.name)
-		if portinfo.finger.Service == "" {
-			return portinfo.OPEN()
+		b.TcpFinger = n.getFinger(data, p.request.name)
+		if b.TcpFinger.Service == "" {
+			return b.OPEN()
 		} else {
 			if tls {
-				if portinfo.finger.Service == "http" {
-					portinfo.finger.Service = "https"
+				if b.TcpFinger.Service == "http" {
+					b.TcpFinger.Service = "https"
 				}
 			}
-			return portinfo.MATCHED()
+			return b.MATCHED()
 		}
 		//如果成功匹配指纹，则直接返回指纹
 	}
 }
 
-func (n *Nmap) getFinger(data string, requestName string) *Finger {
+func (n *Nmap) AddMatch(probeName string, expr string) {
+	n.probeGroup[probeName].loadMatch(expr, false)
+}
+
+func (n *Nmap) AddAllProbe(probeName string) {
+	n.allPortMap = append(n.allPortMap, probeName)
+}
+
+func (n *Nmap) Filter(i int) {
+	n.filter = i
+}
+
+func (n *Nmap) Status() map[string]int {
+	r := make(map[string]int)
+	r["PROBE"] = len(NMAP.probeSort)
+	r["MATCH"] = 0
+	for _, p := range NMAP.probeGroup {
+		r["MATCH"] += len(p.matchGroup)
+	}
+	//fmt.Printf("成功加载探针：【%d】个,指纹【%d】条\n", PROBE_COUNT,MATCH_COUNT)
+	r["USED_PROBE"] = len(NMAP.portMap[0])
+	r["USED_MATCH"] = 0
+	for _, p := range NMAP.portMap[0] {
+		r["USED_MATCH"] += len(NMAP.probeGroup[p].matchGroup)
+	}
+	//fmt.Printf("本次扫描将使用探针:[%d]个,指纹[%d]条\n", USED_PROBE_COUNT,USED_MATCH_COUNT)
+	return r
+}
+
+func (n *Nmap) setTimeout(timeout time.Duration) {
+	if timeout == 0 {
+		return
+	}
+	for _, p := range n.probeGroup {
+		p.totalwaitms = timeout
+		p.tcpwrappedms = timeout
+	}
+}
+
+func (n *Nmap) isCommand(line string) bool {
+	//删除注释行和空行
+	if len(line) < 2 {
+		return false
+	}
+	if line[:1] == "#" {
+		return false
+	}
+	//删除异常命令
+	commandName := line[:strings.Index(line, " ")]
+	commandArr := []string{
+		"Exclude", "Probe", "match", "softmatch", "ports", "sslports", "totalwaitms", "tcpwrappedms", "rarity", "fallback",
+	}
+	for _, item := range commandArr {
+		if item == commandName {
+			return true
+		}
+	}
+	return false
+}
+
+func (n *Nmap) getFinger(data string, requestName string) TcpFinger {
 	data = n.convResponse(data)
 	//fmt.Println(data)
 	f := n.probeGroup[requestName].match(data)
@@ -242,10 +266,6 @@ func (n *Nmap) loads(s string) {
 	n.pushProbe(p)
 }
 
-func (n *Nmap) AddAllProbe(probeName string) {
-	n.allPortMap = append(n.allPortMap, probeName)
-}
-
 func (n *Nmap) loadExclude(expr string) {
 	var exclude = newPort()
 	expr = expr[strings.Index(expr, " ")+1:]
@@ -288,60 +308,4 @@ func (n *Nmap) pushProbe(p *probe) {
 		n.portMap[i] = append(n.portMap[i], p.request.name)
 	}
 
-}
-
-func (n *Nmap) isCommand(line string) bool {
-	//删除注释行和空行
-	if len(line) < 2 {
-		return false
-	}
-	if line[:1] == "#" {
-		return false
-	}
-	//删除异常命令
-	commandName := line[:strings.Index(line, " ")]
-	commandArr := []string{
-		"Exclude", "Probe", "match", "softmatch", "ports", "sslports", "totalwaitms", "tcpwrappedms", "rarity", "fallback",
-	}
-	for _, item := range commandArr {
-		if item == commandName {
-			return true
-		}
-	}
-	return false
-}
-
-func (n *Nmap) Filter(i int) {
-	n.filter = i
-}
-
-func (n *Nmap) Status() map[string]int {
-	r := make(map[string]int)
-	r["PROBE"] = len(NMAP.probeSort)
-	r["MATCH"] = 0
-	for _, p := range NMAP.probeGroup {
-		r["MATCH"] += len(p.matchGroup)
-	}
-	//fmt.Printf("成功加载探针：【%d】个,指纹【%d】条\n", PROBE_COUNT,MATCH_COUNT)
-	r["USED_PROBE"] = len(NMAP.portMap[0])
-	r["USED_MATCH"] = 0
-	for _, p := range NMAP.portMap[0] {
-		r["USED_MATCH"] += len(NMAP.probeGroup[p].matchGroup)
-	}
-	//fmt.Printf("本次扫描将使用探针:[%d]个,指纹[%d]条\n", USED_PROBE_COUNT,USED_MATCH_COUNT)
-	return r
-}
-
-func (n *Nmap) setTimeout(timeout int) {
-	if timeout == 0 {
-		return
-	}
-	for _, p := range n.probeGroup {
-		p.totalwaitms = time.Duration(timeout) * time.Second
-		p.tcpwrappedms = time.Duration(timeout) * time.Second
-	}
-}
-
-func (n *Nmap) AddMatch(probeName string, expr string) {
-	n.probeGroup[probeName].loadMatch(expr, false)
 }

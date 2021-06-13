@@ -4,12 +4,12 @@ type response struct {
 	string string
 }
 
-func newResponse() *response {
-	return &response{
+func newResponse() response {
+	return response{
 		string: "",
 	}
 }
 
-func (r *response) Length() int {
+func (r response) Length() int {
 	return len(r.string)
 }

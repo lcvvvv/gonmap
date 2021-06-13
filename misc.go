@@ -1,5 +1,11 @@
 package gonmap
 
+import (
+	"bytes"
+	"io"
+	"io/ioutil"
+)
+
 func IsInIntArr(slice []int, val int) bool {
 	for _, item := range slice {
 		if item == val {
@@ -35,4 +41,13 @@ func Xrange(args ...int) []int {
 		r = append(r, i)
 	}
 	return r
+}
+
+func CopyIoReader(reader io.Reader) io.Reader {
+	bodyBuf, err := ioutil.ReadAll(reader)
+	if err != nil {
+		return nil
+	}
+	reader = ioutil.NopCloser(bytes.NewReader(bodyBuf))
+	return bytes.NewReader(bodyBuf)
 }

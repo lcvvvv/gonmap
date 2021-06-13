@@ -6,6 +6,6 @@ type target struct {
 	uri  string
 }
 
-func newTarget() *target {
-	return &target{0, "", ""}
+func newTarget() target {
+	return target{0, "", ""}
 }

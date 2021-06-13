@@ -23,7 +23,7 @@ type probe struct {
 	matchGroup   []*match
 	fallback     string
 
-	response        *response
+	response        response
 	softMatchFilter string
 }
 
@@ -50,7 +50,7 @@ func (p *probe) loads(sArr []string) {
 	}
 }
 
-func (p *probe) scan(t *target, ssl bool) (string, error) {
+func (p *probe) scan(t target, ssl bool) (string, error) {
 	if ssl {
 		//fmt.Println("开始TLS探测")
 		return simplenet.TLSSend(p.request.protocol, t.uri, p.request.string, p.totalwaitms, 512)
@@ -60,7 +60,7 @@ func (p *probe) scan(t *target, ssl bool) (string, error) {
 	}
 }
 
-func (p *probe) match(s string) *Finger {
+func (p *probe) match(s string) TcpFinger {
 	var f = newFinger()
 	if p.matchGroup == nil {
 		return f
