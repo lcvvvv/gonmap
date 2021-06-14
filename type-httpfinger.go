@@ -119,8 +119,7 @@ func getFingerByKeyword(header string, title string, body string) string {
 }
 
 func getFingerByHash(url urlparse.URL) string {
-	url.Path = "/favicon.ico"
-	resp, err := shttp.Get(url.UnParse())
+	resp, err := shttp.GetFavicon(url)
 	if err != nil {
 		slog.Debug(url.UnParse() + err.Error())
 		return ""
