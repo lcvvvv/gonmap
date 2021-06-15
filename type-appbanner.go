@@ -2,6 +2,7 @@ package gonmap
 
 import (
 	"fmt"
+	"kscan/lib/chinese"
 	"kscan/lib/misc"
 )
 
@@ -34,7 +35,9 @@ func (a *AppBanner) LoadHttpFinger(finger *HttpFinger) {
 	a.Protocol = finger.URL.Scheme
 	a.SetCertSubject(func() string {
 		if finger.PeerCertificates != nil {
-			return finger.PeerCertificates.Subject.String()
+			strCert := finger.PeerCertificates.Subject.String()
+			strCert = chinese.ToUTF8(strCert)
+			return strCert
 		} else {
 			return ""
 		}
@@ -169,6 +172,9 @@ func (a *AppBanner) LoadTcpBanner(banner *TcpBanner) {
 
 func (a *AppBanner) Output() string {
 	fingerPrint := misc.SprintStringMap(a.fingerPrint)
+
+	a.AppDigest = chinese.ToUTF8(a.AppDigest)
+
 	return fmt.Sprintf("%s\t%d\t%s\t%s", a.URL, a.StatusCode, a.AppDigest, fingerPrint)
 }
 

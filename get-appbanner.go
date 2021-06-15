@@ -16,6 +16,11 @@ func GetAppBannerFromTcpBanner(banner *TcpBanner) *AppBanner {
 		parse, _ := urlparse.Load(url)
 		appBanner = getAppBanner(parse)
 	}
+	if banner.TcpFinger.Service == "ssl" {
+		url = fmt.Sprintf("https://%s", banner.Uri)
+		parse, _ := urlparse.Load(url)
+		appBanner = getAppBanner(parse)
+	}
 	if strings.Contains(banner.Response.string, "HTTP") {
 		url = "http://" + banner.Uri
 		parse, _ := urlparse.Load(url)

@@ -99,12 +99,14 @@ func getResponseDigest(resp io.Reader) string {
 	query.Each(func(_ int, tag *goquery.Selection) {
 		result = result + tag.Text()
 	})
-	if result == "" {
-		return misc.FilterPrintStr(misc.FixLine(query.Text()))
-	}
+
 	result = misc.FixLine(result)
+
 	result = misc.FilterPrintStr(result)
-	return misc.StrRandomCut(result, 20)
+
+	result = misc.StrRandomCut(result, 20)
+
+	return result
 }
 
 func getHeaderDigest(header http.Header) string {
