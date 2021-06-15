@@ -70,6 +70,9 @@ func Header2String(header http.Header) string {
 }
 
 func body2UTF8(resp *http.Response) {
+	if strings.Contains(resp.Header.Get("Content-Type"), "utf-8") {
+		return
+	}
 	bodyBuf, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		slog.Debug(err.Error())
