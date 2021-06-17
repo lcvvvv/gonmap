@@ -15,22 +15,36 @@ func GetAppBannerFromTcpBanner(banner *TcpBanner) *AppBanner {
 		url = fmt.Sprintf("%s://%s", banner.TcpFinger.Service, banner.Uri)
 		parse, _ := urlparse.Load(url)
 		appBanner = getAppBanner(parse)
+		appBanner.LoadTcpBanner(banner)
+		if appBanner.Response == "" {
+			return nil
+		}
+		return appBanner
 	}
-	if banner.TcpFinger.Service == "ssl" {
+	if banner.TcpFinger.Service == "ssl" && strings.Contains(banner.Response.string, "HTTP") {
 		url = fmt.Sprintf("https://%s", banner.Uri)
 		parse, _ := urlparse.Load(url)
 		appBanner = getAppBanner(parse)
+		appBanner.LoadTcpBanner(banner)
+		if appBanner.Response == "" {
+			return nil
+		}
+		return appBanner
 	}
 	if strings.Contains(banner.Response.string, "HTTP") {
 		url = "http://" + banner.Uri
 		parse, _ := urlparse.Load(url)
 		appBanner = getAppBanner(parse)
+		appBanner.LoadTcpBanner(banner)
+		if appBanner.Response == "" {
+			return nil
+		}
+		return appBanner
 	}
 	appBanner.LoadTcpBanner(banner)
 	if appBanner.Response == "" {
 		return nil
 	}
-
 	return appBanner
 }
 

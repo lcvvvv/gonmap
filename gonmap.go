@@ -119,6 +119,9 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 	if b.TcpFinger.Service == "ssl/http" {
 		b.TcpFinger.Service = "https"
 	}
+	if b.TcpFinger.Service == "ssl/https" {
+		b.TcpFinger.Service = "https"
+	}
 	return b
 }
 
