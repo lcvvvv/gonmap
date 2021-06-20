@@ -43,11 +43,12 @@ func Xrange(args ...int) []int {
 	return r
 }
 
-func CopyIoReader(reader io.Reader) io.Reader {
-	bodyBuf, err := ioutil.ReadAll(reader)
+func CopyIoReader(reader *io.Reader) io.Reader {
+
+	bodyBuf, err := ioutil.ReadAll(*reader)
 	if err != nil {
 		return nil
 	}
-	reader = ioutil.NopCloser(bytes.NewReader(bodyBuf))
+	*reader = bytes.NewReader(bodyBuf)
 	return bytes.NewReader(bodyBuf)
 }

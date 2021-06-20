@@ -80,13 +80,15 @@ func getResponse(resp io.Reader) string {
 }
 
 func getResponseDigest(resp io.Reader) string {
+
 	var result string
 
-	query, err := goquery.NewDocumentFromReader(CopyIoReader(resp))
+	query, err := goquery.NewDocumentFromReader(CopyIoReader(&resp))
 	if err != nil {
 		slog.Debug(err.Error())
 		return ""
 	}
+
 	query.Find("script").Each(func(_ int, tag *goquery.Selection) {
 		tag.Remove() // 把无用的 tag 去掉
 	})
@@ -105,6 +107,14 @@ func getResponseDigest(resp io.Reader) string {
 	result = misc.FilterPrintStr(result)
 
 	result = misc.StrRandomCut(result, 20)
+
+	if len(result) == 0 {
+		b, _ := ioutil.ReadAll(CopyIoReader(&resp))
+		result = string(b)
+		result = misc.FixLine(result)
+		result = misc.FilterPrintStr(result)
+		result = misc.StrRandomCut(result, 20)
+	}
 
 	return result
 }
