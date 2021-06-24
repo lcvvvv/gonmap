@@ -45,7 +45,7 @@ func Get(Url string) (*http.Response, error) {
 	}
 	//修改HOST值
 	if app.Setting.Host != "" {
-		request.Header.Add("Host", app.Setting.Host)
+		request.Host = app.Setting.Host
 	}
 	//修改代理选项
 	if app.Setting.Proxy != "" {
