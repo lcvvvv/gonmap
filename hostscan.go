@@ -19,6 +19,14 @@ func HostDiscovery(ip string) (online bool) {
 	return false
 }
 
+func HostDiscoveryIcmp(ip string) (online bool) {
+	online = pingCheck(ip)
+	if online {
+		return true
+	}
+	return false
+}
+
 func pingCheck(ip string) bool {
 	p, err := ping.NewPinger(ip)
 	if err != nil {
