@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/go-ping/ping"
 	"kscan/lib/slog"
+	"runtime"
 	"time"
 )
 
@@ -29,7 +30,11 @@ func HostDiscoveryIcmp(ip string) (online bool) {
 
 func pingCheck(ip string) bool {
 	p, err := ping.NewPinger(ip)
+	if runtime.GOOS == "windows" {
+		p.SetPrivileged(true)
+	}
 	if err != nil {
+		slog.Debug(err.Error())
 		return false
 	}
 	p.Count = 2
