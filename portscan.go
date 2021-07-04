@@ -6,8 +6,8 @@ import (
 	"time"
 )
 
-func PortScan(netloc string, duration time.Duration) bool {
-	result, err := simplenet.Send("tcp", netloc, "", duration, 0)
+func PortScan(protocol string, netloc string, duration time.Duration) bool {
+	result, err := simplenet.Send(protocol, netloc, "", duration, 0)
 	if err == nil {
 		return true
 	}

@@ -14418,7 +14418,7 @@ match winlog m|^\xd0\xb7\x07\x01$| p/Sielco Sistemi Winlog Pro/ cpe:/a:sielcosis
 # Ldap searchRequest for objectClass = * over TCP - elicits response that allows fingerprinting of distinct service and gathering target info, unlike LDAPBindReq
 ##############################NEXT PROBE##############################
 Probe TCP LDAPSearchReq q|\x30\x84\x00\x00\x00\x2d\x02\x01\x07\x63\x84\x00\x00\x00\x24\x04\x00\x0a\x01\x00\x0a\x01\x00\x02\x01\x00\x02\x01\x64\x01\x01\x00\x87\x0b\x6f\x62\x6a\x65\x63\x74\x43\x6c\x61\x73\x73\x30\x84\x00\x00\x00\x00|
-rarity 6
+rarity 3
 ports 256,257,389,390,1702,3268,3892,11711
 sslports 636,637,3269,11712
 
@@ -15034,7 +15034,7 @@ match zabbix m|^NOT OK\n$| p/Zabbix Monitoring System/ cpe:/a:zabbix:zabbix/
 
 ##############################NEXT PROBE##############################
 Probe UDP SNMPv1public q|0\x82\0/\x02\x01\0\x04\x06public\xa0\x82\0\x20\x02\x04\x4c\x33\xa7\x56\x02\x01\0\x02\x01\0\x30\x82\0\x10\x30\x82\0\x0c\x06\x08\x2b\x06\x01\x02\x01\x01\x05\0\x05\0|
-rarity 4
+rarity 1
 ports 161
 
 match bittorrent-udp-tracker m|^\x03\0\0\0lic\xa0Connection ID missmatch\.\0| p/opentracker UDP tracker/ cpe:/a:dirk_engling:opentracker/

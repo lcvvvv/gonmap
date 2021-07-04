@@ -97,6 +97,14 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 		if b.Status == "CLOSED" || b.Status == "MATCHED" {
 			break
 		}
+
+		if n.target.port == 53 {
+			b.TcpFinger.Service = "dns"
+			b.Response.string = "dns"
+			b.MATCHED()
+			return b
+		}
+
 	}
 	//fmt.Println(b.status)
 	if b.Status == "MATCHED" || b.Status == "CLOSED" {
@@ -135,9 +143,9 @@ func (n *Nmap) getTcpBanner(p *probe, target target, tls bool) *TcpBanner {
 		if strings.Contains(err.Error(), "STEP1") {
 			return b.CLOSED()
 		}
-		if p.request.protocol == "UDP" {
-			return b.CLOSED()
-		}
+		//if p.request.protocol == "UDP" {
+		//	return b.CLOSED()
+		//}
 		return b.OPEN()
 	} else {
 		b.Response.string = data
