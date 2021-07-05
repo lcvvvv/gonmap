@@ -99,10 +99,13 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 		}
 
 		if n.target.port == 53 {
-			b.TcpFinger.Service = "dns"
-			b.Response.string = "dns"
-			b.MATCHED()
-			return b
+			if DnsScan(n.target.uri) {
+				b.TcpFinger.Service = "dns"
+				b.Response.string = "dns"
+				b.MATCHED()
+				return b
+			}
+			b.CLOSED()
 		}
 
 	}

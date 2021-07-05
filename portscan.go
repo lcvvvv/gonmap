@@ -1,7 +1,9 @@
 package gonmap
 
 import (
+	"context"
 	"kscan/lib/gonmap/simplenet"
+	"net"
 	"strings"
 	"time"
 )
@@ -19,4 +21,24 @@ func PortScan(protocol string, netloc string, duration time.Duration) bool {
 	} else {
 		return true
 	}
+}
+
+func DnsScan(addr string) bool {
+	r := &net.Resolver{
+		PreferGo: true,
+		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+			d := net.Dialer{
+				Timeout: 7 * time.Second,
+			}
+			return d.DialContext(ctx, "udp", addr)
+		},
+	}
+
+	_, err := r.LookupHost(context.Background(), "localhost")
+	if err != nil {
+		if strings.Contains(err.Error(), "timeout") {
+			return false
+		}
+	}
+	return true
 }
