@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"kscan/lib/chinese"
 	"kscan/lib/misc"
+	"strconv"
 )
 
 type AppBanner struct {
@@ -226,4 +227,17 @@ func (a *AppBanner) SetDeviceType(s string) {
 //端口其他信息
 func (a *AppBanner) SetInfo(s string) {
 	a.fingerPrint["Info"] = s
+}
+
+func (a *AppBanner) Map() map[string]string {
+	bannerMap := make(map[string]string)
+	bannerMap["Response"] = a.Response
+	bannerMap["URL"] = a.URL
+	bannerMap["AppDigest"] = a.AppDigest
+	bannerMap["Protocol"] = a.Protocol
+	bannerMap["StatusCode"] = strconv.Itoa(a.StatusCode)
+	for key, value := range a.fingerPrint {
+		bannerMap[key] = value
+	}
+	return bannerMap
 }
