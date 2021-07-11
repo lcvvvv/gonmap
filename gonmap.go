@@ -103,35 +103,40 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 				b.TcpFinger.Service = "dns"
 				b.Response.string = "dns"
 				b.MATCHED()
-				return b
+			} else {
+				b.CLOSED()
 			}
-			b.CLOSED()
+			break
 		}
 
 	}
 	//fmt.Println(b.status)
-	if b.Status == "MATCHED" || b.Status == "CLOSED" {
-		return b
-	}
-	//开始全端口探测
-	for _, requestName := range n.allPortMap {
-		//fmt.Println("开始全端口探测：", requestName, "权重为", n.probeGroup[requestName].rarity)
-		b.Load(n.getTcpBanner(n.probeGroup[requestName], n.target, false))
-		if b.Status == "CLOSED" || b.Status == "MATCHED" {
-			break
+	if b.Status != "MATCHED" && b.Status != "CLOSED" {
+		//开始全端口探测
+		for _, requestName := range n.allPortMap {
+			//fmt.Println("开始全端口探测：", requestName, "权重为", n.probeGroup[requestName].rarity)
+			b.Load(n.getTcpBanner(n.probeGroup[requestName], n.target, false))
+			if b.Status == "CLOSED" || b.Status == "MATCHED" {
+				break
+			}
+			b.Load(n.getTcpBanner(n.probeGroup[requestName], n.target, true))
+			if b.Status == "CLOSED" || b.Status == "MATCHED" {
+				break
+			}
 		}
-		b.Load(n.getTcpBanner(n.probeGroup[requestName], n.target, true))
-		if b.Status == "CLOSED" || b.Status == "MATCHED" {
-			break
-		}
 	}
-
 	//进行最后输出修饰
 	if b.TcpFinger.Service == "ssl/http" {
 		b.TcpFinger.Service = "https"
 	}
 	if b.TcpFinger.Service == "ssl/https" {
 		b.TcpFinger.Service = "https"
+	}
+	if b.TcpFinger.Service == "ms-wbt-server" {
+		b.TcpFinger.Service = "rdp"
+	}
+	if b.TcpFinger.Service == "ssl" && n.target.port == 3389 {
+		b.TcpFinger.Service = "rdp"
 	}
 	return b
 }
