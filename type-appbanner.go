@@ -5,11 +5,14 @@ import (
 	"kscan/lib/chinese"
 	"kscan/lib/misc"
 	"strconv"
+	"strings"
 )
 
 type AppBanner struct {
-	//端口地址
-	URL string
+	//端口号
+	Port int
+	//IP地址
+	IPAddr string
 	//端口开放状态码
 	StatusCode int
 	//HTTP协议标题，其他协议正文摘要
@@ -28,8 +31,13 @@ func NewAppBanner() *AppBanner {
 	return banner
 }
 
+func (a *AppBanner) URL() string {
+	return fmt.Sprintf("%s://%s:%d", a.Protocol, a.IPAddr, a.Port)
+}
+
 func (a *AppBanner) LoadHttpFinger(finger *HttpFinger) {
-	a.URL = finger.URL.UnParse()
+	a.IPAddr = finger.URL.Netloc
+	a.Port = finger.URL.Port
 	a.AppDigest = finger.Title
 	a.StatusCode = finger.StatusCode
 	a.Response = finger.Response
@@ -153,7 +161,9 @@ func (a *AppBanner) LoadTcpBanner(banner *TcpBanner) {
 			}
 			return banner.TcpFinger.Service
 		}()
-		a.URL = fmt.Sprintf("%s://%s", banner.TcpFinger.Service, banner.Uri)
+		a.Port = misc.Str2Int(strings.Split(banner.Target.uri, ":")[1])
+		a.IPAddr = strings.Split(banner.Target.uri, ":")[0]
+
 		a.Response = banner.Response.string
 		a.AppDigest = func() string {
 			appDigest := misc.FixLine(a.Response)
@@ -176,7 +186,7 @@ func (a *AppBanner) Output() string {
 
 	a.AppDigest = chinese.ToUTF8(a.AppDigest)
 
-	return fmt.Sprintf("%s\t%d\t%s\t%s", a.URL, a.StatusCode, a.AppDigest, fingerPrint)
+	return fmt.Sprintf("%s\t%d\t%s\t%s", a.URL(), a.StatusCode, a.AppDigest, fingerPrint)
 }
 
 //返回包摘要
@@ -232,7 +242,9 @@ func (a *AppBanner) SetInfo(s string) {
 func (a *AppBanner) Map() map[string]string {
 	bannerMap := make(map[string]string)
 	bannerMap["Response"] = a.Response
-	bannerMap["URL"] = a.URL
+	bannerMap["URL"] = a.URL()
+	bannerMap["Port"] = strconv.Itoa(a.Port)
+	bannerMap["IPAddr"] = a.IPAddr
 	bannerMap["AppDigest"] = a.AppDigest
 	bannerMap["Protocol"] = a.Protocol
 	bannerMap["StatusCode"] = strconv.Itoa(a.StatusCode)

@@ -87,13 +87,13 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 
 	//fmt.Println(n.portMap[port])
 	//拼接端口探测队列，全端口探测放在最后
-	b := NewTcpBanner(n.target.uri)
+	b := NewTcpBanner(n.target)
 	//开始特定端口探测
 	for _, requestName := range n.portMap[port] {
 		tls := n.probeGroup[requestName].sslports.Exist(n.target.port)
 		//fmt.Println(tls)
 		//fmt.Println("开始探测：", requestName, "权重为", tls,n.probeGroup[requestName].rarity)
-		b.Load(n.getTcpBanner(n.probeGroup[requestName], n.target, tls))
+		b.Load(n.getTcpBanner(n.probeGroup[requestName], tls))
 		if b.Status == "CLOSED" || b.Status == "MATCHED" {
 			break
 		}
@@ -115,11 +115,11 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 		//开始全端口探测
 		for _, requestName := range n.allPortMap {
 			//fmt.Println("开始全端口探测：", requestName, "权重为", n.probeGroup[requestName].rarity)
-			b.Load(n.getTcpBanner(n.probeGroup[requestName], n.target, false))
+			b.Load(n.getTcpBanner(n.probeGroup[requestName], false))
 			if b.Status == "CLOSED" || b.Status == "MATCHED" {
 				break
 			}
-			b.Load(n.getTcpBanner(n.probeGroup[requestName], n.target, true))
+			b.Load(n.getTcpBanner(n.probeGroup[requestName], true))
 			if b.Status == "CLOSED" || b.Status == "MATCHED" {
 				break
 			}
@@ -141,10 +141,10 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 	return b
 }
 
-func (n *Nmap) getTcpBanner(p *probe, target target, tls bool) *TcpBanner {
-	b := NewTcpBanner(target.uri)
+func (n *Nmap) getTcpBanner(p *probe, tls bool) *TcpBanner {
+	b := NewTcpBanner(n.target)
 	//fmt.Println("开始发送数据:",p.request.name,"超时时间为：",p.totalwaitms,p.tcpwrappedms)
-	data, err := p.scan(target, tls)
+	data, err := p.scan(n.target, tls)
 	//fmt.Println(data,err)
 	if err != nil {
 		b.ErrorMsg = err

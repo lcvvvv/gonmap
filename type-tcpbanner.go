@@ -1,16 +1,16 @@
 package gonmap
 
 type TcpBanner struct {
-	Uri       string
+	Target    target
 	Response  response
 	TcpFinger TcpFinger
 	Status    string
 	ErrorMsg  error
 }
 
-func NewTcpBanner(uri string) TcpBanner {
+func NewTcpBanner(target target) TcpBanner {
 	return TcpBanner{
-		Uri:       uri,
+		Target:    target,
 		Response:  newResponse(),
 		TcpFinger: newFinger(),
 		Status:    "UNKNOWN",
