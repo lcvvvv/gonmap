@@ -3,6 +3,7 @@ package gonmap
 import (
 	"fmt"
 	"github.com/lcvvvv/urlparse"
+	"kscan/app"
 	"kscan/lib/gonmap/shttp"
 	"kscan/lib/slog"
 	"strings"
@@ -14,6 +15,9 @@ func GetAppBannerFromTcpBanner(banner *TcpBanner) *AppBanner {
 	if banner.TcpFinger.Service == "http" || banner.TcpFinger.Service == "https" {
 		url = fmt.Sprintf("%s://%s", banner.TcpFinger.Service, banner.Target.uri)
 		parse, _ := urlparse.Load(url)
+		if app.Setting.Path != "" {
+			parse.Path = app.Setting.Path
+		}
 		appBanner = getAppBanner(parse)
 		appBanner.LoadTcpBanner(banner)
 		if appBanner.Response == "" {
@@ -24,6 +28,9 @@ func GetAppBannerFromTcpBanner(banner *TcpBanner) *AppBanner {
 	if banner.TcpFinger.Service == "ssl" {
 		url = fmt.Sprintf("https://%s", banner.Target.uri)
 		parse, _ := urlparse.Load(url)
+		if app.Setting.Path != "" {
+			parse.Path = app.Setting.Path
+		}
 		appBanner = getAppBanner(parse)
 		appBanner.LoadTcpBanner(banner)
 		if appBanner.Response == "" {
@@ -34,6 +41,9 @@ func GetAppBannerFromTcpBanner(banner *TcpBanner) *AppBanner {
 	if strings.Contains(banner.Response.string, "HTTP") {
 		url = "http://" + banner.Target.uri
 		parse, _ := urlparse.Load(url)
+		if app.Setting.Path != "" {
+			parse.Path = app.Setting.Path
+		}
 		appBanner = getAppBanner(parse)
 		appBanner.LoadTcpBanner(banner)
 		if appBanner.Response == "" {
@@ -50,11 +60,9 @@ func GetAppBannerFromTcpBanner(banner *TcpBanner) *AppBanner {
 
 func GetAppBannerFromUrl(url *urlparse.URL) *AppBanner {
 	banner := getAppBanner(url)
-
 	if banner.StatusCode == 0 {
 		return nil
 	}
-
 	return banner
 }
 

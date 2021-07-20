@@ -2,6 +2,7 @@ package gonmap
 
 import (
 	"fmt"
+	"kscan/app"
 	"kscan/lib/chinese"
 	"kscan/lib/misc"
 	"strconv"
@@ -32,6 +33,9 @@ func NewAppBanner() *AppBanner {
 }
 
 func (a *AppBanner) URL() string {
+	if app.Setting.Path != "" {
+		return fmt.Sprintf("%s://%s:%d%s", a.Protocol, a.IPAddr, a.Port, app.Setting.Path)
+	}
 	return fmt.Sprintf("%s://%s:%d", a.Protocol, a.IPAddr, a.Port)
 }
 
