@@ -2,14 +2,12 @@ package gonmap
 
 import (
 	"fmt"
-	"github.com/go-ping/ping"
-	"kscan/lib/slog"
-	"runtime"
+	"kscan/lib/ping"
 	"time"
 )
 
 func HostDiscovery(ip string) (online bool) {
-	online = pingCheck(ip)
+	online = ping.Check(ip)
 	if online {
 		return true
 	}
@@ -21,30 +19,8 @@ func HostDiscovery(ip string) (online bool) {
 }
 
 func HostDiscoveryIcmp(ip string) (online bool) {
-	online = pingCheck(ip)
+	online = ping.Check(ip)
 	if online {
-		return true
-	}
-	return false
-}
-
-func pingCheck(ip string) bool {
-	p, err := ping.NewPinger(ip)
-	if runtime.GOOS == "windows" {
-		p.SetPrivileged(true)
-	}
-	if err != nil {
-		slog.Debug(err.Error())
-		return false
-	}
-	p.Count = 2
-	p.Timeout = time.Second * 2
-	err = p.Run() // Blocks until finished.
-	if err != nil {
-		slog.Debug(err.Error())
-	}
-	s := p.Statistics()
-	if s.PacketsRecv > 0 {
 		return true
 	}
 	return false
