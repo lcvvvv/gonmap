@@ -59,6 +59,12 @@ func GetAppBannerFromTcpBanner(banner *TcpBanner) *AppBanner {
 }
 
 func GetAppBannerFromUrl(url *urlparse.URL) *AppBanner {
+	if url.Port == 0 {
+		url.Port = 80
+	}
+	if url.Scheme == "" {
+		url.Scheme = "http"
+	}
 	banner := getAppBanner(url)
 	if banner.StatusCode == 0 {
 		return nil
