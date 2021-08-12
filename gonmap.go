@@ -32,6 +32,8 @@ func Init(filter int, timeout time.Duration) map[string]int {
 	}
 	NMAP.loads(NMAP_SERVICE_PROBES)
 	NMAP.AddAllProbe("TCP_GetRequest")
+	NMAP.AddAllProbe("TCP_SSLv23SessionReq")
+	NMAP.AddAllProbe("TCP_SSLSessionReq")
 	NMAP.setTimeout(timeout)
 	NMAP.AddMatch("TCP_GetRequest", `http m|^HTTP/1\.[01] \d\d\d (?:[^\r\n]+\r\n)*?Server: ([^\r\n]+)| p/$1/`)
 	NMAP.AddMatch("TCP_GetRequest", `http m|^HTTP/1\.[01] \d\d\d|`)
@@ -57,6 +59,7 @@ func InitNMAP() {
 	NMAP_SERVICE_PROBES = strings.ReplaceAll(NMAP_SERVICE_PROBES, `(?<=.)`, `(?:.)`)
 	NMAP_SERVICE_PROBES = strings.ReplaceAll(NMAP_SERVICE_PROBES, `(?<=\?)`, `(?:\?)`)
 	NMAP_SERVICE_PROBES = strings.ReplaceAll(NMAP_SERVICE_PROBES, `match rtmp`, `# match rtmp`)
+	NMAP_SERVICE_PROBES = ReplaceAll(NMAP_SERVICE_PROBES, `nmap`, `pamn`)
 }
 
 func New() *Nmap {
@@ -92,7 +95,7 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 	for _, requestName := range n.portMap[port] {
 		tls := n.probeGroup[requestName].sslports.Exist(n.target.port)
 		//fmt.Println(tls)
-		//fmt.Println("开始探测：", requestName, "权重为", tls,n.probeGroup[requestName].rarity)
+		fmt.Println("开始探测：", requestName, "权重为", tls, n.probeGroup[requestName].rarity)
 		b.Load(n.getTcpBanner(n.probeGroup[requestName], tls))
 		if b.Status == "CLOSED" || b.Status == "MATCHED" {
 			break
@@ -114,7 +117,7 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 	if b.Status != "MATCHED" && b.Status != "CLOSED" {
 		//开始全端口探测
 		for _, requestName := range n.allPortMap {
-			//fmt.Println("开始全端口探测：", requestName, "权重为", n.probeGroup[requestName].rarity)
+			fmt.Println("开始全端口探测：", requestName, "权重为", n.probeGroup[requestName].rarity)
 			b.Load(n.getTcpBanner(n.probeGroup[requestName], false))
 			if b.Status == "CLOSED" || b.Status == "MATCHED" {
 				break

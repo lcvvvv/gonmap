@@ -32,7 +32,7 @@ func Send(protocol string, netloc string, data string, duration time.Duration, s
 	}
 	_ = conn.Close()
 	if length == 0 {
-		return "", errors.New("response is empty")
+		return "", errors.New("STEP3:response is empty")
 	}
 	return string(buf[:length]), nil
 }

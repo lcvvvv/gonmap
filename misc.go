@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"io/ioutil"
+	"regexp"
 )
 
 func IsInIntArr(slice []int, val int) bool {
@@ -51,4 +52,9 @@ func CopyIoReader(reader *io.Reader) io.Reader {
 	}
 	*reader = bytes.NewReader(bodyBuf)
 	return bytes.NewReader(bodyBuf)
+}
+
+func ReplaceAll(s string, old string, new string) string {
+	re := regexp.MustCompile(`(?i)` + old)
+	return re.ReplaceAllString(s, new)
 }

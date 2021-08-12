@@ -16053,6 +16053,7 @@ match minecraft-classic m|^\x01\x01\x0eUnhandled message id "254"! {37}| p/MCGal
 Probe TCP erlang-node q|\0\x0bn\0\0\0\0\x01\x04nm@p|
 rarity 9
 
+ports 4369
 match erlang-node m|^\0\x03sok\0.n\0\0.{8}(.+).|s p/Erlang Distribution Node/ i/Node name: $1/
 match erlang-node m|^\0[^\x03]s(.+)|s p/Erlang Distribution Node/ i/Status: $1/
 
