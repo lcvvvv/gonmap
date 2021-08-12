@@ -96,7 +96,7 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 	for _, requestName := range n.portMap[port] {
 		tls := n.probeGroup[requestName].sslports.Exist(n.target.port)
 		//fmt.Println(tls)
-		fmt.Println("开始探测：", requestName, "权重为", tls, n.probeGroup[requestName].rarity)
+		//fmt.Println("开始探测：", requestName, "权重为", tls, n.probeGroup[requestName].rarity)
 		b.Load(n.getTcpBanner(n.probeGroup[requestName], tls))
 		if b.Status == "CLOSED" || b.Status == "MATCHED" {
 			break
