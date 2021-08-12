@@ -99,7 +99,12 @@ func getHttpFinger(url *urlparse.URL, loop bool) *HttpFinger {
 			return getHttpFinger(url, true)
 		}
 		if strings.Contains(err.Error(), "malformed HTTP response") {
-			//HTTP协议重新获取指纹
+			//HTTPS协议重新获取指纹
+			url.Scheme = "https"
+			return getHttpFinger(url, true)
+		}
+		if strings.Contains(err.Error(), "The plain HTTP request was sent to HTTPS port") {
+			//HTTPS协议重新获取指纹
 			url.Scheme = "https"
 			return getHttpFinger(url, true)
 		}
