@@ -160,10 +160,13 @@ func (a *AppBanner) LoadTcpBanner(banner *TcpBanner) {
 			a.StatusCode = 200
 		}
 		a.Protocol = func() string {
-			if banner.TcpFinger.Service == "" {
-				banner.TcpFinger.Service = "unknow"
+			if a.Protocol != "" {
+				return a.Protocol
 			}
-			return banner.TcpFinger.Service
+			if banner.TcpFinger.Service != "" {
+				return banner.TcpFinger.Service
+			}
+			return "unknow"
 		}()
 		a.Port = misc.Str2Int(strings.Split(banner.Target.uri, ":")[1])
 		a.IPAddr = strings.Split(banner.Target.uri, ":")[0]

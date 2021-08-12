@@ -103,14 +103,14 @@ func getHttpFinger(url *urlparse.URL, loop bool) *HttpFinger {
 			url.Scheme = "https"
 			return getHttpFinger(url, true)
 		}
-		if strings.Contains(err.Error(), "The plain HTTP request was sent to HTTPS port") {
-			//HTTPS协议重新获取指纹
-			url.Scheme = "https"
-			return getHttpFinger(url, true)
-		}
 		slog.Debug(err.Error())
 		return r
 	}
+	//if strings.Contains(getResponse(shttp.GetBody(resp)), "The plain HTTP request was sent to HTTPS port") {
+	//	//HTTPS协议重新获取指纹
+	//	url.Scheme = "https"
+	//	return getHttpFinger(url, true)
+	//}
 	if url.Scheme == "https" {
 		r.LoadCert(resp)
 	}
