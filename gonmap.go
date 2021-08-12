@@ -34,6 +34,7 @@ func Init(filter int, timeout time.Duration) map[string]int {
 	NMAP.AddAllProbe("TCP_GetRequest")
 	NMAP.AddAllProbe("TCP_SSLv23SessionReq")
 	NMAP.AddAllProbe("TCP_SSLSessionReq")
+	NMAP.AddAllProbe("TCP_TLSSessionReq")
 	NMAP.setTimeout(timeout)
 	NMAP.AddMatch("TCP_GetRequest", `http m|^HTTP/1\.[01] \d\d\d (?:[^\r\n]+\r\n)*?Server: ([^\r\n]+)| p/$1/`)
 	NMAP.AddMatch("TCP_GetRequest", `http m|^HTTP/1\.[01] \d\d\d|`)
@@ -117,7 +118,26 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 	if b.Status != "MATCHED" && b.Status != "CLOSED" {
 		//开始全端口探测
 		for _, requestName := range n.allPortMap {
-			fmt.Println("开始全端口探测：", requestName, "权重为", n.probeGroup[requestName].rarity)
+			//fmt.Println("开始全端口探测：", requestName, "权重为", n.probeGroup[requestName].rarity)
+			b.Load(n.getTcpBanner(n.probeGroup[requestName], false))
+			if b.Status == "CLOSED" || b.Status == "MATCHED" {
+				break
+			}
+			b.Load(n.getTcpBanner(n.probeGroup[requestName], true))
+			if b.Status == "CLOSED" || b.Status == "MATCHED" {
+				break
+			}
+		}
+	}
+	//ssl协议二次识别
+	if b.TcpFinger.Service == "ssl" {
+		b.OPEN()
+		sslServiceArr := []string{
+			"TCP_TerminalServerCookie",
+			"TCP_TerminalServer",
+		}
+		for _, requestName := range sslServiceArr {
+			//fmt.Println("ssl针对性识别：", requestName, "权重为", n.probeGroup[requestName].rarity)
 			b.Load(n.getTcpBanner(n.probeGroup[requestName], false))
 			if b.Status == "CLOSED" || b.Status == "MATCHED" {
 				break
