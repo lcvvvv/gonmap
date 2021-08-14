@@ -160,11 +160,11 @@ func (a *AppBanner) LoadTcpBanner(banner *TcpBanner) {
 			a.StatusCode = 200
 		}
 		a.Protocol = func() string {
-			if a.Protocol != "" {
-				return a.Protocol
-			}
 			if banner.TcpFinger.Service != "" {
 				return banner.TcpFinger.Service
+			}
+			if a.Protocol != "" {
+				return a.Protocol
 			}
 			return "unknow"
 		}()
