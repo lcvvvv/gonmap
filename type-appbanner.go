@@ -191,9 +191,20 @@ func (a *AppBanner) LoadTcpBanner(banner *TcpBanner) {
 func (a *AppBanner) Output() string {
 	fingerPrint := misc.SprintStringMap(a.fingerPrint)
 
+	a.AppDigest = a.makeAppDigest()
 	a.AppDigest = chinese.ToUTF8(a.AppDigest)
 
 	return fmt.Sprintf("%s\t%d\t%s\t%s", a.URL(), a.StatusCode, a.AppDigest, fingerPrint)
+}
+
+func (a *AppBanner) makeAppDigest() string {
+	digest := a.AppDigest
+	digest = misc.FixLine(digest)
+	digest = misc.FilterPrintStr(digest)
+	if len(digest) > len(a.Protocol) {
+		return digest
+	}
+	return strings.ToUpper(a.Protocol)
 }
 
 //返回包摘要
