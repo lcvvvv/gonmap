@@ -7,6 +7,7 @@ import (
 	"kscan/lib/gonmap/shttp"
 	"kscan/lib/slog"
 	"strings"
+	"time"
 )
 
 func GetAppBannerFromTcpBanner(banner *TcpBanner) *AppBanner {
@@ -82,7 +83,13 @@ func GetAppBannerFromUrl(url *urlparse.URL) *AppBanner {
 
 func getAppBanner(url *urlparse.URL) *AppBanner {
 	r := NewAppBanner()
-	r.LoadHttpFinger(getHttpFinger(url, false))
+	httpFinger := getHttpFinger(url, false)
+	//若请求不成功则进行二次重放
+	if httpFinger.StatusCode == 0 {
+		time.Sleep(time.Second * 1)
+		httpFinger = getHttpFinger(url, false)
+	}
+	r.LoadHttpFinger(httpFinger)
 	return r
 }
 
