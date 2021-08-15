@@ -158,6 +158,15 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 	if b.TcpFinger.Service == "ms-wbt-server" {
 		b.TcpFinger.Service = "rdp"
 	}
+	if b.TcpFinger.Service == "microsoft-ds" {
+		b.TcpFinger.Service = "smb"
+	}
+	if b.TcpFinger.Service == "netbios-ssn" {
+		b.TcpFinger.Service = "netbios"
+	}
+	if b.TcpFinger.Service == "msrpc" {
+		b.TcpFinger.Service = "rdp"
+	}
 	if b.TcpFinger.Service == "domain" {
 		b.TcpFinger.Service = "dns"
 	}
