@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"kscan/app"
 	"kscan/lib/chinese"
+	"kscan/lib/color"
 	"kscan/lib/misc"
 	"strconv"
 	"strings"
@@ -188,13 +189,65 @@ func (a *AppBanner) LoadTcpBanner(banner *TcpBanner) {
 	a.SetVersion(banner.TcpFinger.Version)
 }
 
-func (a *AppBanner) Output() string {
-	fingerPrint := misc.SprintStringMap(a.fingerPrint)
+func (a *AppBanner) Display() string {
+	fingerPrintMap := a.makeColorFingerPrint()
+	fingerPrint := misc.SprintStringMap(fingerPrintMap, app.Setting.NoColor)
+	fingerPrint = misc.FixLine(fingerPrint)
 
 	a.AppDigest = a.makeAppDigest()
 	a.AppDigest = chinese.ToUTF8(a.AppDigest)
 
-	return fmt.Sprintf("%s\t%d\t%s\t%s", a.URL(), a.StatusCode, a.AppDigest, fingerPrint)
+	s := fmt.Sprintf("%s\t%d\t%s\t%s", a.URL(), a.StatusCode, a.AppDigest, fingerPrint)
+	return s
+}
+
+func (a *AppBanner) makeColorFingerPrint() map[string]string {
+	fingerPrintMap := make(map[string]string)
+	fingerPrintMap = misc.CloneStrMap(a.fingerPrint)
+
+	if _, ok := fingerPrintMap["HashFinger"]; ok && len(fingerPrintMap["HashFinger"]) > 0 {
+		fingerPrintMap["HashFinger"] = color.Important(fingerPrintMap["HashFinger"])
+	}
+	if _, ok := fingerPrintMap["KeywordFinger"]; ok && len(fingerPrintMap["KeywordFinger"]) > 0 {
+		fingerPrintMap["KeywordFinger"] = color.Important(fingerPrintMap["KeywordFinger"])
+	}
+	if _, ok := fingerPrintMap["Hostname"]; ok && len(fingerPrintMap["Hostname"]) > 0 {
+		fingerPrintMap["Hostname"] = color.Warning(fingerPrintMap["Hostname"])
+	}
+
+	if _, ok := fingerPrintMap["OperatingSystem"]; ok && len(fingerPrintMap["OperatingSystem"]) > 0 {
+		fingerPrintMap["OperatingSystem"] = color.Red(fingerPrintMap["OperatingSystem"])
+	}
+	if _, ok := fingerPrintMap["ResponseDigest"]; ok && len(fingerPrintMap["ResponseDigest"]) > 0 {
+		fingerPrintMap["ResponseDigest"] = color.Green(fingerPrintMap["ResponseDigest"])
+	}
+	if _, ok := fingerPrintMap["CertSubject"]; ok && len(fingerPrintMap["CertSubject"]) > 0 {
+		fingerPrintMap["CertSubject"] = color.Yellow(fingerPrintMap["CertSubject"])
+	}
+	if _, ok := fingerPrintMap["ProductName"]; ok && len(fingerPrintMap["ProductName"]) > 0 {
+		fingerPrintMap["ProductName"] = color.Blue(fingerPrintMap["ProductName"])
+	}
+	if _, ok := fingerPrintMap["Version"]; ok && len(fingerPrintMap["Version"]) > 0 {
+		fingerPrintMap["Version"] = color.Blue(fingerPrintMap["Version"])
+	}
+	if _, ok := fingerPrintMap["DeviceType"]; ok && len(fingerPrintMap["DeviceType"]) > 0 {
+		fingerPrintMap["DeviceType"] = color.Purple(fingerPrintMap["DeviceType"])
+	}
+	if _, ok := fingerPrintMap["Info"]; ok && len(fingerPrintMap["Info"]) > 0 {
+		fingerPrintMap["Info"] = color.Cyan(fingerPrintMap["Info"])
+	}
+	return fingerPrintMap
+}
+
+func (a *AppBanner) Output() string {
+	fingerPrint := misc.SprintStringMap(a.fingerPrint, app.Setting.NoColor)
+	fingerPrint = misc.FixLine(fingerPrint)
+
+	a.AppDigest = a.makeAppDigest()
+	a.AppDigest = chinese.ToUTF8(a.AppDigest)
+
+	s := fmt.Sprintf("%s\t%d\t%s\t%s", a.URL(), a.StatusCode, a.AppDigest, fingerPrint)
+	return s
 }
 
 func (a *AppBanner) makeAppDigest() string {
