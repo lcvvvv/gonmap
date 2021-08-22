@@ -86,8 +86,6 @@ func Get(Url string) (*http.Response, error) {
 		return resp, err
 	}
 	if misc.IsInStrArr(NoTextExt, path.Ext(Url)) == false {
-		fmt.Println(Url, "转换编码")
-
 		body2UTF8(resp)
 	}
 	return resp, err
