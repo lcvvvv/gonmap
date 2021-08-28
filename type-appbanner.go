@@ -197,7 +197,20 @@ func (a *AppBanner) Display() string {
 	a.AppDigest = a.makeAppDigest()
 	a.AppDigest = chinese.ToUTF8(a.AppDigest)
 
-	s := fmt.Sprintf("%s\t%d\t%s\t%s", a.URL(), a.StatusCode, a.AppDigest, fingerPrint)
+	splitChar := func(i int) string {
+		if i <= 23 {
+			return "\t\t"
+		}
+		if i <= 16 {
+			return "\t\t\t"
+		}
+		if i <= 8 {
+			return "\t\t\t\t"
+		}
+		return "\t"
+	}(len(a.URL()))
+
+	s := fmt.Sprintf("%s%s%d\t%s\t%s", a.URL(), splitChar, a.StatusCode, a.AppDigest, fingerPrint)
 	return s
 }
 

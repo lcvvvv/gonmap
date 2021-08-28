@@ -14,12 +14,17 @@ func GetTcpBanner(netloc string, nmap *Nmap, timeout time.Duration) *TcpBanner {
 	defer cancel()
 	resChan := make(chan *TcpBanner)
 	go func() {
+		var r TcpBanner
 		defer func() {
 			if err := recover(); err != nil {
-				slog.Debug(err)
+				if &r != nil {
+					if r.Response.Length() > 0 {
+						slog.Debug(err, ",", parse.UnParse(), ",", r.Status, ",response length is :", r.Response.Length())
+					}
+				}
 			}
 		}()
-		r := nmap.Scan(parse.Netloc, parse.Port)
+		r = nmap.Scan(parse.Netloc, parse.Port)
 		resChan <- &r
 	}()
 

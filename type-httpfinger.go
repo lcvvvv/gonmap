@@ -137,7 +137,7 @@ func getFingerByHash(url urlparse.URL) string {
 		return ""
 	}
 	if resp.StatusCode != 200 {
-		slog.Debug(url.UnParse() + "没有图标文件")
+		//slog.Debug(url.UnParse() + "no favicon file")
 		return ""
 	}
 	hash, err := iconhash.Get(resp.Body)
