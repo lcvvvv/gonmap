@@ -3,6 +3,7 @@ package gonmap
 import (
 	"context"
 	"github.com/lcvvvv/urlparse"
+	"kscan/lib/slog"
 	"time"
 )
 
@@ -15,6 +16,7 @@ func GetTcpBanner(netloc string, nmap *Nmap, timeout time.Duration) *TcpBanner {
 	go func() {
 		defer func() {
 			if err := recover(); err != nil {
+				slog.Debug(err)
 			}
 		}()
 		r := nmap.Scan(parse.Netloc, parse.Port)
