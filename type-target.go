@@ -9,3 +9,7 @@ type target struct {
 func newTarget() target {
 	return target{0, "", ""}
 }
+
+func (t *target) URI() string {
+	return t.uri
+}
