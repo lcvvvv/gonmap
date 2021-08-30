@@ -84,10 +84,15 @@ func GetAppBannerFromUrl(url *urlparse.URL) *AppBanner {
 func getAppBanner(url *urlparse.URL) *AppBanner {
 	r := NewAppBanner()
 	httpFinger := getHttpFinger(url, false)
-	//若请求不成功则进行二次重放
-	if httpFinger.StatusCode == 0 {
-		time.Sleep(time.Second * 1)
-		httpFinger = getHttpFinger(url, false)
+	//若请求不成功则进行多处
+	retry := 3
+	for i := 1; i < retry; i++ {
+		if httpFinger.StatusCode == 0 {
+			time.Sleep(time.Second * 10)
+			httpFinger = getHttpFinger(url, false)
+		} else {
+			break
+		}
 	}
 	r.LoadHttpFinger(httpFinger)
 	return r
