@@ -12219,7 +12219,7 @@ match upnp m|^HTTP/1\.1 400 Bad Request\r\nContent-Type: text/html; charset=us-a
 ##############################NEXT PROBE##############################
 Probe TCP RPCCheck q|\x80\0\0\x28\x72\xFE\x1D\x13\0\0\0\0\0\0\0\x02\0\x01\x86\xA0\0\x01\x97\x7C\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0|
 rarity 4
-ports 81,111,199,514,544,710,711,1433,2049,4045,4999,7000,8307,8333,17007,32750-32810,38978
+ports 81,111,199,514,544,710,711,1433,2049,4045,4999,7000,8307,8333,17007,32750-32810,38978,49150-49200
 
 match unicorn-ils m|^\xb5q\x83\x02\x05\xe0\x84\x03\x01\xe1\x82\x85\x03\x04\x93\xe0\x86\x03\x04\x93\xe0\x8c\x01\0\x9fn\x16Unicorn ([\w._-]+) Standard\x9fo\x11SIRSI Corporation\x9fp\x033\.0\xab&\(\$\x81\"Expected CONSTRUCTED PDU not found$| p/SirsiDynix Unicorn Integrated Library System/ v/$1/
 
@@ -15344,7 +15344,7 @@ match http m|^HTTP/1.0 \d\d\d .*\r\nServer: OfficeScan Client| p/Trend Micro Off
 ##############################NEXT PROBE##############################
 Probe TCP ms-sql-s q|\x12\x01\x00\x34\x00\x00\x00\x00\x00\x00\x15\x00\x06\x01\x00\x1b\x00\x01\x02\x00\x1c\x00\x0c\x03\x00\x28\x00\x04\xff\x08\x00\x01\x55\x00\x00\x00\x4d\x53\x53\x51\x4c\x53\x65\x72\x76\x65\x72\x00\x48\x0f\x00\x00|
 rarity 7
-ports 1433
+ports 1433,49150-49200
 
 match iscsi m|^\?\x80\x04\0\0\0\x000\0\0\0\0\0\0\0\0\xff\xff\xff\xff\0\0\0\0\0\0\0\0\0\0\0\x01\0\0\0\x01\0\0\0\0\0\0\0\0\0\0\0\0\x12\x01\x004\0\0\0\0\0\0\x15\0\x06\x01\0\x1b\0\x01\x02\0\x1c\0\x0c\x03\0\(\0\x04\xff\x08\0\x01U\0\0\0MSSQLServer\0$| p/iSCSI Target/ d/phone/ o/iOS/ cpe:/o:apple:iphone_os/
 

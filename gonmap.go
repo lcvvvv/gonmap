@@ -167,6 +167,9 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 	if b.TcpFinger.Service == "msrpc" {
 		b.TcpFinger.Service = "rpc"
 	}
+	if b.TcpFinger.Service == "ms-sql-s" {
+		b.TcpFinger.Service = "mssql"
+	}
 	if b.TcpFinger.Service == "domain" {
 		b.TcpFinger.Service = "dns"
 	}
