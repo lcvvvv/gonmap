@@ -3,6 +3,7 @@ package gonmap
 import (
 	"errors"
 	"fmt"
+	"kscan/lib/misc"
 	"strings"
 	"time"
 )
@@ -92,16 +93,20 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 	//fmt.Println(n.portMap[port])
 	//拼接端口探测队列，全端口探测放在最后
 	b := NewTcpBanner(n.target)
-	//开始特定端口探测
-	for _, requestName := range n.portMap[port] {
+	//生成探针清单
+	probeList := append(n.allPortMap, n.portMap[port]...)
+	probeList = misc.RemoveDuplicateElement(probeList)
+	//针对探针清单，开始进行全端口探测
+	for _, requestName := range probeList {
 		tls := n.probeGroup[requestName].sslports.Exist(n.target.port)
 		//fmt.Println(tls)
-		//fmt.Println("开始探测：", requestName, "权重为", tls, n.probeGroup[requestName].rarity)
-		b.Load(n.getTcpBanner(n.probeGroup[requestName], tls))
+		b.Load(n.getTcpBanner(n.probeGroup[requestName], false))
+		if tls {
+			b.Load(n.getTcpBanner(n.probeGroup[requestName], true))
+		}
 		if b.Status == "CLOSED" || b.Status == "MATCHED" {
 			break
 		}
-
 		if n.target.port == 53 {
 			if DnsScan(n.target.uri) {
 				b.TcpFinger.Service = "dns"
@@ -111,22 +116,6 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 				b.CLOSED()
 			}
 			break
-		}
-
-	}
-	//fmt.Println(b.status)
-	if b.Status != "MATCHED" && b.Status != "CLOSED" {
-		//开始全端口探测
-		for _, requestName := range n.allPortMap {
-			//fmt.Println("开始全端口探测：", requestName, "权重为", n.probeGroup[requestName].rarity)
-			b.Load(n.getTcpBanner(n.probeGroup[requestName], false))
-			if b.Status == "CLOSED" || b.Status == "MATCHED" {
-				break
-			}
-			b.Load(n.getTcpBanner(n.probeGroup[requestName], true))
-			if b.Status == "CLOSED" || b.Status == "MATCHED" {
-				break
-			}
 		}
 	}
 	//ssl协议二次识别
@@ -181,7 +170,7 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 
 func (n *Nmap) getTcpBanner(p *probe, tls bool) *TcpBanner {
 	b := NewTcpBanner(n.target)
-	//fmt.Println("开始发送数据:",p.request.name,"超时时间为：",p.totalwaitms,p.tcpwrappedms)
+	//slog.Debug("开始发送数据:", p.request.name, "超时时间为：", p.totalwaitms, p.tcpwrappedms)
 	data, err := p.scan(n.target, tls)
 	//fmt.Println(data,err)
 	if err != nil {
@@ -196,7 +185,7 @@ func (n *Nmap) getTcpBanner(p *probe, tls bool) *TcpBanner {
 	} else {
 		b.Response.string = data
 		//若存在返回包，则开始捕获指纹
-		//fmt.Printf("成功捕获到返回包，返回包为：%x\n", data)
+		//slog.Debugf("成功捕获到返回包，返回包为：%v\n", data)
 		//fmt.Printf("成功捕获到返回包，返回包长度为：%x\n", len(data))
 		b.TcpFinger = n.getFinger(data, p.request.name)
 		if b.TcpFinger.Service == "" {

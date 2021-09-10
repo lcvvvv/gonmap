@@ -106,41 +106,9 @@ func body2UTF8(resp *http.Response) {
 	if strings.Contains(resp.Header.Get("Content-Type"), "utf-8") {
 		return
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 40*time.Second)
-	defer cancel()
-	bodyBufChan := make(chan []byte)
-
-	go func() {
-		var bodyBuf []byte
-		defer func() {
-			if err := recover(); err != nil {
-				if len(bodyBuf) != 0 {
-					slog.Debug(err, ",response length is :", misc.StrRandomCut(string(bodyBuf), 20))
-				}
-			}
-		}()
-		bodyBuf, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			slog.Debug(err.Error())
-		}
-		bodyBufChan <- bodyBuf
-	}()
-
-	var bodyBuf []byte
-	for {
-		select {
-		case <-ctx.Done():
-			close(bodyBufChan)
-			utf8Buf := chinese.ByteToUTF8(bodyBuf)
-			resp.Body = ioutil.NopCloser(bytes.NewReader(utf8Buf))
-			return
-		case bodyBuf = <-bodyBufChan:
-			close(bodyBufChan)
-			utf8Buf := chinese.ByteToUTF8(bodyBuf)
-			resp.Body = ioutil.NopCloser(bytes.NewReader(utf8Buf))
-			return
-		}
-	}
+	bodyBuf := misc.ReadAll(resp.Body, time.Second*5)
+	utf8Buf := chinese.ByteToUTF8(bodyBuf)
+	resp.Body = ioutil.NopCloser(bytes.NewReader(utf8Buf))
 }
 
 func GetBody(resp *http.Response) io.Reader {

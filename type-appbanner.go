@@ -40,6 +40,10 @@ func (a *AppBanner) URL() string {
 	return fmt.Sprintf("%s://%s:%d", a.Protocol, a.IPAddr, a.Port)
 }
 
+func (a *AppBanner) Netloc() string {
+	return fmt.Sprintf("%s:%d", a.IPAddr, a.Port)
+}
+
 func (a *AppBanner) LoadHttpFinger(finger *HttpFinger) {
 	a.IPAddr = finger.URL.Netloc
 	a.Port = finger.URL.Port
