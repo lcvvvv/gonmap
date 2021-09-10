@@ -12,6 +12,7 @@ import (
 	"kscan/lib/misc"
 	"kscan/lib/slog"
 	"net/http"
+	"strings"
 )
 
 type HttpFinger struct {
@@ -120,10 +121,17 @@ func getResponseDigest(resp io.Reader) string {
 }
 
 func getHeaderDigest(header http.Header) string {
+	var finger []string
 	if header.Get("SERVER") != "" {
-		return "server:" + header.Get("SERVER")
+		finger = append(finger, "server:"+header.Get("SERVER"))
 	}
-	return ""
+	if header.Get("X-Redirect-By") != "" {
+		finger = append(finger, "X-Redirect-By:"+header.Get("X-Redirect-By"))
+	}
+	if header.Get("X-Powered-By") != "" {
+		finger = append(finger, "X-Powered-By:"+header.Get("X-Powered-By"))
+	}
+	return strings.Join(finger, "、")
 }
 
 func getFingerByKeyword(header string, title string, body string) string {
