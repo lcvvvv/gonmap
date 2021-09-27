@@ -2,8 +2,8 @@ package gonmap
 
 import (
 	"context"
-	"github.com/lcvvvv/urlparse"
 	"kscan/lib/slog"
+	"kscan/lib/urlparse"
 	"time"
 )
 

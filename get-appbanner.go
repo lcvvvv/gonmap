@@ -2,10 +2,10 @@ package gonmap
 
 import (
 	"fmt"
-	"github.com/lcvvvv/urlparse"
 	"kscan/app"
 	"kscan/lib/gonmap/shttp"
 	"kscan/lib/slog"
+	"kscan/lib/urlparse"
 	"strings"
 	"time"
 )

@@ -3,7 +3,6 @@ package gonmap
 import (
 	"crypto/x509"
 	"github.com/PuerkitoBio/goquery"
-	"github.com/lcvvvv/urlparse"
 	"io"
 	"io/ioutil"
 	"kscan/lib/gonmap/shttp"
@@ -11,6 +10,7 @@ import (
 	"kscan/lib/iconhash"
 	"kscan/lib/misc"
 	"kscan/lib/slog"
+	"kscan/lib/urlparse"
 	"net/http"
 	"strings"
 )
