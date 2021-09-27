@@ -15,6 +15,8 @@ type AppBanner struct {
 	Port int
 	//IP地址
 	IPAddr string
+	//IP地址
+	Path string
 	//端口开放状态码
 	StatusCode int
 	//HTTP协议标题，其他协议正文摘要
@@ -34,10 +36,7 @@ func NewAppBanner() *AppBanner {
 }
 
 func (a *AppBanner) URL() string {
-	if app.Setting.Path != "" {
-		return fmt.Sprintf("%s://%s:%d%s", a.Protocol, a.IPAddr, a.Port, app.Setting.Path)
-	}
-	return fmt.Sprintf("%s://%s:%d", a.Protocol, a.IPAddr, a.Port)
+	return fmt.Sprintf("%s://%s:%d%s", a.Protocol, a.IPAddr, a.Port, a.Path)
 }
 
 func (a *AppBanner) Netloc() string {
@@ -46,6 +45,7 @@ func (a *AppBanner) Netloc() string {
 
 func (a *AppBanner) LoadHttpFinger(finger *HttpFinger) {
 	a.IPAddr = finger.URL.Netloc
+	a.Path = finger.URL.Path
 	a.Port = finger.URL.Port
 	a.AppDigest = finger.Title
 	a.StatusCode = finger.StatusCode
