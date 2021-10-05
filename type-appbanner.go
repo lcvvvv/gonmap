@@ -6,6 +6,7 @@ import (
 	"kscan/lib/chinese"
 	"kscan/lib/color"
 	"kscan/lib/misc"
+	"kscan/lib/urlparse"
 	"strconv"
 	"strings"
 )
@@ -36,7 +37,8 @@ func NewAppBanner() *AppBanner {
 }
 
 func (a *AppBanner) URL() string {
-	return fmt.Sprintf("%s://%s:%d%s", a.Protocol, a.IPAddr, a.Port, a.Path)
+	u, _ := urlparse.Load(fmt.Sprintf("%s://%s:%d%s", a.Protocol, a.IPAddr, a.Port, a.Path))
+	return u.UnParse()
 }
 
 func (a *AppBanner) Netloc() string {
@@ -213,7 +215,6 @@ func (a *AppBanner) Display() string {
 		}
 		return "\t"
 	}(len(a.URL()))
-
 	s := fmt.Sprintf("%s%s%d\t%s\t%s", a.URL(), splitChar, a.StatusCode, a.AppDigest, fingerPrint)
 	return s
 }

@@ -97,12 +97,13 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 	probeList := append(n.allPortMap, n.portMap[port]...)
 	probeList = misc.RemoveDuplicateElement(probeList)
 	//针对探针清单，开始进行全端口探测
+	//slog.Debug(probeList)
 	for _, requestName := range probeList {
 		tls := n.probeGroup[requestName].sslports.Exist(n.target.port)
-		//fmt.Println(tls)
-		b.Load(n.getTcpBanner(n.probeGroup[requestName], false))
 		if tls {
 			b.Load(n.getTcpBanner(n.probeGroup[requestName], true))
+		} else {
+			b.Load(n.getTcpBanner(n.probeGroup[requestName], false))
 		}
 		if b.Status == "CLOSED" || b.Status == "MATCHED" {
 			break
@@ -170,9 +171,10 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 
 func (n *Nmap) getTcpBanner(p *probe, tls bool) *TcpBanner {
 	b := NewTcpBanner(n.target)
+	//slog.Debug(tls)
 	//slog.Debug("开始发送数据:", p.request.name, "超时时间为：", p.totalwaitms, p.tcpwrappedms)
 	data, err := p.scan(n.target, tls)
-	//fmt.Println(data,err)
+	//slog.Debug("返回包为:", data, "错误信息为：", err)
 	if err != nil {
 		b.ErrorMsg = err
 		if strings.Contains(err.Error(), "STEP1") {
@@ -340,12 +342,12 @@ func (n *Nmap) pushProbe(p *probe) {
 	//0记录所有使用的探针
 	n.portMap[0] = append(n.portMap[0], p.request.name)
 
-	if p.ports.length+p.sslports.length == 0 {
-		p.ports.Fill()
-		p.sslports.Fill()
-		n.allPortMap = append(n.allPortMap, p.request.name)
-		return
-	}
+	//if p.ports.length+p.sslports.length == 0 {
+	//	p.ports.Fill()
+	//	p.sslports.Fill()
+	//	n.allPortMap = append(n.allPortMap, p.request.name)
+	//	return
+	//}
 	//分别压入sslports,ports
 	for _, i := range p.ports.value {
 		n.portMap[i] = append(n.portMap[i], p.request.name)
