@@ -172,9 +172,7 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 func (n *Nmap) getTcpBanner(p *probe, tls bool) *TcpBanner {
 	b := NewTcpBanner(n.target)
 	//slog.Debug(tls)
-	//slog.Debug("开始发送数据:", p.request.name, "超时时间为：", p.totalwaitms, p.tcpwrappedms)
 	data, err := p.scan(n.target, tls)
-	//slog.Debug("返回包为:", data, "错误信息为：", err)
 	if err != nil {
 		b.ErrorMsg = err
 		if strings.Contains(err.Error(), "STEP1") {
