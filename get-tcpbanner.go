@@ -8,6 +8,7 @@ import (
 )
 
 func GetTcpBanner(netloc string, nmap *Nmap, timeout time.Duration) *TcpBanner {
+	//slog.Debug(netloc)
 	parse, err := urlparse.Load(netloc)
 	if err != nil {
 		slog.Debug(err)

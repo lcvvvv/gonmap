@@ -90,21 +90,24 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 	n.target.port = port
 	n.target.uri = fmt.Sprintf("%s:%d", ip, port)
 
-	//fmt.Println(n.portMap[port])
 	//拼接端口探测队列，全端口探测放在最后
 	b := NewTcpBanner(n.target)
+	//slog.Debug(n.target)
 	//生成探针清单
 	probeList := append(n.allPortMap, n.portMap[port]...)
 	probeList = misc.RemoveDuplicateElement(probeList)
 	//针对探针清单，开始进行全端口探测
 	//slog.Debug(probeList)
 	for _, requestName := range probeList {
+		//slog.Debug("开始扫描：", requestName)
 		tls := n.probeGroup[requestName].sslports.Exist(n.target.port)
 		if tls {
 			b.Load(n.getTcpBanner(n.probeGroup[requestName], true))
 		} else {
 			b.Load(n.getTcpBanner(n.probeGroup[requestName], false))
 		}
+		//slog.Debug(b.Status)
+		//slog.Debug(b.TcpFinger.Service)
 		if b.Status == "CLOSED" || b.Status == "MATCHED" {
 			break
 		}
@@ -171,7 +174,6 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 
 func (n *Nmap) getTcpBanner(p *probe, tls bool) *TcpBanner {
 	b := NewTcpBanner(n.target)
-	//slog.Debug(tls)
 	data, err := p.scan(n.target, tls)
 	if err != nil {
 		b.ErrorMsg = err
