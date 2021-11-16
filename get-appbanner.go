@@ -69,7 +69,7 @@ func GetAppBannerFromUrl(url *urlparse.URL) *AppBanner {
 	if url.Scheme == "" {
 		netloc := fmt.Sprintf("%s:%d", url.Netloc, url.Port)
 		banner := GetTcpBanner(netloc, New(), app.Setting.Timeout*10)
-		if banner.TcpFinger.Service == "" {
+		if banner.Status == "CLOSED" {
 			return nil
 		}
 		return GetAppBannerFromTcpBanner(banner)

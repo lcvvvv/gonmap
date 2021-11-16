@@ -10,7 +10,6 @@ import (
 
 func PortScan(protocol string, netloc string, duration time.Duration) bool {
 	result, err := simplenet.Send(protocol, netloc, "", duration, 0)
-	//fmt.Println(result,err)
 	if err == nil {
 		return true
 	}
@@ -34,7 +33,6 @@ func DnsScan(addr string) bool {
 			return d.DialContext(ctx, "udp", addr)
 		},
 	}
-
 	_, err := r.LookupHost(context.Background(), "localhost")
 	if err != nil {
 		if strings.Contains(err.Error(), "timeout") {

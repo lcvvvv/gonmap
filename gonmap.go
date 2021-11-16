@@ -32,6 +32,7 @@ func Init(filter int, timeout time.Duration) map[string]int {
 		NMAP.portMap[i] = []string{}
 	}
 	NMAP.loads(NMAP_SERVICE_PROBES)
+	NMAP.AddAllProbe("TCP_NULL")
 	NMAP.AddAllProbe("TCP_GetRequest")
 	NMAP.AddAllProbe("TCP_SSLv23SessionReq")
 	NMAP.AddAllProbe("TCP_SSLSessionReq")
@@ -157,6 +158,9 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 	if b.TcpFinger.Service == "netbios-ssn" {
 		b.TcpFinger.Service = "netbios"
 	}
+	if b.TcpFinger.Service == "oracle-tns" {
+		b.TcpFinger.Service = "oracle"
+	}
 	if b.TcpFinger.Service == "msrpc" {
 		b.TcpFinger.Service = "rpc"
 	}
@@ -266,7 +270,6 @@ func (n *Nmap) isCommand(line string) bool {
 
 func (n *Nmap) getFinger(data string, requestName string) TcpFinger {
 	data = n.convResponse(data)
-	//fmt.Println(data)
 	f := n.probeGroup[requestName].match(data)
 	if f.Service == "" {
 		if n.probeGroup[requestName].fallback != "" {
