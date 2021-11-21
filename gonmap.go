@@ -170,6 +170,9 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 	if b.TcpFinger.Service == "domain" {
 		b.TcpFinger.Service = "dns"
 	}
+	if b.TcpFinger.Service == "svnserve" {
+		b.TcpFinger.Service = "svn"
+	}
 	if b.TcpFinger.Service == "ssl" && n.target.port == 3389 {
 		b.TcpFinger.Service = "rdp"
 	}
