@@ -197,7 +197,7 @@ func (a *AppBanner) LoadTcpBanner(banner *TcpBanner) {
 
 func (a *AppBanner) Display() string {
 	fingerPrintMap := a.makeColorFingerPrint()
-	fingerPrint := misc.SprintStringMap(fingerPrintMap, app.Setting.NoColor)
+	fingerPrint := misc.SprintStringMap(fingerPrintMap, app.Setting.CloseColor)
 	fingerPrint = misc.FixLine(fingerPrint)
 
 	a.AppDigest = a.makeAppDigest()
@@ -258,7 +258,7 @@ func (a *AppBanner) makeColorFingerPrint() map[string]string {
 }
 
 func (a *AppBanner) Output() string {
-	fingerPrint := misc.SprintStringMap(a.fingerPrint, app.Setting.NoColor)
+	fingerPrint := misc.SprintStringMap(a.fingerPrint, app.Setting.CloseColor)
 	fingerPrint = misc.FixLine(fingerPrint)
 
 	a.AppDigest = a.makeAppDigest()
