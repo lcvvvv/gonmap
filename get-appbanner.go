@@ -2,7 +2,6 @@ package gonmap
 
 import (
 	"fmt"
-	"kscan/app"
 	"kscan/lib/gonmap/shttp"
 	"kscan/lib/slog"
 	"kscan/lib/urlparse"
@@ -10,14 +9,27 @@ import (
 	"time"
 )
 
+var (
+	HttpHost    = ""
+	HttpPath    = ""
+	HttpTimeout = 5 * time.Second
+)
+
+func InitAppBannerDiscernConfig(host, path, proxy string, timeout time.Duration) {
+	HttpHost = host
+	HttpPath = path
+	HttpTimeout = timeout
+	shttp.InitSHttp(host, proxy, timeout)
+}
+
 func GetAppBannerFromTcpBanner(banner *TcpBanner) *AppBanner {
 	var appBanner = NewAppBanner()
 	var url string
 	if banner.TcpFinger.Service == "http" || banner.TcpFinger.Service == "https" {
 		url = fmt.Sprintf("%s://%s", banner.TcpFinger.Service, banner.Target.uri)
 		parse, _ := urlparse.Load(url)
-		if app.Setting.Path != "" {
-			parse.Path = app.Setting.Path
+		if HttpPath != "" {
+			parse.Path = HttpPath
 		}
 		appBanner = getAppBanner(parse)
 		appBanner.LoadTcpBanner(banner)
@@ -29,8 +41,8 @@ func GetAppBannerFromTcpBanner(banner *TcpBanner) *AppBanner {
 	if banner.TcpFinger.Service == "ssl" {
 		url = fmt.Sprintf("https://%s", banner.Target.uri)
 		parse, _ := urlparse.Load(url)
-		if app.Setting.Path != "" {
-			parse.Path = app.Setting.Path
+		if HttpPath != "" {
+			parse.Path = HttpPath
 		}
 		appBanner = getAppBanner(parse)
 		appBanner.LoadTcpBanner(banner)
@@ -42,8 +54,8 @@ func GetAppBannerFromTcpBanner(banner *TcpBanner) *AppBanner {
 	if strings.Contains(banner.Response.string, "HTTP") {
 		url = "http://" + banner.Target.uri
 		parse, _ := urlparse.Load(url)
-		if app.Setting.Path != "" {
-			parse.Path = app.Setting.Path
+		if HttpPath != "" {
+			parse.Path = HttpPath
 		}
 		appBanner = getAppBanner(parse)
 		appBanner.LoadTcpBanner(banner)
@@ -68,7 +80,7 @@ func GetAppBannerFromUrl(url *urlparse.URL) *AppBanner {
 	}
 	if url.Scheme == "" {
 		netloc := fmt.Sprintf("%s:%d", url.Netloc, url.Port)
-		banner := GetTcpBanner(netloc, New(), app.Setting.Timeout*10)
+		banner := GetTcpBanner(netloc, New(), HttpTimeout*10)
 		if banner.Status == "CLOSED" {
 			return nil
 		}

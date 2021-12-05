@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"kscan/app"
 	"kscan/lib/chinese"
 	"kscan/lib/misc"
 	"kscan/lib/slog"
@@ -44,7 +43,16 @@ var (
 		".ico", ".png", ".gif", ".png", ".jpg", ".bmp",
 		".zip", ".rar",
 	}
+	Timeout = 5 * time.Second
+	Host    = ""
+	Proxy   = ""
 )
+
+func InitSHttp(host, proxy string, timeout time.Duration) {
+	Host = host
+	Proxy = proxy
+	Timeout = timeout
+}
 
 func GetFavicon(url urlparse.URL) (*http.Response, error) {
 	url.Path = "/favicon.ico"
@@ -69,18 +77,18 @@ func Get(Url string) (*http.Response, error) {
 	(*tr).DisableKeepAlives = false
 	client := &http.Client{}
 	//修改HTTP超时时间
-	if app.Setting.Timeout != 0 {
-		ctx, _ := context.WithTimeout(context.Background(), app.Setting.Timeout)
+	if Timeout != 0 {
+		ctx, _ := context.WithTimeout(context.Background(), Timeout)
 		request.WithContext(ctx)
-		client.Timeout = app.Setting.Timeout
+		client.Timeout = Timeout
 	}
 	//修改HOST值
-	if app.Setting.Host != "" {
-		request.Host = app.Setting.Host
+	if Host != "" {
+		request.Host = Host
 	}
 	//修改代理选项
-	if app.Setting.Proxy != "" {
-		uri, _ := url.Parse(app.Setting.Proxy)
+	if Proxy != "" {
+		uri, _ := url.Parse(Proxy)
 		(*tr).Proxy = http.ProxyURL(uri)
 	}
 	client.Transport = tr
