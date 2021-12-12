@@ -39,8 +39,7 @@ func Init(filter int, timeout time.Duration) map[string]int {
 	NMAP.AddAllProbe("TCP_TLSSessionReq")
 	NMAP.setTimeout(timeout)
 	NMAP.AddMatch("TCP_GetRequest", `http m|^HTTP/1\.[01] \d\d\d (?:[^\r\n]+\r\n)*?Server: ([^\r\n]+)| p/$1/`)
-	NMAP.AddMatch("TCP_GetRequest", `http m|^HT
-TP/1\.[01] \d\d\d|`)
+	NMAP.AddMatch("TCP_GetRequest", `http m|^HTTP/1\.[01] \d\d\d|`)
 	NMAP.AddMatch("TCP_NULL", `mysql m|.\x00\x00..j\x04Host '.*' is not allowed to connect to this MariaDB server| p/MariaDB/`)
 	NMAP.AddMatch("TCP_NULL", `mysql m|.\x00\x00..j\x04Host '.*' is not allowed to connect to this MySQL server| p/MySQL/`)
 	NMAP.AddMatch("TCP_NULL", `mysql m|.\x00\x00\x00\x0a(\d+\.\d+\.\d+)\x00.*caching_sha2_password\x00| p/MariaDB/ v/$1/`)
@@ -100,14 +99,12 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 
 	//拼接端口探测队列，全端口探测放在最后
 	b := NewTcpBanner(n.target)
-	//slog.Debug(n.target)
 	//生成探针清单
 	probeList := append(n.allPortMap, n.portMap[port]...)
 	probeList = misc.RemoveDuplicateElement(probeList)
 	//针对探针清单，开始进行全端口探测
 	//slog.Debug(probeList)
 	for _, requestName := range probeList {
-		//slog.Debug("开始扫描：", requestName)
 		tls := n.probeGroup[requestName].sslports.Exist(n.target.port)
 		if tls {
 			b.Load(n.getTcpBanner(n.probeGroup[requestName], true))
@@ -116,6 +113,7 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 		}
 		//slog.Debug(b.Status)
 		//slog.Debug(b.TcpFinger.Service)
+		//slog.Debug(b.Response)
 		if b.Status == "CLOSED" || b.Status == "MATCHED" {
 			break
 		}
@@ -204,6 +202,7 @@ func (n *Nmap) getTcpBanner(p *probe, tls bool) *TcpBanner {
 		//slog.Debugf("成功捕获到返回包，返回包为：%v\n", data)
 		//fmt.Printf("成功捕获到返回包，返回包长度为：%x\n", len(data))
 		b.TcpFinger = n.getFinger(data, p.request.name)
+		//slog.Debug(b.TcpFinger.Service)
 		if b.TcpFinger.Service == "" {
 			return b.OPEN()
 		} else {
