@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"kscan/lib/misc"
+	"kscan/lib/slog"
 	"strings"
 	"time"
 )
@@ -106,14 +107,13 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 	//slog.Debug(probeList)
 	for _, requestName := range probeList {
 		tls := n.probeGroup[requestName].sslports.Exist(n.target.port)
-		if tls {
-			b.Load(n.getTcpBanner(n.probeGroup[requestName], true))
-		} else {
-			b.Load(n.getTcpBanner(n.probeGroup[requestName], false))
+		nTcpBanner := n.getTcpBanner(n.probeGroup[requestName], tls)
+		if nTcpBanner.Status == "CLOSED" {
+			time.Sleep(time.Second * 10)
+			nTcpBanner = n.getTcpBanner(n.probeGroup[requestName], tls)
 		}
-		//slog.Debug(b.Status)
-		//slog.Debug(b.TcpFinger.Service)
-		//slog.Debug(b.Response)
+		b.Load(nTcpBanner)
+		slog.Debug(b.Target.URI(), b.Status, b.TcpFinger.Service, b.Response)
 		if b.Status == "CLOSED" || b.Status == "MATCHED" {
 			break
 		}
@@ -190,34 +190,35 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 func (n *Nmap) getTcpBanner(p *probe, tls bool) *TcpBanner {
 	b := NewTcpBanner(n.target)
 	data, err := p.scan(n.target, tls)
+	slog.Debug(data, err)
 	if err != nil {
 		b.ErrorMsg = err
 		if strings.Contains(err.Error(), "STEP1") {
+			//slog.Debug(err.Error())
 			return b.CLOSED()
 		}
 		//if p.request.protocol == "UDP" {
 		//	return b.CLOSED()
 		//}
 		return b.OPEN()
-	} else {
-		b.Response.string = data
-		//若存在返回包，则开始捕获指纹
-		//slog.Debugf("成功捕获到返回包，返回包为：%v\n", data)
-		//fmt.Printf("成功捕获到返回包，返回包长度为：%x\n", len(data))
-		b.TcpFinger = n.getFinger(data, p.request.name)
-		//slog.Debug(b.TcpFinger.Service)
-		if b.TcpFinger.Service == "" {
-			return b.OPEN()
-		} else {
-			if tls {
-				if b.TcpFinger.Service == "http" {
-					b.TcpFinger.Service = "https"
-				}
-			}
-			return b.MATCHED()
-		}
-		//如果成功匹配指纹，则直接返回指纹
 	}
+	b.Response.string = data
+	//若存在返回包，则开始捕获指纹
+	//slog.Debugf("成功捕获到返回包，返回包为：%v\n", data)
+	//fmt.Printf("成功捕获到返回包，返回包长度为：%x\n", len(data))
+	b.TcpFinger = n.getFinger(data, p.request.name)
+	//slog.Debug(b.TcpFinger.Service)
+	if b.TcpFinger.Service == "" {
+		return b.OPEN()
+	} else {
+		if tls {
+			if b.TcpFinger.Service == "http" {
+				b.TcpFinger.Service = "https"
+			}
+		}
+		return b.MATCHED()
+	}
+	//如果成功匹配指纹，则直接返回指纹
 }
 
 func (n *Nmap) AddMatch(probeName string, expr string) {
