@@ -135,14 +135,17 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 			"TCP_TerminalServerCookie",
 			"TCP_TerminalServer",
 		}
+		var t *TcpBanner
 		for _, requestName := range sslServiceArr {
-			//fmt.Println("ssl针对性识别：", requestName, "权重为", n.probeGroup[requestName].rarity)
-			b.Load(n.getTcpBanner(n.probeGroup[requestName], false))
-			if b.Status == "CLOSED" || b.Status == "MATCHED" {
+			//slog.debug("ssl针对性识别：", requestName, "权重为", n.probeGroup[requestName].rarity)
+			t = n.getTcpBanner(n.probeGroup[requestName], false)
+			if t.Status == "CLOSED" || t.Status == "MATCHED" {
+				b.Load(t)
 				break
 			}
-			b.Load(n.getTcpBanner(n.probeGroup[requestName], true))
-			if b.Status == "CLOSED" || b.Status == "MATCHED" {
+			t = n.getTcpBanner(n.probeGroup[requestName], true)
+			if t.Status == "CLOSED" || t.Status == "MATCHED" {
+				b.Load(t)
 				break
 			}
 		}
