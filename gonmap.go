@@ -101,7 +101,12 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 	//拼接端口探测队列，全端口探测放在最后
 	b := NewTcpBanner(n.target)
 	//生成探针清单
-	probeList := append(n.allPortMap, n.portMap[port]...)
+	var probeList []string
+	if port == 161 || port == 137 {
+		probeList = n.portMap[port]
+	} else {
+		probeList = append(n.allPortMap, n.portMap[port]...)
+	}
 	probeList = misc.RemoveDuplicateElement(probeList)
 	//针对探针清单，开始进行全端口探测
 	//slog.Debug(probeList)
@@ -113,7 +118,9 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 			nTcpBanner = n.getTcpBanner(n.probeGroup[requestName], tls)
 		}
 		b.Load(nTcpBanner)
-		slog.Debug(b.Target.URI(), b.Status, b.TcpFinger.Service, b.Response)
+		if n.probeGroup[requestName].request.protocol == "tcp" {
+			slog.Debug(b.Target.URI(), b.Status, b.TcpFinger.Service, b.Response)
+		}
 		if b.Status == "CLOSED" || b.Status == "MATCHED" {
 			break
 		}
@@ -190,11 +197,16 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 func (n *Nmap) getTcpBanner(p *probe, tls bool) *TcpBanner {
 	b := NewTcpBanner(n.target)
 	data, err := p.scan(n.target, tls)
-	slog.Debug(data, err)
+	if p.request.protocol == "tcp" {
+		slog.Debug(data, err)
+	}
 	if err != nil {
 		b.ErrorMsg = err
 		if strings.Contains(err.Error(), "STEP1") {
 			//slog.Debug(err.Error())
+			if n.target.port == 137 || n.target.port == 161 {
+				return b.OPEN()
+			}
 			return b.CLOSED()
 		}
 		//if p.request.protocol == "UDP" {
