@@ -81,6 +81,9 @@ func GetAppBannerFromUrl(url *urlparse.URL) *AppBanner {
 	if url.Scheme != "https" && url.Scheme != "http" {
 		netloc := fmt.Sprintf("%s:%d", url.Netloc, url.Port)
 		banner := GetTcpBanner(netloc, New(), HttpTimeout*10)
+		if banner == nil {
+			return nil
+		}
 		if banner.Status == "CLOSED" {
 			return nil
 		}
