@@ -3,6 +3,7 @@ package gonmap
 import (
 	"fmt"
 	"kscan/lib/gonmap/shttp"
+	"kscan/lib/gorpc"
 	"kscan/lib/slog"
 	"kscan/lib/urlparse"
 	"strings"
@@ -23,64 +24,27 @@ func InitAppBannerDiscernConfig(host, path, proxy string, timeout time.Duration)
 }
 
 func GetAppBannerFromTcpBanner(banner *TcpBanner) *AppBanner {
-	var appBanner = NewAppBanner()
-	var url string
-	if banner.TcpFinger.Service == "http" || banner.TcpFinger.Service == "https" {
-		url = fmt.Sprintf("%s://%s", banner.TcpFinger.Service, banner.Target.uri)
-		parse, _ := urlparse.Load(url)
-		if HttpPath != "" {
-			parse.Path = HttpPath
-		}
-		appBanner = getAppBanner(parse)
-		appBanner.LoadTcpBanner(banner)
-		if appBanner.Response == "" {
-			return nil
-		}
-		return appBanner
-	}
+	url := fmt.Sprintf("%s://%s", banner.TcpFinger.Service, banner.Target.uri)
+	parse, _ := urlparse.Load(url)
 	if banner.TcpFinger.Service == "ssl" {
-		url = fmt.Sprintf("https://%s", banner.Target.uri)
-		parse, _ := urlparse.Load(url)
+		parse.Scheme = "https"
 		if HttpPath != "" {
 			parse.Path = HttpPath
 		}
-		appBanner = getAppBanner(parse)
-		appBanner.LoadTcpBanner(banner)
-		if appBanner.Response == "" {
-			return nil
-		}
-		return appBanner
-	}
-	if strings.Contains(banner.Response.string, "HTTP") {
+	} else if strings.Contains(banner.Response.string, "HTTP") {
 		url = "http://" + banner.Target.uri
 		parse, _ := urlparse.Load(url)
 		if HttpPath != "" {
 			parse.Path = HttpPath
 		}
-		appBanner = getAppBanner(parse)
-		appBanner.LoadTcpBanner(banner)
-		if appBanner.Response == "" {
-			return nil
-		}
-		return appBanner
 	}
-	appBanner.LoadTcpBanner(banner)
-	if appBanner.Response == "" {
-		return nil
-	}
-	return appBanner
+	return getAppBanner(parse, banner)
 }
 
 func GetAppBannerFromUrl(url *urlparse.URL) *AppBanner {
-	if url.Port == 0 {
-		url.Port = 80
-		if url.Scheme == "" {
-			url.Scheme = "http"
-		}
-	}
-	if url.Scheme != "https" && url.Scheme != "http" {
+	if url.Scheme != "http" && url.Scheme != "https" {
 		netloc := fmt.Sprintf("%s:%d", url.Netloc, url.Port)
-		banner := GetTcpBanner(netloc, New(), HttpTimeout*10)
+		banner := GetTcpBanner(netloc, New(), HttpTimeout*20)
 		if banner == nil {
 			return nil
 		}
@@ -89,27 +53,65 @@ func GetAppBannerFromUrl(url *urlparse.URL) *AppBanner {
 		}
 		return GetAppBannerFromTcpBanner(banner)
 	}
-	banner := getAppBanner(url)
-	if banner.StatusCode == 0 {
-		return nil
+
+	if url.Port == 0 && url.Scheme == "" {
+		url.Port = 80
+		url.Scheme = "http"
 	}
-	return banner
+	if url.Port == 0 && url.Scheme == "https" {
+		url.Port = 443
+	}
+	if url.Port == 0 {
+		url.Port = 80
+	}
+	return getAppBanner(url, nil)
 }
 
-func getAppBanner(url *urlparse.URL) *AppBanner {
+func getAppBanner(url *urlparse.URL, tcpBanner *TcpBanner) *AppBanner {
 	r := NewAppBanner()
-	httpFinger := getHttpFinger(url, false)
-	//若请求不成功则进行多处
-	retry := 3
-	for i := 1; i < retry; i++ {
-		if httpFinger.StatusCode == 0 {
-			time.Sleep(time.Second * 10)
-			httpFinger = getHttpFinger(url, false)
-		} else {
-			break
+	r.IPAddr = url.Netloc
+	r.Port = url.Port
+	r.Protocol = url.Scheme
+
+	slog.Debug(r.URL())
+
+	if url.Scheme == "http" || url.Scheme == "https" {
+		httpFinger := getHttpFinger(url, false)
+		//若请求不成功则进行多处
+		retry := 3
+		for i := 1; i < retry; i++ {
+			if httpFinger.StatusCode == 0 {
+				time.Sleep(time.Second * 10)
+				httpFinger = getHttpFinger(url, false)
+			} else {
+				break
+			}
+		}
+		r.LoadHttpFinger(httpFinger)
+	}
+
+	if url.Scheme == "rpc" || url.Scheme == "dcerpc" {
+		url.Scheme = "rpc"
+		r.Protocol = "rpc"
+		RpcFinger, _ := gorpc.GetFinger(url.Netloc)
+		if RpcFinger != nil {
+			r.LoadRpcFinger(RpcFinger)
 		}
 	}
-	r.LoadHttpFinger(httpFinger)
+
+	if url.Scheme == "rdp" {
+		//todo
+	}
+
+	if tcpBanner != nil {
+		r.LoadTcpBanner(tcpBanner)
+	}
+	if r.StatusCode == 0 {
+		return nil
+	}
+	if r.Response == "" {
+		return nil
+	}
 	return r
 }
 
