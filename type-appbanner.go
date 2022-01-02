@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"kscan/lib/chinese"
 	"kscan/lib/color"
+	"kscan/lib/gorpc"
 	"kscan/lib/misc"
 	"kscan/lib/urlparse"
 	"strconv"
@@ -196,7 +197,7 @@ func (a *AppBanner) LoadTcpBanner(banner *TcpBanner) {
 
 func (a *AppBanner) Display(keyPrint bool) string {
 	m := misc.FixMap(a.fingerPrint)
-	fingerPrint := color.StrMapRandomColor(m, keyPrint, []string{"HashFinger", "KeywordFinger", "ProductName", "Hostname", "DeviceType", "ProductName"})
+	fingerPrint := color.StrMapRandomColor(m, keyPrint, []string{"HashFinger", "KeywordFinger", "ProductName", "Hostname", "DeviceType"})
 	fingerPrint = misc.FixLine(fingerPrint)
 
 	a.AppDigest = a.makeAppDigest()
@@ -232,52 +233,52 @@ func (a *AppBanner) makeAppDigest() string {
 
 //返回包摘要
 func (a *AppBanner) SetResponseDigest(s string) {
-	a.fingerPrint["ResponseDigest"] = s
+	a.fingerPrint["ResponseDigest"] += s
 }
 
 //Http IconHash指纹识别信息
 func (a *AppBanner) SetHashFinger(s string) {
-	a.fingerPrint["HashFinger"] = s
+	a.fingerPrint["HashFinger"] += s
 }
 
 //Http 关键字指纹识别信息
 func (a *AppBanner) SetKeywordFinger(s string) {
-	a.fingerPrint["KeywordFinger"] = s
+	a.fingerPrint["KeywordFinger"] += s
 }
 
 //Https 证书信息
 func (a *AppBanner) SetCertSubject(s string) {
-	a.fingerPrint["CertSubject"] = s
+	a.fingerPrint["CertSubject"] += s
 }
 
 //端口开放 产品信息
 func (a *AppBanner) SetProductName(s string) {
-	a.fingerPrint["ProductName"] = s
+	a.fingerPrint["ProductName"] += s
 }
 
 //端口开放 产品版本信息
 func (a *AppBanner) SetVersion(s string) {
-	a.fingerPrint["Version"] = s
+	a.fingerPrint["Version"] += s
 }
 
 //主机名称
 func (a *AppBanner) SetHostname(s string) {
-	a.fingerPrint["Hostname"] = s
+	a.fingerPrint["Hostname"] += s
 }
 
 //操作系统名称
 func (a *AppBanner) SetOperatingSystem(s string) {
-	a.fingerPrint["OperatingSystem"] = s
+	a.fingerPrint["OperatingSystem"] += s
 }
 
 //设备类型
 func (a *AppBanner) SetDeviceType(s string) {
-	a.fingerPrint["DeviceType"] = s
+	a.fingerPrint["DeviceType"] += s
 }
 
 //端口其他信息
 func (a *AppBanner) SetInfo(s string) {
-	a.fingerPrint["Info"] = s
+	a.fingerPrint["Info"] += s
 }
 
 func (a *AppBanner) Map() map[string]string {
@@ -293,4 +294,15 @@ func (a *AppBanner) Map() map[string]string {
 		bannerMap[key] = value
 	}
 	return bannerMap
+}
+
+func (a *AppBanner) LoadRpcFinger(finger *gorpc.Finger) {
+	a.AppDigest = finger.Value()[0]
+
+	if len(a.AppDigest) == 0 {
+		a.AppDigest = "NoName"
+	}
+
+	a.StatusCode = 200
+	a.SetHostname(finger.ValueString())
 }
