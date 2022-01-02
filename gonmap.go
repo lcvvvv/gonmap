@@ -32,7 +32,7 @@ func Init(filter int, timeout time.Duration) map[string]int {
 	for i := 0; i <= 65535; i++ {
 		NMAP.portMap[i] = []string{}
 	}
-	NMAP.loads(NMAP_SERVICE_PROBES)
+	NMAP.loads(NMAP_SERVICE_PROBES + NMAP_CUSTOMIZE_PROBES)
 	NMAP.AddAllProbe("TCP_NULL")
 	NMAP.AddAllProbe("TCP_GetRequest")
 	NMAP.AddAllProbe("TCP_SSLv23SessionReq")
@@ -102,8 +102,8 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 	b := NewTcpBanner(n.target)
 	//生成探针清单
 	var probeList []string
-	if port == 161 || port == 137 {
-		probeList = n.portMap[port]
+	if port == 161 || port == 137 || port == 139 || port == 135 {
+		probeList = append(n.portMap[port], n.allPortMap...)
 	} else {
 		probeList = append(n.allPortMap, n.portMap[port]...)
 	}
@@ -118,7 +118,7 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 			nTcpBanner = n.getTcpBanner(n.probeGroup[requestName], tls)
 		}
 		b.Load(nTcpBanner)
-		if n.probeGroup[requestName].request.protocol == "tcp" {
+		if n.probeGroup[requestName].request.protocol == "TCP" {
 			slog.Debug(b.Target.URI(), b.Status, b.TcpFinger.Service, b.Response)
 		}
 		if b.Status == "CLOSED" || b.Status == "MATCHED" {
@@ -197,7 +197,7 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 func (n *Nmap) getTcpBanner(p *probe, tls bool) *TcpBanner {
 	b := NewTcpBanner(n.target)
 	data, err := p.scan(n.target, tls)
-	if p.request.protocol == "tcp" {
+	if p.request.protocol == "TCP" && err != nil {
 		slog.Debug(data, err)
 	}
 	if err != nil {
