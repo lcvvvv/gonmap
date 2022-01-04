@@ -73,7 +73,9 @@ func getAppBanner(url *urlparse.URL, tcpBanner *TcpBanner) *AppBanner {
 	r.Port = url.Port
 	r.Protocol = url.Scheme
 
-	slog.Debug(r.URL())
+	if tcpBanner != nil {
+		r.LoadTcpBanner(tcpBanner)
+	}
 
 	if url.Scheme == "http" || url.Scheme == "https" {
 		httpFinger := getHttpFinger(url, false)
@@ -103,15 +105,14 @@ func getAppBanner(url *urlparse.URL, tcpBanner *TcpBanner) *AppBanner {
 		//todo
 	}
 
-	if tcpBanner != nil {
-		r.LoadTcpBanner(tcpBanner)
-	}
 	if r.StatusCode == 0 {
 		return nil
 	}
+
 	if r.Response == "" {
 		return nil
 	}
+
 	return r
 }
 
