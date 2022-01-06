@@ -47,6 +47,7 @@ func Init(filter int, timeout time.Duration) map[string]int {
 	NMAP.AddMatch("TCP_NULL", `mysql m|.\x00\x00\x00\x0a(\d+\.\d+\.\d+)\x00.*caching_sha2_password\x00| p/MariaDB/ v/$1/`)
 	NMAP.AddMatch("TCP_NULL", `mysql m|.\x00\x00\x00\x0a([\d.-]+)-MariaDB\x00.*mysql_native_password\x00| p/MariaDB/ v/$1/`)
 	NMAP.AddMatch("TCP_NULL", `redis m|-DENIED Redis is running in.*| p/Redis/ i/Protected mode/`)
+	NMAP.AddMatch("TCP_redis-server", `redis m|^.*redis_version:([.\d]+)\n|s p/Redis key-value store/ v/$1/ cpe:/a:redislabs:redis:$1/`)
 	return NMAP.Status()
 }
 
@@ -68,6 +69,7 @@ func InitNMAP() {
 	NMAP_SERVICE_PROBES = strings.ReplaceAll(NMAP_SERVICE_PROBES, `(?!x)`, `[^x]`)
 	NMAP_SERVICE_PROBES = strings.ReplaceAll(NMAP_SERVICE_PROBES, `(?<=.)`, `(?:.)`)
 	NMAP_SERVICE_PROBES = strings.ReplaceAll(NMAP_SERVICE_PROBES, `(?<=\?)`, `(?:\?)`)
+	NMAP_SERVICE_PROBES = strings.ReplaceAll(NMAP_SERVICE_PROBES, `\x20\x02\x00.`, `\x20\x02..`)
 	NMAP_SERVICE_PROBES = strings.ReplaceAll(NMAP_SERVICE_PROBES, `match rtmp`, `# match rtmp`)
 	NMAP_SERVICE_PROBES = ReplaceAll(NMAP_SERVICE_PROBES, `nmap`, `pamn`)
 }
@@ -102,7 +104,8 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 	b := NewTcpBanner(n.target)
 	//生成探针清单
 	var probeList []string
-	if port == 161 || port == 137 || port == 139 || port == 135 {
+	if port == 161 || port == 137 || port == 139 || port == 135 ||
+		port == 1433 || port == 6379 || port == 1883 || port == 5432 || port == 1521 {
 		probeList = append(n.portMap[port], n.allPortMap...)
 	} else {
 		probeList = append(n.allPortMap, n.portMap[port]...)
