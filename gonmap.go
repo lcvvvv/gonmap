@@ -49,6 +49,7 @@ func Init(filter int, timeout time.Duration) map[string]int {
 	NMAP.AddMatch("TCP_NULL", `redis m|-DENIED Redis is running in.*| p/Redis/ i/Protected mode/`)
 	NMAP.AddMatch("TCP_NULL", `ftp m|^220 H3C Small-FTP Server Version ([\d.]+).* | p/H3C Small-FTP/ v/$1/`)
 	NMAP.AddMatch("TCP_redis-server", `redis m|^.*redis_version:([.\d]+)\n|s p/Redis key-value store/ v/$1/ cpe:/a:redislabs:redis:$1/`)
+	NMAP.AddMatch("TCP_redis-server", `redis m|^-NOAUTH Authentication required.|s p/Redis key-value store/`)
 	return NMAP.Status()
 }
 
@@ -123,7 +124,7 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 		}
 		b.Load(nTcpBanner)
 		if n.probeGroup[requestName].request.protocol == "TCP" {
-			slog.Debug(b.Target.URI(), b.Status, b.TcpFinger.Service, b.Response)
+			slog.Debug(b.Target.URI(), requestName, b.Status, b.TcpFinger.Service, b.Response)
 		}
 		if b.Status == "CLOSED" || b.Status == "MATCHED" {
 			break
@@ -389,3 +390,12 @@ func (n *Nmap) pushProbe(p *probe) {
 	}
 
 }
+
+//func (n *Nmap) Touch(ip string, port int) interface{} {
+//	for probeName := range n.probeSort {
+//		p := n.probeGroup[probeName]
+//
+//		_, _ = p.scan()
+//
+//	}
+//}
