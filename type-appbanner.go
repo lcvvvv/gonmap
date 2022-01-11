@@ -203,10 +203,8 @@ func (a *AppBanner) Display(keyPrint bool) string {
 	a.AppDigest = a.makeAppDigest()
 	a.AppDigest = chinese.ToUTF8(a.AppDigest)
 
-	s := fmt.Sprintf("%-30v %-"+strconv.Itoa(misc.AutoWidth(a.AppDigest, 26))+"v %s",
-		a.URL(),
-		a.AppDigest,
-		fingerPrint)
+	format := "%-30v %-" + strconv.Itoa(misc.AutoWidth(a.AppDigest, 26)) + "v %s"
+	s := fmt.Sprintf(format, a.URL(), a.AppDigest, fingerPrint)
 	return s
 }
 
