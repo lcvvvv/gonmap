@@ -197,7 +197,7 @@ func (a *AppBanner) LoadTcpBanner(banner *TcpBanner) {
 
 func (a *AppBanner) Display(keyPrint bool) string {
 	m := misc.FixMap(a.fingerPrint)
-	fingerPrint := color.StrMapRandomColor(m, keyPrint, []string{"HashFinger", "KeywordFinger", "ProductName", "Hostname", "DeviceType"})
+	fingerPrint := color.StrMapRandomColor(m, keyPrint, []string{"ProductName", "Hostname", "DeviceType"}, []string{"HashFinger", "KeywordFinger"})
 	fingerPrint = misc.FixLine(fingerPrint)
 
 	a.AppDigest = a.makeAppDigest()
