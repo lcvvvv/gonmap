@@ -21,7 +21,7 @@ func GetTcpBanner(netloc string, nmap *Nmap, timeout time.Duration) *TcpBanner {
 			if err := recover(); err != nil {
 				if &r != nil {
 					if r.Response.Length() > 0 {
-						slog.Debug(err, ",", parse.UnParse(), ",", r.Status, ",response length is :", r.Response.Length())
+						slog.Debug(err, ",", parse.UnParse(), ",", r.status, ",response length is :", r.Response.Length())
 					}
 				}
 			}

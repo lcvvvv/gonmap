@@ -11,8 +11,9 @@ type TcpBanner struct {
 	Target    target
 	Response  response
 	TcpFinger TcpFinger
-	Status    int
 	ErrorMsg  error
+
+	status int
 }
 
 func NewTcpBanner(target target) TcpBanner {
@@ -20,19 +21,19 @@ func NewTcpBanner(target target) TcpBanner {
 		Target:    target,
 		Response:  newResponse(),
 		TcpFinger: newFinger(),
-		Status:    Unknown,
+		status:    Unknown,
 		ErrorMsg:  nil,
 	}
 }
 
 func (p *TcpBanner) Load(np *TcpBanner) {
-	if p.Status == Closed || p.Status == Matched {
+	if p.status == Closed || p.status == Matched {
 		return
 	}
-	if p.Status == Unknown {
+	if p.status == Unknown {
 		*p = *np
 	}
-	if p.Status == Open && np.Status != Closed && np.Status != Unknown {
+	if p.status == Open && np.status != Closed && np.status != Unknown {
 		*p = *np
 	}
 	//fmt.Println("加载完成后端口状态为：",p.status)
@@ -43,16 +44,31 @@ func (p *TcpBanner) Length() int {
 }
 
 func (p *TcpBanner) CLOSED() *TcpBanner {
-	p.Status = Closed
+	p.status = Closed
 	return p
 }
 
 func (p *TcpBanner) OPEN() *TcpBanner {
-	p.Status = Open
+	p.status = Open
 	return p
 }
 
 func (p *TcpBanner) MATCHED() *TcpBanner {
-	p.Status = Matched
+	p.status = Matched
 	return p
+}
+
+func (p *TcpBanner) Status() string {
+	switch p.status {
+	case 0x00001:
+		return "Closed"
+	case 0x00002:
+		return "Open"
+	case 0x00003:
+		return "Matched"
+	case 0x00004:
+		return "Unknown"
+	default:
+		return "Unknown"
+	}
 }
