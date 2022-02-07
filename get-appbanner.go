@@ -48,7 +48,7 @@ func GetAppBannerFromUrl(url *urlparse.URL) *AppBanner {
 		if banner == nil {
 			return nil
 		}
-		if banner.Status == "CLOSED" {
+		if banner.Status == Closed {
 			return nil
 		}
 		return GetAppBannerFromTcpBanner(banner)

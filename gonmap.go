@@ -132,7 +132,7 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 	for _, requestName := range probeList {
 		tls := n.probeGroup[requestName].sslports.Exist(n.target.port)
 		nTcpBanner := n.getTcpBanner(n.probeGroup[requestName], tls)
-		if nTcpBanner.Status == "CLOSED" {
+		if nTcpBanner.Status == Closed {
 			time.Sleep(time.Second * 10)
 			nTcpBanner = n.getTcpBanner(n.probeGroup[requestName], tls)
 		}
@@ -140,7 +140,7 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 		if n.probeGroup[requestName].request.protocol == "TCP" {
 			slog.Debug(b.Target.URI(), requestName, b.Status, b.TcpFinger.Service, b.Response)
 		}
-		if b.Status == "CLOSED" || b.Status == "MATCHED" {
+		if b.Status == Closed || b.Status == Matched {
 			break
 		}
 		if n.target.port == 53 {
@@ -156,7 +156,6 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 	}
 	//ssl协议二次识别
 	if b.TcpFinger.Service == "ssl" {
-		b.OPEN()
 		sslServiceArr := []string{
 			"TCP_TerminalServerCookie",
 			"TCP_TerminalServer",
@@ -165,12 +164,14 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 		for _, requestName := range sslServiceArr {
 			//slog.debug("ssl针对性识别：", requestName, "权重为", n.probeGroup[requestName].rarity)
 			t = n.getTcpBanner(n.probeGroup[requestName], false)
-			if t.Status == "CLOSED" || t.Status == "MATCHED" {
+			if t.Status == Closed || t.Status == Matched {
+				b.OPEN()
 				b.Load(t)
 				break
 			}
 			t = n.getTcpBanner(n.probeGroup[requestName], true)
-			if t.Status == "CLOSED" || t.Status == "MATCHED" {
+			if t.Status == Closed || t.Status == Matched {
+				b.OPEN()
 				b.Load(t)
 				break
 			}
