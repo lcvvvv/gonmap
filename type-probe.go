@@ -74,7 +74,6 @@ func (p *probe) match(s string) TcpFinger {
 		}
 		//slog.Debug("开始匹配正则：", m.service, m.patternRegexp.String())
 		if m.patternRegexp.MatchString(s) {
-			//fmt.Println("成功匹配指纹：", m.pattern, "所在probe为：", p.request.name)
 			if m.soft {
 				//如果为软捕获，这设置筛选器
 				f.Service = m.service

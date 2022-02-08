@@ -105,12 +105,11 @@ func getAppBanner(url *urlparse.URL, tcpBanner *TcpBanner) *AppBanner {
 		//todo
 	}
 
-	if r.StatusCode == 0 {
-		return nil
-	}
-
 	if r.Response == "" {
-		return nil
+		r.Protocol = GuessProtocol(r.Port)
+		r.SetInfo("Maybe")
+		r.AppDigest = "ResponseIsEmpty"
+		//return nil
 	}
 
 	return r

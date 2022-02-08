@@ -64,6 +64,7 @@ func Init(filter int, timeout time.Duration) map[string]int {
 	NMAP.AddMatch("TCP_NULL", `telnet m|^\x0d\x0a\x0d\x0aWelcome to the host.\x0d\x0a.*|s o/Windows/`)
 	NMAP.AddMatch("TCP_NULL", `telnet m|^.*Welcome Visiting Huawei Home Gateway\x0d\x0aCopyright by Huawei Technologies Co., Ltd.*Login:|s p/Huawei/`)
 	NMAP.AddMatch("TCP_NULL", `telnet m|^..\x01..\x03..\x18..\x1f|s p/Huawei/`)
+	NMAP.probeGroup["TCP_GetRequest"].fallback = "NULL"
 	return NMAP.Status()
 }
 
@@ -177,40 +178,7 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 			}
 		}
 	}
-	//进行最后输出修饰
-	if b.TcpFinger.Service == "ssl/http" {
-		b.TcpFinger.Service = "https"
-	}
-	if b.TcpFinger.Service == "ssl/https" {
-		b.TcpFinger.Service = "https"
-	}
-	if b.TcpFinger.Service == "ms-wbt-server" {
-		b.TcpFinger.Service = "rdp"
-	}
-	if b.TcpFinger.Service == "microsoft-ds" {
-		b.TcpFinger.Service = "smb"
-	}
-	if b.TcpFinger.Service == "netbios-ssn" {
-		b.TcpFinger.Service = "netbios"
-	}
-	if b.TcpFinger.Service == "oracle-tns" {
-		b.TcpFinger.Service = "oracle"
-	}
-	if b.TcpFinger.Service == "msrpc" {
-		b.TcpFinger.Service = "rpc"
-	}
-	if b.TcpFinger.Service == "ms-sql-s" {
-		b.TcpFinger.Service = "mssql"
-	}
-	if b.TcpFinger.Service == "domain" {
-		b.TcpFinger.Service = "dns"
-	}
-	if b.TcpFinger.Service == "svnserve" {
-		b.TcpFinger.Service = "svn"
-	}
-	if b.TcpFinger.Service == "ssl" && n.target.port == 3389 {
-		b.TcpFinger.Service = "rdp"
-	}
+	b.TcpFinger.Service = FixProtocol(b.TcpFinger.Service, b.Target.port)
 	return b
 }
 
@@ -316,9 +284,16 @@ func (n *Nmap) isCommand(line string) bool {
 func (n *Nmap) getFinger(data string, requestName string) TcpFinger {
 	data = n.convResponse(data)
 	f := n.probeGroup[requestName].match(data)
-	if f.Service == "" {
-		if n.probeGroup[requestName].fallback != "" {
-			return n.probeGroup["TCP_"+n.probeGroup[requestName].fallback].match(data)
+	if f.Service != "" || n.probeGroup[requestName].fallback == "" {
+		return f
+	}
+	fallback := n.probeGroup[requestName].fallback
+	for fallback != "" {
+		//slog.Debug("fallback:", fallback)
+		f = n.probeGroup["TCP_"+fallback].match(data)
+		fallback = n.probeGroup["TCP_"+fallback].fallback
+		if f.Service != "" {
+			continue
 		}
 	}
 	return f
