@@ -10,7 +10,7 @@ const (
 type TcpBanner struct {
 	Target    target
 	Response  response
-	TcpFinger TcpFinger
+	TcpFinger *TcpFinger
 	ErrorMsg  error
 
 	status int

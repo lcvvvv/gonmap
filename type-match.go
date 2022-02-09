@@ -13,7 +13,7 @@ type match struct {
 	service       string
 	pattern       string
 	patternRegexp *regexp.Regexp
-	versioninfo   TcpFinger
+	versioninfo   *TcpFinger
 }
 
 var MATCH_LOAD_REGEXPS = []*regexp.Regexp{
@@ -96,7 +96,7 @@ func (m *match) getVersionInfo(s string, regID string) string {
 	}
 }
 
-func (m *match) makeVersionInfo(s string) TcpFinger {
+func (m *match) makeVersionInfo(s string) *TcpFinger {
 	f := newFinger()
 	//fmt.Println(s)
 	f.Info = m.makeVersionInfoSubHelper(s, m.versioninfo.Info)

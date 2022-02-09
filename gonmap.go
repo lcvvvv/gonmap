@@ -281,7 +281,7 @@ func (n *Nmap) isCommand(line string) bool {
 	return false
 }
 
-func (n *Nmap) getFinger(data string, requestName string) TcpFinger {
+func (n *Nmap) getFinger(data string, requestName string) *TcpFinger {
 	data = n.convResponse(data)
 	f := n.probeGroup[requestName].match(data)
 	if f.Service != "" || n.probeGroup[requestName].fallback == "" {

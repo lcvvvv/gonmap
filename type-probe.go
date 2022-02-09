@@ -60,7 +60,7 @@ func (p *probe) scan(t target, ssl bool) (string, error) {
 	}
 }
 
-func (p *probe) match(s string) TcpFinger {
+func (p *probe) match(s string) *TcpFinger {
 	var f = newFinger()
 	if p.matchGroup == nil {
 		return f
