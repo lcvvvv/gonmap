@@ -16,28 +16,32 @@ import (
 )
 
 type HttpFinger struct {
-	URL              *urlparse.URL
-	StatusCode       int
-	Response         string
-	ResponseDigest   string
-	Title            string
-	Header           string
-	HeaderDigest     string
-	HashFinger       string
-	KeywordFinger    string
+	URL            *urlparse.URL
+	StatusCode     int
+	Response       string
+	ResponseDigest string
+	Title          string
+	Header         string
+
+	//HeaderDigest  string
+	//HashFinger    string
+	//KeywordFinger string
+
+	Finger           *TcpFinger
 	PeerCertificates *x509.Certificate
 }
 
 func NewHttpFinger(url *urlparse.URL) *HttpFinger {
 	return &HttpFinger{
-		URL:              url,
-		StatusCode:       0,
-		Response:         "",
-		ResponseDigest:   "",
-		Title:            "",
-		Header:           "",
-		HashFinger:       "",
-		KeywordFinger:    "",
+		URL:            url,
+		StatusCode:     0,
+		Response:       "",
+		ResponseDigest: "",
+		Title:          "",
+		Header:         "",
+		//HashFinger:       "",
+		//KeywordFinger:    "",
+		Finger:           newFinger(),
 		PeerCertificates: nil,
 	}
 }
@@ -46,11 +50,19 @@ func (h *HttpFinger) LoadHttpResponse(url *urlparse.URL, resp *http.Response) {
 	h.Title = getTitle(shttp.GetBody(resp))
 	h.StatusCode = resp.StatusCode
 	h.Header = getHeader(resp.Header.Clone())
-	h.HeaderDigest = getHeaderDigest(resp.Header.Clone())
 	h.Response = getResponse(shttp.GetBody(resp))
 	h.ResponseDigest = getResponseDigest(shttp.GetBody(resp))
-	h.HashFinger = getFingerByHash(*url)
-	h.KeywordFinger = getFingerByKeyword(h.Header, h.Title, h.Response)
+
+	var componentSlice []string
+	if component := getFingerByHash(*url); component != "" {
+		componentSlice = append(componentSlice, "icon:"+component)
+	}
+	if component := getFingerByKeyword(h.Header, h.Title, h.Response); component != "" {
+		componentSlice = append(componentSlice, component)
+	}
+	h.Finger.ApplicationComponent = strings.Join(componentSlice, ",")
+	//h.HashFinger = getFingerByHash(*url)
+	//h.KeywordFinger = getFingerByKeyword(h.Header, h.Title, h.Response)
 	_ = resp.Body.Close()
 }
 
@@ -118,20 +130,6 @@ func getResponseDigest(resp io.Reader) string {
 	}
 
 	return result
-}
-
-func getHeaderDigest(header http.Header) string {
-	var finger []string
-	if header.Get("SERVER") != "" {
-		finger = append(finger, "server:"+header.Get("SERVER"))
-	}
-	if header.Get("X-Redirect-By") != "" {
-		finger = append(finger, "X-Redirect-By:"+header.Get("X-Redirect-By"))
-	}
-	if header.Get("X-Powered-By") != "" {
-		finger = append(finger, "X-Powered-By:"+header.Get("X-Powered-By"))
-	}
-	return strings.Join(finger, "、")
 }
 
 func getFingerByKeyword(header string, title string, body string) string {

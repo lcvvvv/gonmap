@@ -63,9 +63,7 @@ func (a *AppBanner) LoadHttpFinger(finger *HttpFinger) {
 		}
 	}())
 	a.SetResponseDigest(finger.ResponseDigest)
-	a.SetHashFinger(finger.HashFinger)
-	a.SetKeywordFinger(finger.KeywordFinger)
-	a.SetInfo(finger.HeaderDigest)
+
 	if a.AppDigest == "" {
 		switch a.StatusCode {
 		case 100:
@@ -157,6 +155,7 @@ func (a *AppBanner) LoadHttpFinger(finger *HttpFinger) {
 		a.Protocol = "unknown"
 	}
 
+	a.loadTcpFinger(finger.Finger)
 }
 
 func (a *AppBanner) LoadTcpBanner(banner *TcpBanner) {
@@ -187,17 +186,12 @@ func (a *AppBanner) LoadTcpBanner(banner *TcpBanner) {
 		}()
 	}
 
-	a.SetProductName(banner.TcpFinger.ProductName)
-	a.SetInfo(banner.TcpFinger.Info)
-	a.SetDeviceType(banner.TcpFinger.DeviceType)
-	a.SetOperatingSystem(banner.TcpFinger.OperatingSystem)
-	a.SetHostname(banner.TcpFinger.Hostname)
-	a.SetVersion(banner.TcpFinger.Version)
+	a.loadTcpFinger(banner.TcpFinger)
 }
 
 func (a *AppBanner) Display(keyPrint bool) string {
 	m := misc.FixMap(a.fingerPrint)
-	fingerPrint := color.StrMapRandomColor(m, keyPrint, []string{"ProductName", "Hostname", "DeviceType"}, []string{"HashFinger", "KeywordFinger"})
+	fingerPrint := color.StrMapRandomColor(m, keyPrint, []string{"ProductName", "Hostname", "DeviceType"}, []string{"ApplicationComponent"})
 	fingerPrint = misc.FixLine(fingerPrint)
 
 	a.AppDigest = a.makeAppDigest()
@@ -279,6 +273,11 @@ func (a *AppBanner) SetInfo(s string) {
 	a.fingerPrint["Info"] += s
 }
 
+//应用层协议协议
+func (a *AppBanner) SetApplicationComponent(component string) {
+	a.fingerPrint["ApplicationComponent"] += component
+}
+
 func (a *AppBanner) Map() map[string]string {
 	bannerMap := make(map[string]string)
 	bannerMap["Response"] = a.Response
@@ -303,4 +302,14 @@ func (a *AppBanner) LoadRpcFinger(finger *gorpc.Finger) {
 
 	a.StatusCode = 200
 	a.SetHostname(finger.ValueString())
+}
+
+func (a *AppBanner) loadTcpFinger(finger *TcpFinger) {
+	a.SetProductName(finger.ProductName)
+	a.SetInfo(finger.Info)
+	a.SetDeviceType(finger.DeviceType)
+	a.SetOperatingSystem(finger.OperatingSystem)
+	a.SetHostname(finger.Hostname)
+	a.SetVersion(finger.Version)
+	a.SetApplicationComponent(finger.ApplicationComponent)
 }
