@@ -73,6 +73,9 @@ func (m *match) load(s string, soft bool) bool {
 func (m *match) getPatternRegexp(pattern string, opt string) *regexp.Regexp {
 	pattern = strings.ReplaceAll(pattern, `\0`, `\x00`)
 	if opt != "" {
+		if strings.Contains(opt, "i") == false {
+			opt += "i"
+		}
 		if pattern[:1] == "^" {
 			pattern = fmt.Sprintf("^(?%s:%s", opt, pattern[1:])
 		} else {
