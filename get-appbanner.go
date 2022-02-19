@@ -112,6 +112,10 @@ func getAppBanner(url *urlparse.URL, tcpBanner *TcpBanner) *AppBanner {
 		//return nil
 	}
 
+	if r.StatusCode == ERROR_NOT_SUCH_HOST {
+		return nil
+	}
+
 	return r
 }
 
@@ -136,6 +140,9 @@ func getHttpFinger(url *urlparse.URL, loop bool) *HttpFinger {
 			//HTTPS协议重新获取指纹
 			url.Scheme = "https"
 			return getHttpFinger(url, true)
+		}
+		if strings.Contains(err.Error(), "no such host") {
+			r.StatusCode = ERROR_NOT_SUCH_HOST
 		}
 		slog.Debug(err.Error())
 		return r

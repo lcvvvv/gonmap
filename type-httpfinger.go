@@ -31,6 +31,8 @@ type HttpFinger struct {
 	PeerCertificates *x509.Certificate
 }
 
+const ERROR_NOT_SUCH_HOST = 0x0010001
+
 func NewHttpFinger(url *urlparse.URL) *HttpFinger {
 	return &HttpFinger{
 		URL:            url,
