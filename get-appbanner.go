@@ -115,6 +115,11 @@ func getAppBanner(url *urlparse.URL, tcpBanner *TcpBanner) *AppBanner {
 	if r.StatusCode == ERROR_NOT_SUCH_HOST {
 		return nil
 	}
+
+	if r.StatusCode == 0 && r.Response == "" {
+		return nil
+	}
+
 	return r
 }
 

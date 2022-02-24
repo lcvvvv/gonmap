@@ -51,7 +51,9 @@ func (a *AppBanner) LoadHttpFinger(finger *HttpFinger) {
 	a.Port = finger.URL.Port
 	a.AppDigest = finger.Title
 	a.StatusCode = finger.StatusCode
-	a.Response = finger.Header + "\t\n" + finger.Response
+	if finger.StatusCode != 0 {
+		a.Response = finger.Header + "\t\n" + finger.Response
+	}
 	a.Protocol = finger.URL.Scheme
 	a.SetCertSubject(func() string {
 		if finger.PeerCertificates != nil {
