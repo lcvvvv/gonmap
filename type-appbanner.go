@@ -217,10 +217,10 @@ func (a *AppBanner) makeAppDigest() string {
 	digest := a.AppDigest
 	digest = misc.FixLine(digest)
 	digest = misc.FilterPrintStr(digest)
-	if len(digest) > len(a.Protocol) {
-		return digest
+	if digest == "" {
+		return strings.ToUpper(a.Protocol)
 	}
-	return strings.ToUpper(a.Protocol)
+	return digest
 }
 
 //返回包摘要
