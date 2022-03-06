@@ -2,7 +2,7 @@ package gonmap
 
 import (
 	"fmt"
-	"kscan/lib/ping"
+	"kscan/lib/gosping"
 	"time"
 )
 
@@ -17,10 +17,7 @@ func HostDiscovery(ip string) bool {
 }
 
 func HostDiscoveryForIcmp(ip string) bool {
-	if ping.Check(ip) {
-		return true
-	}
-	return false
+	return gosping.OsPing(ip)
 }
 
 func HostDiscoveryForTcp(ip string) bool {
