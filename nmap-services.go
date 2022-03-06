@@ -5347,6 +5347,8 @@ var NMAP_SERVICES = `1	tcpmux
 7878	owms
 7880	pss
 7887	ubroker
+7890	clash-http
+7891	clash-socks
 7900	mevent
 7901	tnos-sp
 7902	tnos-dp
