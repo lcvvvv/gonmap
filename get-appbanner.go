@@ -106,8 +106,8 @@ func getAppBanner(url *urlparse.URL, tcpBanner *TcpBanner) *AppBanner {
 	}
 
 	if r.Response == "" {
-		r.Protocol = GuessProtocol(r.Port)
-		r.SetInfo("Maybe")
+		r.Protocol = "unknown"
+		r.SetInfo("MaybeProtocolIs :" + GuessProtocol(r.Port))
 		r.AppDigest = "ResponseIsEmpty"
 		//return nil
 	}

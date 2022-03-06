@@ -1,7 +1,11 @@
 package gonmap
 
 func GuessProtocol(port int) string {
-	return NMAP_SERVICES_SLICE[port]
+	protocol := NMAP_SERVICES_SLICE[port]
+	if protocol == "unknown" {
+		protocol = "http"
+	}
+	return protocol
 }
 
 func FixProtocol(oldProtocol string, port int) string {
