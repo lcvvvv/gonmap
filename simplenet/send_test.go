@@ -9,7 +9,7 @@ import (
 )
 
 func TestName(t *testing.T) {
-	response, err := Send("tcp", "125.253.123.22:3306", "", time.Second*3, 2048)
+	response, err := Send("tcp", "192.168.217.1:25", "", time.Second*3, 2048)
 	if err != nil {
 		fmt.Println(err)
 		return
