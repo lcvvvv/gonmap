@@ -28,15 +28,9 @@ func GetAppBannerFromTcpBanner(banner *TcpBanner) *AppBanner {
 	parse, _ := urlparse.Load(url)
 	if banner.TcpFinger.Service == "ssl" {
 		parse.Scheme = "https"
-		if HttpPath != "" {
-			parse.Path = HttpPath
-		}
 	} else if strings.Contains(banner.Response.string, "HTTP") {
 		url = "http://" + banner.Target.uri
-		parse, _ := urlparse.Load(url)
-		if HttpPath != "" {
-			parse.Path = HttpPath
-		}
+		parse, _ = urlparse.Load(url)
 	}
 	return getAppBanner(parse, banner)
 }
@@ -78,6 +72,9 @@ func getAppBanner(url *urlparse.URL, tcpBanner *TcpBanner) *AppBanner {
 	}
 
 	if url.Scheme == "http" || url.Scheme == "https" {
+		if HttpPath != "" {
+			url.Path = HttpPath
+		}
 		httpFinger := getHttpFinger(url, false)
 		//若请求不成功则进行多处
 		retry := 3
