@@ -3,7 +3,6 @@ package gonmap
 import (
 	"errors"
 	"fmt"
-	"kscan/lib/misc"
 	"kscan/lib/slog"
 	"strings"
 	"time"
@@ -11,34 +10,38 @@ import (
 
 var NMAP *Nmap
 
+var BypassAllProbePortMap = []int{161, 137, 139, 135, 1433, 6379, 1883, 5432, 1521, 3389, 3388, 3389, 33890, 33900}
+var SSLSecondProbeMap = []string{"TCP_TerminalServerCookie", "TCP_TerminalServer"}
+var AllProbeMap = []string{"TCP_NULL", "TCP_GetRequest"}
+var SSLProbeMap = []string{"TCP_TLSSessionReq", "TCP_SSLSessionReq", "TCP_SSLv23SessionReq"}
+
 //r["PROBE"] 总探针数、r["MATCH"] 总指纹数 、r["USED_PROBE"] 已使用探针数、r["USED_MATCH"] 已使用指纹数
 func Init(filter int, timeout time.Duration) map[string]int {
 	//初始化NMAP探针库
 	InitNMAP()
 	//fmt.Println("初始化了")
 	NMAP = &Nmap{
-		exclude:     newPort(),
-		probeGroup:  make(map[string]*probe),
-		probeSort:   []string{},
-		portMap:     make(map[int][]string),
-		allPortMap:  []string{},
-		probeFilter: 0,
-		target:      newTarget(),
-		response:    newResponse(),
-		finger:      nil,
-		filter:      5,
+		exclude:        newPort(),
+		probeGroup:     make(map[string]*probe),
+		probeSort:      []string{},
+		portProbeMap:   make(map[int][]string),
+		usedProbeSlice: []string{},
+		probeFilter:    0,
+		target:         newTarget(),
+		response:       newResponse(),
+		finger:         nil,
+		filter:         5,
 	}
 	NMAP.filter = filter
 	for i := 0; i <= 65535; i++ {
-		NMAP.portMap[i] = []string{}
+		NMAP.portProbeMap[i] = []string{}
 	}
 	NMAP.loads(NMAP_SERVICE_PROBES + NMAP_CUSTOMIZE_PROBES)
-	NMAP.AddAllProbe("TCP_NULL")
-	NMAP.AddAllProbe("TCP_GetRequest")
-	NMAP.AddAllProbe("TCP_SSLv23SessionReq")
-	NMAP.AddAllProbe("TCP_SSLSessionReq")
-	NMAP.AddAllProbe("TCP_TLSSessionReq")
+	//将TCP_GetRequest的fallback参数设置为NULL探针，避免漏资产
+	NMAP.probeGroup["TCP_GetRequest"].fallback = "NULL"
+	//配置超时时间
 	NMAP.setTimeout(timeout)
+	//新增自定义指纹信息
 	NMAP.AddMatch("TCP_GetRequest", `http m|^HTTP/1\.[01] \d\d\d (?:[^\r\n]+\r\n)*?Server: ([^\r\n]+)| p/$1/`)
 	NMAP.AddMatch("TCP_GetRequest", `http m|^HTTP/1\.[01] \d\d\d|`)
 	NMAP.AddMatch("TCP_NULL", `mysql m|.\x00\x00..j\x04Host '.*' is not allowed to connect to this MariaDB server| p/MariaDB/`)
@@ -64,7 +67,13 @@ func Init(filter int, timeout time.Duration) map[string]int {
 	NMAP.AddMatch("TCP_NULL", `telnet m|^\x0d\x0a\x0d\x0aWelcome to the host.\x0d\x0a.*|s o/Windows/`)
 	NMAP.AddMatch("TCP_NULL", `telnet m|^.*Welcome Visiting Huawei Home Gateway\x0d\x0aCopyright by Huawei Technologies Co., Ltd.*Login:|s p/Huawei/`)
 	NMAP.AddMatch("TCP_NULL", `telnet m|^..\x01..\x03..\x18..\x1f|s p/Huawei/`)
-	NMAP.probeGroup["TCP_GetRequest"].fallback = "NULL"
+	//优化检测逻辑，及端口对应的默认探针
+	NMAP.portProbeMap[3390] = append(NMAP.portProbeMap[3390], "TCP_TerminalServer")
+	NMAP.portProbeMap[3390] = append(NMAP.portProbeMap[3390], "TCP_TerminalServerCookie")
+	NMAP.portProbeMap[33890] = append(NMAP.portProbeMap[33890], "TCP_TerminalServer")
+	NMAP.portProbeMap[33890] = append(NMAP.portProbeMap[33890], "TCP_TerminalServerCookie")
+	NMAP.portProbeMap[33900] = append(NMAP.portProbeMap[33900], "TCP_TerminalServer")
+	NMAP.portProbeMap[33900] = append(NMAP.portProbeMap[33900], "TCP_TerminalServerCookie")
 	return NMAP.Status()
 }
 
@@ -98,12 +107,12 @@ func New() *Nmap {
 }
 
 type Nmap struct {
-	exclude     *port
-	probeGroup  map[string]*probe
-	probeSort   []string
-	probeFilter int
-	portMap     map[int][]string
-	allPortMap  []string
+	exclude        *port
+	probeGroup     map[string]*probe
+	probeSort      []string
+	probeFilter    int
+	portProbeMap   map[int][]string
+	usedProbeSlice []string
 
 	target target
 	filter int
@@ -119,75 +128,54 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 
 	//拼接端口探测队列，全端口探测放在最后
 	b := NewTcpBanner(n.target)
-	//生成探针清单
-	var probeList []string
-	if port == 161 || port == 137 || port == 139 || port == 135 ||
-		port == 1433 || port == 6379 || port == 1883 || port == 5432 || port == 1521 {
-		probeList = append(n.portMap[port], n.allPortMap...)
-	} else {
-		probeList = append(n.allPortMap, n.portMap[port]...)
-	}
-	probeList = misc.RemoveDuplicateElement(probeList)
-	//针对探针清单，开始进行全端口探测
-	//slog.Debug(probeList)
-	for _, requestName := range probeList {
-		tls := n.probeGroup[requestName].sslports.Exist(n.target.port)
-		nTcpBanner := n.getTcpBanner(n.probeGroup[requestName], tls)
-		if nTcpBanner.status == Closed {
-			time.Sleep(time.Second * 10)
-			nTcpBanner = n.getTcpBanner(n.probeGroup[requestName], tls)
-		}
-		b.Load(nTcpBanner)
-		if n.probeGroup[requestName].request.protocol == "TCP" {
-			slog.Debug(b.Target.URI(), requestName, b.status, b.TcpFinger.Service, b.Response)
-		}
+
+	//对特殊端口优先发起特定探针
+	if IsInIntArr(BypassAllProbePortMap, port) {
+		b.Load(n.ScanByProbeSlice(n.portProbeMap[port]))
 		if b.status == Closed || b.status == Matched {
-			break
+			return b
 		}
-		if n.target.port == 53 {
-			if DnsScan(n.target.uri) {
-				b.TcpFinger.Service = "dns"
-				b.Response.string = "dns"
-				b.MATCHED()
-			} else {
-				b.CLOSED()
-			}
-			break
+	} else { //非特殊端口，会优先进行全局探针测试
+		//开始使用全局探针进行测试
+		b.Load(n.ScanByProbeSlice(AllProbeMap))
+		if b.status == Closed || b.status == Matched {
+			return b
 		}
-	}
-	//ssl协议二次识别
-	if b.TcpFinger.Service == "ssl" {
-		sslServiceArr := []string{
-			"TCP_TerminalServerCookie",
-			"TCP_TerminalServer",
-		}
-		var t *TcpBanner
-		for _, requestName := range sslServiceArr {
-			//slog.debug("ssl针对性识别：", requestName, "权重为", n.probeGroup[requestName].rarity)
-			t = n.getTcpBanner(n.probeGroup[requestName], false)
-			if t.status == Closed || t.status == Matched {
-				b.OPEN()
-				b.Load(t)
-				break
-			}
-			t = n.getTcpBanner(n.probeGroup[requestName], true)
-			if t.status == Closed || t.status == Matched {
-				b.OPEN()
-				b.Load(t)
-				break
-			}
+		//开始进行特定探针测试
+		b.Load(n.ScanByProbeSlice(n.portProbeMap[port]))
+		if b.status == Closed || b.status == Matched {
+			return b
 		}
 	}
-	b.TcpFinger.Service = FixProtocol(b.TcpFinger.Service, b.Target.port)
+
+	//开始SSL探针测试
+	b.Load(n.ScanByProbeSlice(SSLProbeMap))
+	if b.status == Closed {
+		return b
+	}
+	if b.status == Matched {
+		if b.TcpFinger.Service != "ssl" {
+			return b
+		}
+		b.Load(n.ScanByProbeSlice(SSLSecondProbeMap))
+		if b.status == Closed || b.status == Matched {
+			return b
+		}
+	}
 	return b
 }
 
-func (n *Nmap) getTcpBanner(p *probe, tls bool) *TcpBanner {
+func (n *Nmap) getTcpBanner(p *probe) *TcpBanner {
 	b := NewTcpBanner(n.target)
+
+	tls := p.sslports.Exist(n.target.port)
+
 	data, err := p.scan(n.target, tls)
-	if p.request.protocol == "TCP" && err != nil {
+
+	if err != nil {
 		slog.Debug(data, err)
 	}
+
 	if err != nil {
 		b.ErrorMsg = err
 		if strings.Contains(err.Error(), "STEP1") {
@@ -202,12 +190,14 @@ func (n *Nmap) getTcpBanner(p *probe, tls bool) *TcpBanner {
 		//}
 		return b.OPEN()
 	}
+
 	b.Response.string = data
 	//若存在返回包，则开始捕获指纹
 	//slog.Debugf("成功捕获到返回包，返回包为：%v\n", data)
 	//fmt.Printf("成功捕获到返回包，返回包长度为：%x\n", len(data))
 	b.TcpFinger = n.getFinger(data, p.request.name)
 	//slog.Debug(b.TcpFinger.Service)
+
 	if b.TcpFinger.Service == "" {
 		return b.OPEN()
 	} else {
@@ -225,14 +215,6 @@ func (n *Nmap) AddMatch(probeName string, expr string) {
 	n.probeGroup[probeName].loadMatch(expr, false)
 }
 
-func (n *Nmap) AddAllProbe(probeName string) {
-	n.allPortMap = append(n.allPortMap, probeName)
-}
-
-func (n *Nmap) Filter(i int) {
-	n.filter = i
-}
-
 func (n *Nmap) Status() map[string]int {
 	r := make(map[string]int)
 	r["PROBE"] = len(NMAP.probeSort)
@@ -241,9 +223,9 @@ func (n *Nmap) Status() map[string]int {
 		r["MATCH"] += len(p.matchGroup)
 	}
 	//fmt.Printf("成功加载探针：【%d】个,指纹【%d】条\n", PROBE_COUNT,MATCH_COUNT)
-	r["USED_PROBE"] = len(NMAP.portMap[0])
+	r["USED_PROBE"] = len(NMAP.portProbeMap[0])
 	r["USED_MATCH"] = 0
-	for _, p := range NMAP.portMap[0] {
+	for _, p := range NMAP.portProbeMap[0] {
 		r["USED_MATCH"] += len(NMAP.probeGroup[p].matchGroup)
 	}
 	//fmt.Printf("本次扫描将使用探针:[%d]个,指纹[%d]条\n", USED_PROBE_COUNT,USED_MATCH_COUNT)
@@ -351,9 +333,7 @@ func (n *Nmap) loadExclude(expr string) {
 func (n *Nmap) pushProbe(p *probe) {
 	PROBE := newProbe()
 	*PROBE = *p
-	//if p.ports.length == 0 && p.sslports.length == 0 {
-	//	fmt.Println(p.request.name)
-	//}
+
 	n.probeSort = append(n.probeSort, p.request.name)
 	n.probeGroup[p.request.name] = PROBE
 
@@ -363,29 +343,49 @@ func (n *Nmap) pushProbe(p *probe) {
 		return
 	}
 	//0记录所有使用的探针
-	n.portMap[0] = append(n.portMap[0], p.request.name)
+	n.portProbeMap[0] = append(n.portProbeMap[0], p.request.name)
 
-	//if p.ports.length+p.sslports.length == 0 {
-	//	p.ports.Fill()
-	//	p.sslports.Fill()
-	//	n.allPortMap = append(n.allPortMap, p.request.name)
-	//	return
-	//}
 	//分别压入sslports,ports
 	for _, i := range p.ports.value {
-		n.portMap[i] = append(n.portMap[i], p.request.name)
+		n.portProbeMap[i] = append(n.portProbeMap[i], p.request.name)
 	}
 	for _, i := range p.sslports.value {
-		n.portMap[i] = append(n.portMap[i], p.request.name)
+		n.portProbeMap[i] = append(n.portProbeMap[i], p.request.name)
 	}
 
 }
 
-//func (n *Nmap) Touch(ip string, port int) interface{} {
-//	for probeName := range n.probeSort {
-//		p := n.probeGroup[probeName]
-//
-//		_, _ = p.scan()
-//
-//	}
-//}
+func (n *Nmap) ScanByProbeSlice(probeSlice []string) *TcpBanner {
+	b := NewTcpBanner(n.target)
+	for _, requestName := range probeSlice {
+		if IsInStrArr(n.usedProbeSlice, requestName) {
+			continue
+		}
+		b.Load(n.getTcpBanner(n.probeGroup[requestName]))
+		//如果端口未开放，则等待10s后重新连接
+		if b.status == Closed {
+			time.Sleep(time.Second * 10)
+			b.Load(n.getTcpBanner(n.probeGroup[requestName]))
+		}
+		slog.Debugf("Target:%s,Probe:%s,Status:%s,Service:%s,Response:%s", b.Target.URI(), requestName, b.Status(), b.TcpFinger.Service, b.Response)
+		if b.status == Closed || b.status == Matched {
+			break
+		}
+		if n.target.port == 53 {
+			if DnsScan(n.target.uri) {
+				b.TcpFinger.Service = "dns"
+				b.Response.string = "dns"
+				b.MATCHED()
+			} else {
+				b.CLOSED()
+			}
+			break
+		}
+	}
+	return &b
+}
+
+func SetScanVersion() {
+	//-sV参数深度解析
+	AllProbeMap = NMAP.probeSort
+}
