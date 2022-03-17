@@ -53,8 +53,8 @@ func (a *AppBanner) LoadHttpFinger(finger *HttpFinger) {
 	a.StatusCode = finger.StatusCode
 	if finger.StatusCode != 0 {
 		a.Response = finger.Header + "\t\n" + finger.Response
+		a.Protocol = finger.URL.Scheme
 	}
-	a.Protocol = finger.URL.Scheme
 	a.SetCertSubject(func() string {
 		if finger.PeerCertificates != nil {
 			strCert := finger.PeerCertificates.Subject.String()
@@ -153,7 +153,7 @@ func (a *AppBanner) LoadHttpFinger(finger *HttpFinger) {
 		}
 	}
 
-	if finger.StatusCode == 0 {
+	if finger.StatusCode == 0 && a.Protocol == "" {
 		a.Protocol = "unknown"
 	}
 
