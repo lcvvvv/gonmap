@@ -18,7 +18,7 @@ func Send(protocol string, netloc string, data string, duration time.Duration, s
 	}
 	defer conn.Close()
 	buf := make([]byte, size)
-	_, err = io.WriteString(conn, data)
+	_, err = conn.Write([]byte(data))
 	//_, err = io.WriteString(conn, data)
 	if err != nil {
 		return "", errors.New(err.Error() + " STEP2:WRITE")

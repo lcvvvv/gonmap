@@ -34,14 +34,14 @@ func TestName(t *testing.T) {
 
 }
 
-func convData(s string) string {
-	b := []byte(s)
-	var r []rune
-	for _, i := range b {
-		r = append(r, rune(i))
-	}
-	return string(r)
-}
+//func convData(s string) string {
+//	b := []byte(s)
+//	var r []rune
+//	for _, i := range b {
+//		r = append(r, rune(i))
+//	}
+//	return string(r)
+//}
 
 func TestRuneALl(t *testing.T) {
 	for i := 0; i <= 0xffff; i++ {
@@ -49,12 +49,23 @@ func TestRuneALl(t *testing.T) {
 	}
 }
 
-func IsPrint(r rune) bool {
-	if r < 20 {
-		return false
+//func IsPrint(r rune) bool {
+//	if r < 20 {
+//		return false
+//	}
+//	if r > 0x7f {
+//		return false
+//	}
+//	return true
+//}
+
+func TestUDPSend(t *testing.T) {
+	byteString := "\x88\x2a\x5e\xe7\xee\x66\x88\x66\x5a\x3b\x08\x4f\x08\x00\x45\x00\x00\x3b\xa5\xa7\x00\x00\x40\x11\xfd\x6c\xc0\xa8\x32\x11\x72\x72\x72\x72\xcc\x42\x00\x35\x00\x27\xc0\x91\xde\xf7\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00\x03\x77\x77\x77\x05\x62\x61\x69\x64\x75\x03\x63\x6f\x6d\x00\x00\x01\x00\x01"
+
+	fmt.Printf("%x", byteString)
+	response, err := Send("udp", "114.114.114.114:53", byteString, time.Second*30, 512)
+	if err != nil {
+		fmt.Println(err)
 	}
-	if r > 0x7f {
-		return false
-	}
-	return true
+	fmt.Println(response)
 }
