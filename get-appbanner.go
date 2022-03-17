@@ -69,6 +69,7 @@ func getAppBanner(url *urlparse.URL, tcpBanner *TcpBanner) *AppBanner {
 
 	if tcpBanner != nil {
 		r.LoadTcpBanner(tcpBanner)
+		r.Protocol = tcpBanner.TcpFinger.Service
 	}
 
 	if url.Scheme == "http" || url.Scheme == "https" {
