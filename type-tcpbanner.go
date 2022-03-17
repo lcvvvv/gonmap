@@ -27,16 +27,18 @@ func NewTcpBanner(target target) TcpBanner {
 }
 
 func (p *TcpBanner) Load(np *TcpBanner) {
-	if p.status == Closed || p.status == Matched {
-		return
-	}
 	if p.status == Unknown {
 		*p = *np
 	}
-	if p.status == Open && np.status != Closed && np.status != Unknown {
+	if p.status == Closed {
 		*p = *np
 	}
-	//fmt.Println("加载完成后端口状态为：",p.status)
+	if p.status == Open && np.status != Unknown && np.status != Closed {
+		*p = *np
+	}
+	if p.status == Matched && np.status == Matched && np.TcpFinger.Service != "ssl" {
+		*p = *np
+	}
 }
 
 func (p *TcpBanner) Length() int {
@@ -50,6 +52,7 @@ func (p *TcpBanner) CLOSED() *TcpBanner {
 
 func (p *TcpBanner) OPEN() *TcpBanner {
 	p.status = Open
+	p.TcpFinger.Service = "unknown"
 	return p
 }
 

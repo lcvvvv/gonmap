@@ -6472,7 +6472,7 @@ var NMAP_SERVICES_SLICE = func() []string {
 			r = append(r, "unknown")
 		}
 
-		protocol = FixProtocol(protocol, port)
+		protocol = FixProtocol(protocol)
 		r = append(r, protocol)
 	}
 	return r

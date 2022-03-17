@@ -16,6 +16,15 @@ func IsInIntArr(slice []int, val int) bool {
 	return false
 }
 
+func IsInStrArr(slice []string, val string) bool {
+	for _, item := range slice {
+		if item == val {
+			return true
+		}
+	}
+	return false
+}
+
 func Xrange(args ...int) []int {
 	var start, stop int
 	var step = 1

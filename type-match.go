@@ -57,6 +57,7 @@ func (m *match) load(s string, soft bool) bool {
 	args := MATCH_LOAD_REGEXP.FindStringSubmatch(s)
 	m.soft = soft
 	m.service = args[1]
+	m.service = FixProtocol(m.service)
 	m.pattern = args[2]
 	m.versioninfo.Service = m.service
 	m.versioninfo.ProductName = m.getVersionInfo(s, "PRODUCTNAME")

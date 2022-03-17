@@ -150,7 +150,7 @@ func (p *probe) loadMatch(s string, soft bool) {
 	//	"matchVersioninfoHostname":    misc.MakeRegexpCompile("h/([^/]+)/"),
 	//	"matchVersioninfoOS":          misc.MakeRegexpCompile("o/([^/]+)/"),
 	//	"matchVersioninfoDevice":      misc.MakeRegexpCompile("d/([^/]+)/"),
-	if !m.load(s, soft) {
+	if m.load(s, soft) == false {
 		panic(errors.New("match 语句参数不正确"))
 	}
 	p.matchGroup = append(p.matchGroup, m)

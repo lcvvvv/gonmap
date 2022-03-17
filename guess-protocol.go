@@ -8,12 +8,9 @@ func GuessProtocol(port int) string {
 	return protocol
 }
 
-func FixProtocol(oldProtocol string, port int) string {
+func FixProtocol(oldProtocol string) string {
 	//进行最后输出修饰
 	if oldProtocol == "ssl/http" {
-		return "https"
-	}
-	if oldProtocol == "ssl/https" {
 		return "https"
 	}
 	if oldProtocol == "ms-wbt-server" {
@@ -40,8 +37,8 @@ func FixProtocol(oldProtocol string, port int) string {
 	if oldProtocol == "svnserve" {
 		return "svn"
 	}
-	if oldProtocol == "ssl" && port == 3389 {
-		return "rdp"
+	if oldProtocol == "ibm-db2" {
+		return "db2"
 	}
 	return oldProtocol
 }
