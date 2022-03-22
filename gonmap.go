@@ -12,7 +12,7 @@ var NMAP *Nmap
 
 var BypassAllProbePortMap = []int{161, 137, 139, 135, 1433, 6379, 1883, 5432, 1521, 3389, 3388, 3389, 33890, 33900}
 var SSLSecondProbeMap = []string{"TCP_TerminalServerCookie", "TCP_TerminalServer"}
-var AllProbeMap = []string{"TCP_NULL", "TCP_GetRequest"}
+var AllProbeMap = []string{"TCP_GetRequest", "TCP_NULL"}
 var SSLProbeMap = []string{"TCP_TLSSessionReq", "TCP_SSLSessionReq", "TCP_SSLv23SessionReq"}
 
 //r["PROBE"] 总探针数、r["MATCH"] 总指纹数 、r["USED_PROBE"] 已使用探针数、r["USED_MATCH"] 已使用指纹数
@@ -42,6 +42,7 @@ func Init(filter int, timeout time.Duration) map[string]int {
 	//配置超时时间
 	NMAP.setTimeout(timeout)
 	//新增自定义指纹信息
+	NMAP.AddMatch("TCP_GetRequest", `mongodb m|.*It looks like you are trying to access MongoDB.*|s p/MongoDB/`)
 	NMAP.AddMatch("TCP_GetRequest", `http m|^HTTP/1\.[01] \d\d\d (?:[^\r\n]+\r\n)*?Server: ([^\r\n]+)| p/$1/`)
 	NMAP.AddMatch("TCP_GetRequest", `http m|^HTTP/1\.[01] \d\d\d|`)
 	NMAP.AddMatch("TCP_NULL", `mysql m|.\x00\x00..j\x04Host '.*' is not allowed to connect to this MariaDB server| p/MariaDB/`)
