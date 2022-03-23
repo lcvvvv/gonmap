@@ -3,7 +3,7 @@ package gonmap
 import (
 	"context"
 	"fmt"
-	"kscan/lib/gonmap/simplenet"
+	"kscan/core/gonmap/simplenet"
 	"net"
 	"strings"
 	"time"

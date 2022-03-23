@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"kscan/core/slog"
 	"kscan/lib/chinese"
 	"kscan/lib/misc"
-	"kscan/lib/slog"
 	"kscan/lib/urlparse"
 	"math/rand"
 	"net/http"
@@ -114,7 +114,10 @@ func body2UTF8(resp *http.Response) {
 	if strings.Contains(resp.Header.Get("Content-Type"), "utf-8") {
 		return
 	}
-	bodyBuf := misc.ReadAll(resp.Body, time.Second*5)
+	bodyBuf, err := misc.ReadAll(resp.Body, time.Second*5)
+	if err != nil {
+		slog.Debug(err)
+	}
 	utf8Buf := chinese.ByteToUTF8(bodyBuf)
 	resp.Body = ioutil.NopCloser(bytes.NewReader(utf8Buf))
 }

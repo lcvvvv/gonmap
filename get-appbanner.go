@@ -2,9 +2,9 @@ package gonmap
 
 import (
 	"fmt"
-	"kscan/lib/gonmap/shttp"
+	"kscan/core/gonmap/shttp"
+	"kscan/core/slog"
 	"kscan/lib/gorpc"
-	"kscan/lib/slog"
 	"kscan/lib/urlparse"
 	"strings"
 	"time"

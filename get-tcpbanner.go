@@ -2,7 +2,7 @@ package gonmap
 
 import (
 	"context"
-	"kscan/lib/slog"
+	"kscan/core/slog"
 	"kscan/lib/urlparse"
 	"time"
 )

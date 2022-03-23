@@ -3,14 +3,14 @@ package gonmap
 import (
 	"errors"
 	"fmt"
-	"kscan/lib/slog"
+	"kscan/core/slog"
 	"strings"
 	"time"
 )
 
 var NMAP *Nmap
 
-var BypassAllProbePortMap = []int{161, 137, 139, 135, 1433, 6379, 1883, 5432, 1521, 3389, 3388, 3389, 33890, 33900}
+var BypassAllProbePortMap = []int{161, 137, 139, 135, 389, 1433, 6379, 1883, 5432, 1521, 3389, 3388, 3389, 33890, 33900}
 var SSLSecondProbeMap = []string{"TCP_TerminalServerCookie", "TCP_TerminalServer"}
 var AllProbeMap = []string{"TCP_GetRequest", "TCP_NULL"}
 var SSLProbeMap = []string{"TCP_TLSSessionReq", "TCP_SSLSessionReq", "TCP_SSLv23SessionReq"}
@@ -42,6 +42,7 @@ func Init(filter int, timeout time.Duration) map[string]int {
 	//配置超时时间
 	NMAP.setTimeout(timeout)
 	//新增自定义指纹信息
+	NMAP.AddMatch("TCP_GetRequest", `echo m|^GET / HTTP/1.0\r\n\r\n$|s`)
 	NMAP.AddMatch("TCP_GetRequest", `mongodb m|.*It looks like you are trying to access MongoDB.*|s p/MongoDB/`)
 	NMAP.AddMatch("TCP_GetRequest", `http m|^HTTP/1\.[01] \d\d\d (?:[^\r\n]+\r\n)*?Server: ([^\r\n]+)| p/$1/`)
 	NMAP.AddMatch("TCP_GetRequest", `http m|^HTTP/1\.[01] \d\d\d|`)
@@ -133,27 +134,30 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 	//对特殊端口优先发起特定探针
 	if IsInIntArr(BypassAllProbePortMap, port) {
 		b.Load(n.ScanByProbeSlice(n.portProbeMap[port]))
-		if b.status == Closed || b.status == Matched {
+		if b.status == Closed || (b.status == Matched && b.TcpFinger.Service != "ssl") {
 			return b
 		}
 	} else { //非特殊端口，会优先进行全局探针测试
 		//开始使用全局探针进行测试
 		b.Load(n.ScanByProbeSlice(AllProbeMap))
-		if b.status == Closed || b.status == Matched {
+		if b.status == Closed || (b.status == Matched && b.TcpFinger.Service != "ssl") {
 			return b
 		}
 		//开始进行特定探针测试
 		b.Load(n.ScanByProbeSlice(n.portProbeMap[port]))
-		if b.status == Closed || b.status == Matched {
+		if b.status == Closed || (b.status == Matched && b.TcpFinger.Service != "ssl") {
 			return b
 		}
 	}
 
 	//开始SSL探针测试
-	b.Load(n.ScanByProbeSlice(SSLProbeMap))
-	if b.status == Closed {
-		return b
+	if b.TcpFinger.Service != "ssl" {
+		b.Load(n.ScanByProbeSlice(SSLProbeMap))
+		if b.status == Closed {
+			return b
+		}
 	}
+
 	if b.status == Matched {
 		if b.TcpFinger.Service != "ssl" {
 			return b
