@@ -37,8 +37,10 @@ func Init(filter int, timeout time.Duration) map[string]int {
 		NMAP.portProbeMap[i] = []string{}
 	}
 	NMAP.loads(NMAP_SERVICE_PROBES + NMAP_CUSTOMIZE_PROBES)
+	//修复fallback
+	NMAP.fixFallback()
 	//将TCP_GetRequest的fallback参数设置为NULL探针，避免漏资产
-	NMAP.probeGroup["TCP_GetRequest"].fallback = "NULL"
+	NMAP.probeGroup["TCP_GetRequest"].fallback = "TCP_NULL"
 	//配置超时时间
 	NMAP.setTimeout(timeout)
 	//新增自定义指纹信息
@@ -183,7 +185,6 @@ func (n *Nmap) getTcpBanner(p *probe) *TcpBanner {
 	if err != nil {
 		slog.Debug(data, err)
 	}
-
 	if err != nil {
 		b.ErrorMsg = err
 		if strings.Contains(err.Error(), "STEP1") {
@@ -203,7 +204,9 @@ func (n *Nmap) getTcpBanner(p *probe) *TcpBanner {
 	//若存在返回包，则开始捕获指纹
 	//slog.Debugf("成功捕获到返回包，返回包为：%v\n", data)
 	//fmt.Printf("成功捕获到返回包，返回包长度为：%x\n", len(data))
+
 	b.TcpFinger = n.getFinger(data, p.request.name)
+
 	//slog.Debug(b.TcpFinger.Service)
 
 	if b.TcpFinger.Service == "" {
@@ -273,15 +276,18 @@ func (n *Nmap) isCommand(line string) bool {
 
 func (n *Nmap) getFinger(data string, requestName string) *TcpFinger {
 	data = n.convResponse(data)
+
 	f := n.probeGroup[requestName].match(data)
+
 	if f.Service != "" || n.probeGroup[requestName].fallback == "" {
 		return f
 	}
+
 	fallback := n.probeGroup[requestName].fallback
 	for fallback != "" {
-		//slog.Debug("fallback:", fallback)
-		f = n.probeGroup["TCP_"+fallback].match(data)
-		fallback = n.probeGroup["TCP_"+fallback].fallback
+		slog.Debug("fallback:", fallback)
+		f = n.probeGroup[fallback].match(data)
+		fallback = n.probeGroup[fallback].fallback
 		if f.Service != "" {
 			continue
 		}
@@ -369,6 +375,7 @@ func (n *Nmap) ScanByProbeSlice(probeSlice []string) *TcpBanner {
 		if IsInStrArr(n.usedProbeSlice, requestName) {
 			continue
 		}
+		slog.Debug("now start ", requestName)
 		b.Load(n.getTcpBanner(n.probeGroup[requestName]))
 		//如果端口未开放，则等待10s后重新连接
 		if b.status == Closed {
@@ -391,6 +398,20 @@ func (n *Nmap) ScanByProbeSlice(probeSlice []string) *TcpBanner {
 		}
 	}
 	return &b
+}
+
+func (n *Nmap) fixFallback() {
+	for probeName, probeType := range n.probeGroup {
+		fallback := probeType.fallback
+		if fallback == "" {
+			continue
+		}
+		if _, ok := n.probeGroup["TCP_"+fallback]; ok {
+			n.probeGroup[probeName].fallback = "TCP_" + fallback
+		} else {
+			n.probeGroup[probeName].fallback = "UDP_" + fallback
+		}
+	}
 }
 
 func SetScanVersion() {
