@@ -80,6 +80,8 @@ func Init(filter int, timeout time.Duration) map[string]int {
 	NMAP.portProbeMap[33900] = append(NMAP.portProbeMap[33900], "TCP_TerminalServerCookie")
 	NMAP.portProbeMap[7890] = append(NMAP.portProbeMap[7890], "TCP_Socks5")
 	NMAP.portProbeMap[7891] = append(NMAP.portProbeMap[7891], "TCP_Socks5")
+	NMAP.portProbeMap[4000] = append(NMAP.portProbeMap[4000], "TCP_Socks5")
+	NMAP.portProbeMap[2022] = append(NMAP.portProbeMap[2022], "TCP_Socks5")
 	return NMAP.Status()
 }
 

@@ -40,6 +40,9 @@ func FixProtocol(oldProtocol string) string {
 	if oldProtocol == "ibm-db2" {
 		return "db2"
 	}
+	if oldProtocol == "socks-proxy" {
+		return "sock5"
+	}
 	if len(oldProtocol) > 4 {
 		if oldProtocol[:4] == "ssl/" {
 			return oldProtocol[4:] + "-ssl"
