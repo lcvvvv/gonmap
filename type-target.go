@@ -13,3 +13,7 @@ func newTarget() target {
 func (t *target) URI() string {
 	return t.uri
 }
+
+func (t *target) Port() int {
+	return t.port
+}
