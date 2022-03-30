@@ -72,6 +72,7 @@ func Init(filter int, timeout time.Duration) map[string]int {
 	NMAP.AddMatch("TCP_NULL", `telnet m|^\x0d\x0a\x0d\x0aWelcome to the host.\x0d\x0a.*|s o/Windows/`)
 	NMAP.AddMatch("TCP_NULL", `telnet m|^.*Welcome Visiting Huawei Home Gateway\x0d\x0aCopyright by Huawei Technologies Co., Ltd.*Login:|s p/Huawei/`)
 	NMAP.AddMatch("TCP_NULL", `telnet m|^..\x01..\x03..\x18..\x1f|s p/Huawei/`)
+	NMAP.AddMatch("TCP_TerminalServerCookie", `ms-wbt-server m|^\x03\0\0\x13\x0e\xd0\0\0\x124\0\x02.*\0\x02\0\0\0| p/Microsoft Terminal Services/ o/Windows/ cpe:/o:microsoft:windows/a`)
 	//优化检测逻辑，及端口对应的默认探针
 	NMAP.portProbeMap[3390] = append(NMAP.portProbeMap[3390], "TCP_TerminalServer")
 	NMAP.portProbeMap[3390] = append(NMAP.portProbeMap[3390], "TCP_TerminalServerCookie")
