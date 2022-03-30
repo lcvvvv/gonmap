@@ -4,13 +4,14 @@ import (
 	"errors"
 	"fmt"
 	"kscan/core/slog"
+	"strconv"
 	"strings"
 	"time"
 )
 
 var NMAP *Nmap
 
-var BypassAllProbePortMap = []int{161, 137, 139, 135, 389, 1433, 6379, 1883, 5432, 1521, 3389, 3388, 3389, 33890, 33900}
+var BypassAllProbePortMap = []int{161, 137, 139, 135, 389, 548, 1433, 6379, 1883, 5432, 1521, 3389, 3388, 3389, 33890, 33900}
 var SSLSecondProbeMap = []string{"TCP_TerminalServerCookie", "TCP_TerminalServer"}
 var AllProbeMap = []string{"TCP_GetRequest", "TCP_NULL"}
 var SSLProbeMap = []string{"TCP_TLSSessionReq", "TCP_SSLSessionReq", "TCP_SSLv23SessionReq"}
@@ -386,7 +387,7 @@ func (n *Nmap) ScanByProbeSlice(probeSlice []string) *TcpBanner {
 			time.Sleep(time.Second * 10)
 			b.Load(n.getTcpBanner(n.probeGroup[requestName]))
 		}
-		slog.Debugf("Target:%s,Probe:%s,Status:%s,Service:%s,Response:%s", b.Target.URI(), requestName, b.Status(), b.TcpFinger.Service, b.Response)
+		slog.Debugf("Target:%s,Probe:%s,Status:%s,Service:%s,Response:%s", b.Target.URI(), requestName, b.Status(), b.TcpFinger.Service, strconv.Quote(b.Response.string))
 		if b.status == Closed || b.status == Matched {
 			break
 		}
