@@ -13,3 +13,7 @@ func newResponse() response {
 func (r response) Length() int {
 	return len(r.string)
 }
+
+func (r response) Value() string {
+	return r.string
+}
