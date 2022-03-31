@@ -1,6 +1,9 @@
 package gonmap
 
 type TcpFinger struct {
+	ProbeName        string
+	MatchRegexString string
+
 	Service              string
 	ProductName          string
 	Version              string

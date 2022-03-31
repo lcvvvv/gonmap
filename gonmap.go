@@ -206,12 +206,8 @@ func (n *Nmap) getTcpBanner(p *probe) *TcpBanner {
 
 	b.Response.string = data
 	//若存在返回包，则开始捕获指纹
-	//slog.Debugf("成功捕获到返回包，返回包为：%v\n", data)
-	//fmt.Printf("成功捕获到返回包，返回包长度为：%x\n", len(data))
 
 	b.TcpFinger = n.getFinger(data, p.request.name)
-
-	//slog.Debug(b.TcpFinger.Service)
 
 	if b.TcpFinger.Service == "" {
 		return b.OPEN()
@@ -282,6 +278,8 @@ func (n *Nmap) getFinger(data string, requestName string) *TcpFinger {
 	data = n.convResponse(data)
 
 	f := n.probeGroup[requestName].match(data)
+	//标记当前探针名称
+	f.ProbeName = requestName
 
 	if f.Service != "" || n.probeGroup[requestName].fallback == "" {
 		return f

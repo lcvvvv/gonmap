@@ -100,9 +100,7 @@ func (m *match) getVersionInfo(s string, regID string) string {
 	}
 }
 
-func (m *match) makeVersionInfo(s string) *TcpFinger {
-	f := newFinger()
-	//fmt.Println(s)
+func (m *match) makeVersionInfo(s string, f *TcpFinger) {
 	f.Info = m.makeVersionInfoSubHelper(s, m.versioninfo.Info)
 	f.DeviceType = m.makeVersionInfoSubHelper(s, m.versioninfo.DeviceType)
 	f.Hostname = m.makeVersionInfoSubHelper(s, m.versioninfo.Hostname)
@@ -110,7 +108,6 @@ func (m *match) makeVersionInfo(s string) *TcpFinger {
 	f.ProductName = m.makeVersionInfoSubHelper(s, m.versioninfo.ProductName)
 	f.Version = m.makeVersionInfoSubHelper(s, m.versioninfo.Version)
 	f.Service = m.makeVersionInfoSubHelper(s, m.versioninfo.Service)
-	return f
 }
 
 func (m *match) makeVersionInfoSubHelper(s string, pattern string) string {

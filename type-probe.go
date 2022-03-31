@@ -74,6 +74,9 @@ func (p *probe) match(s string) *TcpFinger {
 		}
 		//slog.Debug("开始匹配正则：", m.service, m.patternRegexp.String())
 		if m.patternRegexp.MatchString(s) {
+			//标记当前正则
+			f.MatchRegexString = m.patternRegexp.String()
+
 			if m.soft {
 				//如果为软捕获，这设置筛选器
 				f.Service = m.service
@@ -81,7 +84,7 @@ func (p *probe) match(s string) *TcpFinger {
 				continue
 			} else {
 				//如果为硬捕获则直接获取指纹信息
-				f = m.makeVersionInfo(s)
+				m.makeVersionInfo(s, f)
 				f.Service = m.service
 				return f
 			}
