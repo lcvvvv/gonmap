@@ -2,7 +2,6 @@ package gonmap
 
 import (
 	"errors"
-	"fmt"
 	"kscan/core/slog"
 	"strconv"
 	"strings"
@@ -28,7 +27,7 @@ func Init(filter int, timeout time.Duration) map[string]int {
 		portProbeMap:   make(map[int][]string),
 		usedProbeSlice: []string{},
 		probeFilter:    0,
-		target:         newTarget(),
+		target:         target{},
 		response:       newResponse(),
 		finger:         nil,
 		filter:         5,
@@ -136,10 +135,9 @@ type Nmap struct {
 func (n *Nmap) Scan(ip string, port int) TcpBanner {
 	n.target.host = ip
 	n.target.port = port
-	n.target.uri = fmt.Sprintf("%s:%d", ip, port)
 
 	//拼接端口探测队列，全端口探测放在最后
-	b := NewTcpBanner(n.target)
+	b := NewTcpBanner(ip, port)
 
 	//对特殊端口优先发起特定探针
 	if IsInIntArr(BypassAllProbePortMap, port) {
@@ -182,7 +180,7 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 }
 
 func (n *Nmap) getTcpBanner(p *probe) *TcpBanner {
-	b := NewTcpBanner(n.target)
+	b := NewTcpBanner(n.target.host, n.target.port)
 
 	tls := p.sslports.Exist(n.target.port)
 
@@ -376,7 +374,7 @@ func (n *Nmap) pushProbe(p *probe) {
 }
 
 func (n *Nmap) ScanByProbeSlice(probeSlice []string) *TcpBanner {
-	b := NewTcpBanner(n.target)
+	b := NewTcpBanner(n.target.host, n.target.port)
 	for _, requestName := range probeSlice {
 		if IsInStrArr(n.usedProbeSlice, requestName) {
 			continue
@@ -388,12 +386,12 @@ func (n *Nmap) ScanByProbeSlice(probeSlice []string) *TcpBanner {
 			time.Sleep(time.Second * 10)
 			b.Load(n.getTcpBanner(n.probeGroup[requestName]))
 		}
-		slog.Debugf("Target:%s,Probe:%s,Status:%s,Service:%s,Response:%s", b.Target.URI(), requestName, b.Status(), b.TcpFinger.Service, strconv.Quote(b.Response.string))
+		slog.Debugf("Target:%s,Probe:%s,Status:%s,Service:%s,Response:%s", b.Target.URI(), requestName, b.StatusDisplay(), b.TcpFinger.Service, strconv.Quote(b.Response.string))
 		if b.status == Closed || b.status == Matched {
 			break
 		}
 		if n.target.port == 53 {
-			if DnsScan(n.target.uri) {
+			if DnsScan(n.target.URI()) {
 				b.TcpFinger.Service = "dns"
 				b.Response.string = "dns"
 				b.MATCHED()

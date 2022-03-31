@@ -1,19 +1,20 @@
 package gonmap
 
-type target struct {
-	port int
-	host string
-	uri  string
-}
+import "fmt"
 
-func newTarget() target {
-	return target{0, "", ""}
+type target struct {
+	host string
+	port int
 }
 
 func (t *target) URI() string {
-	return t.uri
+	return fmt.Sprintf("%s:%d", t.host, t.port)
 }
 
 func (t *target) Port() int {
 	return t.port
+}
+
+func (t *target) Addr() string {
+	return t.host
 }

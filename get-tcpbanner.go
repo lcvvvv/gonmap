@@ -2,12 +2,14 @@ package gonmap
 
 import (
 	"context"
+	"fmt"
 	"kscan/core/slog"
 	"kscan/lib/urlparse"
 	"time"
 )
 
-func GetTcpBanner(netloc string, nmap *Nmap, timeout time.Duration) *TcpBanner {
+func GetTcpBanner(ip string, port int, nmap *Nmap, timeout time.Duration) *TcpBanner {
+	netloc := fmt.Sprintf("%s:%d", ip, port)
 	parse, err := urlparse.Load(netloc)
 	if err != nil {
 		slog.Debug(err)
@@ -34,7 +36,8 @@ func GetTcpBanner(netloc string, nmap *Nmap, timeout time.Duration) *TcpBanner {
 		select {
 		case <-ctx.Done():
 			close(resChan)
-			return nil
+			banner := NewTcpBanner(ip, port)
+			return banner.CLOSED()
 		case res := <-resChan:
 			close(resChan)
 			return res

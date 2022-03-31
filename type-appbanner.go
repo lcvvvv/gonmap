@@ -174,10 +174,10 @@ func (a *AppBanner) LoadTcpBanner(banner *TcpBanner) {
 			if a.Protocol != "" {
 				return a.Protocol
 			}
-			return "unknow"
+			return "unknown"
 		}()
-		a.Port = misc.Str2Int(strings.Split(banner.Target.uri, ":")[1])
-		a.IPAddr = strings.Split(banner.Target.uri, ":")[0]
+		a.Port = misc.Str2Int(strings.Split(banner.Target.URI(), ":")[1])
+		a.IPAddr = strings.Split(banner.Target.URI(), ":")[0]
 
 		a.Response = banner.Response.string
 		a.AppDigest = func() string {

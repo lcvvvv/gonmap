@@ -53,10 +53,10 @@ func (p *probe) loads(sArr []string) {
 func (p *probe) scan(t target, ssl bool) (string, error) {
 	if ssl {
 		//fmt.Println("开始TLS探测")
-		return simplenet.TLSSend(p.request.protocol, t.uri, p.request.string, p.totalwaitms, 512)
+		return simplenet.TLSSend(p.request.protocol, t.URI(), p.request.string, p.totalwaitms, 512)
 	} else {
 		//fmt.Println("开始TCP探测")
-		return simplenet.Send(p.request.protocol, t.uri, p.request.string, p.totalwaitms, 512)
+		return simplenet.Send(p.request.protocol, t.URI(), p.request.string, p.totalwaitms, 512)
 	}
 }
 

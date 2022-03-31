@@ -24,14 +24,14 @@ func InitAppBannerDiscernConfig(host, path, proxy string, timeout time.Duration)
 }
 
 func GetAppBannerFromTcpBanner(banner *TcpBanner) *AppBanner {
-	url := fmt.Sprintf("%s://%s", banner.TcpFinger.Service, banner.Target.uri)
+	url := fmt.Sprintf("%s://%s", banner.TcpFinger.Service, banner.Target.URI())
 	parse, _ := urlparse.Load(url)
 	if banner.TcpFinger.Service == "ssl" {
 		parse.Scheme = "https"
 	}
 	if banner.status == Unknown || banner.status == Open {
 		if strings.Contains(banner.Response.string, "HTTP") {
-			url = "http://" + banner.Target.uri
+			url = "http://" + banner.Target.URI()
 			parse, _ = urlparse.Load(url)
 		}
 	}
@@ -40,8 +40,7 @@ func GetAppBannerFromTcpBanner(banner *TcpBanner) *AppBanner {
 
 func GetAppBannerFromUrl(url *urlparse.URL) *AppBanner {
 	if url.Scheme != "http" && url.Scheme != "https" {
-		netloc := fmt.Sprintf("%s:%d", url.Netloc, url.Port)
-		banner := GetTcpBanner(netloc, New(), HttpTimeout*20)
+		banner := GetTcpBanner(url.Netloc, url.Port, New(), HttpTimeout*20)
 		if banner == nil {
 			return nil
 		}

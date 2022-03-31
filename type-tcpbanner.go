@@ -16,9 +16,9 @@ type TcpBanner struct {
 	status int
 }
 
-func NewTcpBanner(target target) TcpBanner {
+func NewTcpBanner(ip string, port int) TcpBanner {
 	return TcpBanner{
-		Target:    target,
+		Target:    target{ip, port},
 		Response:  newResponse(),
 		TcpFinger: newFinger(),
 		status:    Unknown,
@@ -61,7 +61,7 @@ func (p *TcpBanner) MATCHED() *TcpBanner {
 	return p
 }
 
-func (p *TcpBanner) Status() string {
+func (p *TcpBanner) StatusDisplay() string {
 	switch p.status {
 	case 0x00001:
 		return "Closed"
@@ -74,4 +74,8 @@ func (p *TcpBanner) Status() string {
 	default:
 		return "Unknown"
 	}
+}
+
+func (p *TcpBanner) Status() int {
+	return p.status
 }
