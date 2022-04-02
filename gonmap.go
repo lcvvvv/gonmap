@@ -10,7 +10,7 @@ import (
 
 var NMAP *Nmap
 
-var BypassAllProbePortMap = []int{161, 137, 139, 135, 389, 548, 1433, 6379, 1883, 5432, 1521, 3389, 3388, 3389, 33890, 33900}
+var BypassAllProbePortMap = []int{161, 137, 139, 135, 389, 443, 548, 1433, 6379, 1883, 5432, 1521, 3389, 3388, 3389, 33890, 33900}
 var SSLSecondProbeMap = []string{"TCP_TerminalServerCookie", "TCP_TerminalServer"}
 var AllProbeMap = []string{"TCP_GetRequest", "TCP_NULL"}
 var SSLProbeMap = []string{"TCP_TLSSessionReq", "TCP_SSLSessionReq", "TCP_SSLv23SessionReq"}
@@ -41,6 +41,8 @@ func Init(filter int, timeout time.Duration) map[string]int {
 	NMAP.fixFallback()
 	//将TCP_GetRequest的fallback参数设置为NULL探针，避免漏资产
 	NMAP.probeGroup["TCP_GetRequest"].fallback = "TCP_NULL"
+	NMAP.probeGroup["TCP_TerminalServerCookie"].fallback = "TCP_GetRequest"
+	NMAP.probeGroup["TCP_TerminalServer"].fallback = "TCP_GetRequest"
 	//配置超时时间
 	NMAP.setTimeout(timeout)
 	//新增自定义指纹信息
@@ -173,6 +175,11 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 			return b
 		}
 		b.Load(n.ScanByProbeSlice(SSLSecondProbeMap))
+
+		if b.TcpFinger.Service == "http" {
+			b.TcpFinger.Service = "https"
+		}
+
 		if b.status == Closed || b.status == Matched {
 			return b
 		}
@@ -293,7 +300,7 @@ func (n *Nmap) getFinger(data string, requestName string) *TcpFinger {
 		f = n.probeGroup[fallback].match(data)
 		fallback = n.probeGroup[fallback].fallback
 		if f.Service != "" {
-			continue
+			break
 		}
 	}
 	return f
@@ -379,7 +386,6 @@ func (n *Nmap) ScanByProbeSlice(probeSlice []string) *TcpBanner {
 		if IsInStrArr(n.usedProbeSlice, requestName) {
 			continue
 		}
-		slog.Debug("now start ", requestName)
 		b.Load(n.getTcpBanner(n.probeGroup[requestName]))
 		//如果端口未开放，则等待10s后重新连接
 		if b.status == Closed {

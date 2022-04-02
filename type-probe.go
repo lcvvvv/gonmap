@@ -52,10 +52,10 @@ func (p *probe) loads(sArr []string) {
 
 func (p *probe) scan(t target, ssl bool) (string, error) {
 	if ssl {
-		//fmt.Println("开始TLS探测")
+		//slog.Debug("开始对目标进行TLS探测：", t.URI(), strconv.Quote(p.request.string))
 		return simplenet.TLSSend(p.request.protocol, t.URI(), p.request.string, p.totalwaitms, 512)
 	} else {
-		//fmt.Println("开始TCP探测")
+		//slog.Debug("开始对目标进行TCP探测：", t.URI())
 		return simplenet.Send(p.request.protocol, t.URI(), p.request.string, p.totalwaitms, 512)
 	}
 }
@@ -76,7 +76,6 @@ func (p *probe) match(s string) *TcpFinger {
 		if m.patternRegexp.MatchString(s) {
 			//标记当前正则
 			f.MatchRegexString = m.patternRegexp.String()
-
 			if m.soft {
 				//如果为软捕获，这设置筛选器
 				f.Service = m.service

@@ -57,7 +57,7 @@ func TLSSend(protocol string, netloc string, data string, duration time.Duration
 	buf := make([]byte, size)
 	_ = conn.SetReadDeadline(time.Now().Add(duration * 2))
 	length, err := conn.Read(buf)
-	if err != nil && err.Error() != " EOF" {
+	if err != nil && err.Error() != "EOF" {
 		return "", errors.New(err.Error() + " STEP3:READ")
 	}
 	if length == 0 {
