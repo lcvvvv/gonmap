@@ -3,7 +3,6 @@ package gonmap
 import (
 	"fmt"
 	"kscan/core/gonmap/shttp"
-	"kscan/core/slog"
 	"kscan/lib/gorpc"
 	"kscan/lib/urlparse"
 	"strings"
@@ -148,7 +147,7 @@ func getHttpFinger(url *urlparse.URL, loop bool) *HttpFinger {
 		if strings.Contains(err.Error(), "no such host") {
 			r.StatusCode = ERROR_NOT_SUCH_HOST
 		}
-		slog.Debug(err.Error())
+		logger.Println(err.Error())
 		return r
 	}
 	//if strings.Contains(getResponse(shttp.GetBody(resp)), "The plain HTTP request was sent to HTTPS port") {

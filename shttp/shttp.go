@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"kscan/core/slog"
 	"kscan/lib/chinese"
 	"kscan/lib/misc"
 	"kscan/lib/urlparse"
@@ -110,23 +109,8 @@ func Header2String(header http.Header) string {
 	return result
 }
 
-func body2UTF8(resp *http.Response) {
-	if strings.Contains(resp.Header.Get("Content-Type"), "utf-8") {
-		return
-	}
-	bodyBuf, err := misc.ReadAll(resp.Body, time.Second*5)
-	if err != nil {
-		slog.Debug(err)
-	}
-	utf8Buf := chinese.ByteToUTF8(bodyBuf)
-	resp.Body = ioutil.NopCloser(bytes.NewReader(utf8Buf))
-}
-
 func GetBody(resp *http.Response) io.Reader {
-	bodyBuf, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		slog.Debug(err.Error())
-	}
+	bodyBuf, _ := readAllWithTimeout(resp.Body, time.Second*5)
 	resp.Body = ioutil.NopCloser(bytes.NewReader(bodyBuf))
 	return bytes.NewReader(bodyBuf)
 }
@@ -135,4 +119,47 @@ func getUserAgent() string {
 	rand.Seed(time.Now().UnixNano())
 	i := rand.Intn(len(UserAgents))
 	return UserAgents[i]
+}
+
+func body2UTF8(resp *http.Response) {
+	if strings.Contains(resp.Header.Get("Content-Type"), "utf-8") {
+		return
+	}
+	bodyBuf, _ := readAllWithTimeout(resp.Body, time.Second*5)
+	utf8Buf := chinese.ByteToUTF8(bodyBuf)
+	resp.Body = ioutil.NopCloser(bytes.NewReader(utf8Buf))
+}
+
+func readAllWithTimeout(r io.Reader, duration time.Duration) ([]byte, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), duration)
+	defer cancel()
+	BufChan := make(chan []byte)
+
+	var err error
+
+	go func() {
+		var Buf []byte
+		defer func() {
+			if err := recover(); err != nil {
+				if len(Buf) != 0 {
+					err = "reader response is :" + string(Buf)
+				}
+			}
+		}()
+		Buf, err = ioutil.ReadAll(r)
+		BufChan <- Buf
+	}()
+
+	var Buf []byte
+	for {
+		select {
+		case <-ctx.Done():
+			close(BufChan)
+			return Buf, err
+		case Buf = <-BufChan:
+			close(BufChan)
+			return Buf, err
+		}
+	}
+
 }

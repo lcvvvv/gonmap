@@ -6,7 +6,6 @@ import (
 	"io"
 	"io/ioutil"
 	"kscan/core/gonmap/shttp"
-	"kscan/core/slog"
 	"kscan/lib/httpfinger"
 	"kscan/lib/iconhash"
 	"kscan/lib/misc"
@@ -71,7 +70,7 @@ func (h *HttpFinger) LoadHttpResponse(url *urlparse.URL, resp *http.Response) {
 func getTitle(resp io.Reader) string {
 	query, err := goquery.NewDocumentFromReader(resp)
 	if err != nil {
-		slog.Debug(err.Error())
+		logger.Println(err.Error())
 		return ""
 	}
 	result := query.Find("title").Text()
@@ -87,7 +86,7 @@ func getHeader(header http.Header) string {
 func getResponse(resp io.Reader) string {
 	body, err := ioutil.ReadAll(resp)
 	if err != nil {
-		slog.Debug(err.Error())
+		logger.Println(err.Error())
 		return ""
 	}
 	bodyStr := string(body)
@@ -100,7 +99,7 @@ func getResponseDigest(resp io.Reader) string {
 
 	query, err := goquery.NewDocumentFromReader(CopyIoReader(&resp))
 	if err != nil {
-		slog.Debug(err.Error())
+		logger.Println(err.Error())
 		return ""
 	}
 
@@ -141,16 +140,16 @@ func getFingerByKeyword(header string, title string, body string) string {
 func getFingerByHash(url urlparse.URL) string {
 	resp, err := shttp.GetFavicon(url)
 	if err != nil {
-		slog.Debug(url.UnParse() + err.Error())
+		logger.Println(url.UnParse() + err.Error())
 		return ""
 	}
 	if resp.StatusCode != 200 {
-		//slog.Debug(url.UnParse() + "no favicon file")
+		//logger.Println(url.UnParse() + "no favicon file")
 		return ""
 	}
 	hash, err := iconhash.Get(resp.Body)
 	if err != nil {
-		slog.Debug(url.UnParse() + err.Error())
+		logger.Println(url.UnParse() + err.Error())
 		return ""
 	}
 	_ = resp.Body.Close()

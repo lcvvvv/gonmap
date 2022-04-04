@@ -2,7 +2,8 @@ package gonmap
 
 import (
 	"errors"
-	"kscan/core/slog"
+	"log"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -14,6 +15,8 @@ var BypassAllProbePortMap = []int{161, 137, 139, 135, 389, 443, 548, 1433, 6379,
 var SSLSecondProbeMap = []string{"TCP_TerminalServerCookie", "TCP_TerminalServer"}
 var AllProbeMap = []string{"TCP_GetRequest", "TCP_NULL"}
 var SSLProbeMap = []string{"TCP_TLSSessionReq", "TCP_SSLSessionReq", "TCP_SSLv23SessionReq"}
+
+var logger = Logger(log.New(os.Stderr, "[gonmap] ", log.Ldate|log.Ltime|log.Lshortfile))
 
 //r["PROBE"] 总探针数、r["MATCH"] 总指纹数 、r["USED_PROBE"] 已使用探针数、r["USED_MATCH"] 已使用指纹数
 func Init(filter int, timeout time.Duration) map[string]int {
@@ -196,12 +199,12 @@ func (n *Nmap) getTcpBanner(p *probe) *TcpBanner {
 	data, err := p.scan(n.target, tls)
 
 	if err != nil {
-		slog.Debug(data, err)
+		logger.Println(data, err)
 	}
 	if err != nil {
 		b.ErrorMsg = err
 		if strings.Contains(err.Error(), "STEP1") {
-			//slog.Debug(err.Error())
+			//logger.Println(err.Error())
 			if n.target.port == 137 || n.target.port == 161 {
 				return b.OPEN()
 			}
@@ -242,13 +245,11 @@ func (n *Nmap) Status() map[string]int {
 	for _, p := range NMAP.probeGroup {
 		r["MATCH"] += len(p.matchGroup)
 	}
-	//fmt.Printf("成功加载探针：【%d】个,指纹【%d】条\n", PROBE_COUNT,MATCH_COUNT)
 	r["USED_PROBE"] = len(NMAP.portProbeMap[0])
 	r["USED_MATCH"] = 0
 	for _, p := range NMAP.portProbeMap[0] {
 		r["USED_MATCH"] += len(NMAP.probeGroup[p].matchGroup)
 	}
-	//fmt.Printf("本次扫描将使用探针:[%d]个,指纹[%d]条\n", USED_PROBE_COUNT,USED_MATCH_COUNT)
 	return r
 }
 
@@ -296,7 +297,7 @@ func (n *Nmap) getFinger(data string, requestName string) *TcpFinger {
 
 	fallback := n.probeGroup[requestName].fallback
 	for fallback != "" {
-		slog.Debug("fallback:", fallback)
+		logger.Println("fallback:", fallback)
 		f = n.probeGroup[fallback].match(data)
 		fallback = n.probeGroup[fallback].fallback
 		if f.Service != "" {
@@ -392,7 +393,7 @@ func (n *Nmap) ScanByProbeSlice(probeSlice []string) *TcpBanner {
 			time.Sleep(time.Second * 10)
 			b.Load(n.getTcpBanner(n.probeGroup[requestName]))
 		}
-		slog.Debugf("Target:%s,Probe:%s,Status:%s,Service:%s,Response:%s", b.Target.URI(), requestName, b.StatusDisplay(), b.TcpFinger.Service, strconv.Quote(b.Response.string))
+		logger.Printf("Target:%s,Probe:%s,Status:%s,Service:%s,Response:%s", b.Target.URI(), requestName, b.StatusDisplay(), b.TcpFinger.Service, strconv.Quote(b.Response.string))
 		if b.status == Closed || b.status == Matched {
 			break
 		}
@@ -427,4 +428,13 @@ func (n *Nmap) fixFallback() {
 func SetScanVersion() {
 	//-sV参数深度解析
 	AllProbeMap = NMAP.probeSort
+}
+
+type Logger interface {
+	Printf(format string, v ...interface{})
+	Println(v ...interface{})
+}
+
+func SetLogger(v Logger) {
+	logger = v
 }
