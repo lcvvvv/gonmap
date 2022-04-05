@@ -6,16 +6,15 @@ import (
 	"strconv"
 	"strings"
 	"testing"
-	"time"
 )
 
-func TestPortscan(t *testing.T) {
+func TestPortScan(t *testing.T) {
 	//fmt.Println(PortScan("www.baidu.com:4433", 2*time.Second))
 
 }
 
 func TestGonmap(t *testing.T) {
-	Init(9, 30*time.Second)
+	Init(9)
 
 	nmap := New()
 	var text []string
@@ -36,7 +35,7 @@ func TestGonmap(t *testing.T) {
 			mrow = append(mrow, match.versioninfo.OperatingSystem)
 			mrow = append(mrow, match.versioninfo.ProductName)
 			mrow = append(mrow, match.versioninfo.Version)
-			mrow = append(mrow, strconv.Quote(match.pattern))
+			mrow = append(mrow, match.patternRegexp.String())
 			for index, value := range mrow {
 				mrow[index] = strings.ReplaceAll(value, ",", "[douhao]")
 			}
