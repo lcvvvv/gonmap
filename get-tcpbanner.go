@@ -2,17 +2,10 @@ package gonmap
 
 import (
 	"context"
-	"fmt"
-	"kscan/lib/urlparse"
 	"time"
 )
 
 func GetTcpBanner(ip string, port int, nmap *Nmap, timeout time.Duration) *TcpBanner {
-	netloc := fmt.Sprintf("%s:%d", ip, port)
-	parse, err := urlparse.Load(netloc)
-	if err != nil {
-		logger.Println(err)
-	}
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 	resChan := make(chan *TcpBanner)
@@ -22,12 +15,13 @@ func GetTcpBanner(ip string, port int, nmap *Nmap, timeout time.Duration) *TcpBa
 			if err := recover(); err != nil {
 				if &r != nil {
 					if r.Response.Length() > 0 {
-						logger.Println(err, ",", parse.UnParse(), ",", r.status, ",response length is :", r.Response.Length())
+						logger.Printf("Target:%s:%d, get tcpBanner is error:%v, response length is:%d",
+							ip, port, err, r.Response.Length())
 					}
 				}
 			}
 		}()
-		r = nmap.Scan(parse.Netloc, parse.Port)
+		r = nmap.Scan(ip, port)
 		resChan <- &r
 	}()
 
