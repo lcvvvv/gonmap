@@ -5,7 +5,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"io"
 	"io/ioutil"
-	"kscan/core/gonmap/shttp"
+	"kscan/core/gonmap/lib/shttp"
 	"kscan/lib/httpfinger"
 	"kscan/lib/iconhash"
 	"kscan/lib/misc"

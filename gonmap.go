@@ -40,11 +40,11 @@ func Init(filter int) {
 		probeSort:      []string{},
 		portProbeMap:   make(map[int][]string),
 		usedProbeSlice: []string{},
-		probeFilter:    0,
-		target:         target{},
-		response:       newResponse(),
-		finger:         nil,
-		filter:         5,
+
+		target:   target{},
+		response: newResponse(),
+		finger:   nil,
+		filter:   5,
 	}
 	NMAP.filter = filter
 	for i := 0; i <= 65535; i++ {

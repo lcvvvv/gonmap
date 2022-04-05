@@ -2,7 +2,7 @@ package gonmap
 
 import (
 	"errors"
-	"kscan/core/gonmap/simplenet"
+	"kscan/core/gonmap/lib/simplenet"
 	"regexp"
 	"strconv"
 	"strings"
@@ -50,12 +50,13 @@ func (p *probe) loads(sArr []string) {
 	}
 }
 
-func (p *probe) scan(t target, ssl bool) (string, error) {
-	if ssl {
-		return simplenet.TLSSend(p.request.protocol, t.URI(), p.request.string, p.totalwaitms, 512)
-	} else {
-		return simplenet.Send(p.request.protocol, t.URI(), p.request.string, p.totalwaitms, 512)
-	}
+func (p *probe) scan(t target) (response, error) {
+	tls := p.sslports.Exist(t.port)
+	text, err := simplenet.Send(p.request.protocol, tls, t.URI(), p.request.string, p.totalwaitms, 512)
+	return response{
+		string: text,
+		tls:    tls,
+	}, err
 }
 
 func (p *probe) match(s string) *TcpFinger {

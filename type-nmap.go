@@ -8,10 +8,10 @@ import (
 )
 
 type Nmap struct {
-	exclude        *port
-	probeGroup     map[string]*probe
-	probeSort      []string
-	probeFilter    int
+	exclude    *port
+	probeGroup map[string]*probe
+	probeSort  []string
+
 	portProbeMap   map[int][]string
 	usedProbeSlice []string
 
@@ -75,44 +75,30 @@ func (n *Nmap) Scan(ip string, port int) TcpBanner {
 }
 
 func (n *Nmap) getTcpBanner(p *probe) *TcpBanner {
-	b := NewTcpBanner(n.target.host, n.target.port)
+	tcpBanner := NewTcpBanner(n.target.host, n.target.port)
 
-	tls := p.sslports.Exist(n.target.port)
-
-	data, err := p.scan(n.target, tls)
+	resp, err := p.scan(n.target)
 
 	if err != nil {
-		logger.Println(data, err)
-	}
-	if err != nil {
-		b.ErrorMsg = err
+		logger.Println(resp, err)
 		if strings.Contains(err.Error(), "STEP1") {
-			//logger.Println(err.Error())
-			if n.target.port == 137 || n.target.port == 161 {
-				return b.OPEN()
-			}
-			return b.CLOSED()
+			return tcpBanner.CLOSED()
 		}
-		//if p.request.protocol == "UDP" {
-		//	return b.CLOSED()
-		//}
-		return b.OPEN()
+		if strings.Contains(err.Error(), "STEP2") {
+			return tcpBanner.CLOSED()
+		}
+		return tcpBanner.OPEN()
 	}
 
-	b.Response.string = data
+	tcpBanner.Response = resp
 	//若存在返回包，则开始捕获指纹
 
-	b.TcpFinger = n.getFinger(data, p.request.name)
+	tcpBanner.TcpFinger = n.getFinger(resp, p.request.name)
 
-	if b.TcpFinger.Service == "" {
-		return b.OPEN()
+	if tcpBanner.TcpFinger.Service == "" {
+		return tcpBanner.OPEN()
 	} else {
-		if tls {
-			if b.TcpFinger.Service == "http" {
-				b.TcpFinger.Service = "https"
-			}
-		}
-		return b.MATCHED()
+		return tcpBanner.MATCHED()
 	}
 	//如果成功匹配指纹，则直接返回指纹
 }
@@ -152,27 +138,33 @@ func (n *Nmap) isCommand(line string) bool {
 	return false
 }
 
-func (n *Nmap) getFinger(data string, requestName string) *TcpFinger {
-	data = n.convResponse(data)
+func (n *Nmap) getFinger(response response, requestName string) *TcpFinger {
+	data := n.convResponse(response.string)
 
-	f := n.probeGroup[requestName].match(data)
+	finger := n.probeGroup[requestName].match(data)
 	//标记当前探针名称
-	f.ProbeName = requestName
+	finger.ProbeName = requestName
 
-	if f.Service != "" || n.probeGroup[requestName].fallback == "" {
-		return f
+	if response.tls {
+		if finger.Service == "http" {
+			finger.Service = "https"
+		}
+	}
+
+	if finger.Service != "" || n.probeGroup[requestName].fallback == "" {
+		return finger
 	}
 
 	fallback := n.probeGroup[requestName].fallback
 	for fallback != "" {
 		logger.Println("fallback:", fallback)
-		f = n.probeGroup[fallback].match(data)
+		finger = n.probeGroup[fallback].match(data)
 		fallback = n.probeGroup[fallback].fallback
-		if f.Service != "" {
+		if finger.Service != "" {
 			break
 		}
 	}
-	return f
+	return finger
 }
 
 func (n *Nmap) convResponse(s1 string) string {

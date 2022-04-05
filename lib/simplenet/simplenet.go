@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func Send(protocol string, netloc string, data string, duration time.Duration, size int) (string, error) {
+func tcpSend(protocol string, netloc string, data string, duration time.Duration, size int) (string, error) {
 	protocol = strings.ToLower(protocol)
 	conn, err := net.DialTimeout(protocol, netloc, duration)
 	if err != nil {
@@ -35,7 +35,7 @@ func Send(protocol string, netloc string, data string, duration time.Duration, s
 	return string(buf[:length]), nil
 }
 
-func TLSSend(protocol string, netloc string, data string, duration time.Duration, size int) (string, error) {
+func tlsSend(protocol string, netloc string, data string, duration time.Duration, size int) (string, error) {
 	protocol = strings.ToLower(protocol)
 	config := &tls.Config{
 		InsecureSkipVerify: true,
@@ -64,4 +64,12 @@ func TLSSend(protocol string, netloc string, data string, duration time.Duration
 		return "", errors.New("response is empty")
 	}
 	return string(buf[:length]), nil
+}
+
+func Send(protocol string, tls bool, netloc string, data string, duration time.Duration, size int) (string, error) {
+	if tls {
+		return tlsSend(protocol, netloc, data, duration, size)
+	} else {
+		return tcpSend(protocol, netloc, data, duration, size)
+	}
 }

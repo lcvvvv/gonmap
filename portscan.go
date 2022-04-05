@@ -3,7 +3,7 @@ package gonmap
 import (
 	"context"
 	"fmt"
-	"kscan/core/gonmap/simplenet"
+	"kscan/core/gonmap/lib/simplenet"
 	"net"
 	"strings"
 	"time"
@@ -15,7 +15,7 @@ func PortScan(protocol string, addr string, port int, duration time.Duration) bo
 	if port == 25 || port == 110 {
 		data = "\n"
 	}
-	result, err := simplenet.Send(protocol, netloc, data, duration, 0)
+	result, err := simplenet.Send(protocol, false, netloc, data, duration, 0)
 	if err == nil {
 		return true
 	}

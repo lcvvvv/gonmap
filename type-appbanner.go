@@ -3,7 +3,6 @@ package gonmap
 import (
 	"fmt"
 	"kscan/lib/chinese"
-	"kscan/lib/color"
 	"kscan/lib/gorpc"
 	"kscan/lib/misc"
 	"kscan/lib/urlparse"
@@ -50,6 +49,7 @@ func (a *AppBanner) LoadHttpFinger(finger *HttpFinger) {
 	a.Path = finger.URL.Path
 	a.Port = finger.URL.Port
 	a.AppDigest = finger.Title
+	a.AppDigest = a.makeAppDigest()
 	a.StatusCode = finger.StatusCode
 	if finger.StatusCode != 0 {
 		a.Response = finger.Header + "\t\n" + finger.Response
@@ -191,30 +191,6 @@ func (a *AppBanner) LoadTcpBanner(banner *TcpBanner) {
 	a.loadTcpFinger(banner.TcpFinger)
 }
 
-func (a *AppBanner) Display(keyPrint bool) string {
-	m := misc.FixMap(a.fingerPrint)
-	fingerPrint := color.StrMapRandomColor(m, keyPrint, []string{"ProductName", "Hostname", "DeviceType"}, []string{"ApplicationComponent"})
-	fingerPrint = misc.FixLine(fingerPrint)
-
-	a.AppDigest = a.makeAppDigest()
-	a.AppDigest = chinese.ToUTF8(a.AppDigest)
-
-	format := "%-30v %-" + strconv.Itoa(misc.AutoWidth(a.AppDigest, 26)) + "v %s"
-	s := fmt.Sprintf(format, a.URL(), a.AppDigest, fingerPrint)
-	return s
-}
-
-func (a *AppBanner) Output(keyPrint bool) string {
-	fingerPrint := misc.StrMap2Str(a.fingerPrint, keyPrint)
-	fingerPrint = misc.FixLine(fingerPrint)
-
-	a.AppDigest = a.makeAppDigest()
-	a.AppDigest = chinese.ToUTF8(a.AppDigest)
-
-	s := fmt.Sprintf("%s\t%d\t%s\t%s", a.URL(), a.StatusCode, a.AppDigest, fingerPrint)
-	return s
-}
-
 func (a *AppBanner) makeAppDigest() string {
 	digest := a.AppDigest
 	digest = misc.FixLine(digest)
@@ -293,6 +269,10 @@ func (a *AppBanner) Map() map[string]string {
 		bannerMap[key] = value
 	}
 	return bannerMap
+}
+
+func (a *AppBanner) FingerPrint() map[string]string {
+	return a.fingerPrint
 }
 
 func (a *AppBanner) LoadRpcFinger(finger *gorpc.Finger) {
