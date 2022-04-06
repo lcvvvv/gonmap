@@ -1,7 +1,7 @@
 package gonmap
 
 import (
-	"kscan/lib/gosping"
+	"github.com/lcvvvv/gonmap/lib/gosping"
 	"time"
 )
 

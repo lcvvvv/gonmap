@@ -2,10 +2,10 @@ package gonmap
 
 import (
 	"fmt"
-	"kscan/lib/chinese"
-	"kscan/lib/gorpc"
-	"kscan/lib/misc"
-	"kscan/lib/urlparse"
+	"github.com/lcvvvv/gonmap/lib/chinese"
+	"github.com/lcvvvv/gonmap/lib/gorpc"
+	"github.com/lcvvvv/gonmap/lib/misc"
+	"github.com/lcvvvv/gonmap/lib/urlparse"
 	"strconv"
 	"strings"
 )

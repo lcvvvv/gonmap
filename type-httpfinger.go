@@ -3,13 +3,13 @@ package gonmap
 import (
 	"crypto/x509"
 	"github.com/PuerkitoBio/goquery"
+	"github.com/lcvvvv/gonmap/lib/httpfinger"
+	"github.com/lcvvvv/gonmap/lib/iconhash"
+	"github.com/lcvvvv/gonmap/lib/misc"
+	"github.com/lcvvvv/gonmap/lib/shttp"
+	"github.com/lcvvvv/gonmap/lib/urlparse"
 	"io"
 	"io/ioutil"
-	"kscan/core/gonmap/lib/shttp"
-	"kscan/lib/httpfinger"
-	"kscan/lib/iconhash"
-	"kscan/lib/misc"
-	"kscan/lib/urlparse"
 	"net/http"
 	"strings"
 )

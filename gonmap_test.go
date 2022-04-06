@@ -2,15 +2,16 @@ package gonmap
 
 import (
 	"fmt"
-	"kscan/lib/misc"
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestPortScan(t *testing.T) {
-	//fmt.Println(PortScan("www.baidu.com:4433", 2*time.Second))
-
+	Init(9)
+	tcpBanner := GetTcpBanner("www.baidu.com", 80, New(), time.Second*5)
+	fmt.Print(tcpBanner.Response)
 }
 
 func TestGonmap(t *testing.T) {
@@ -43,6 +44,4 @@ func TestGonmap(t *testing.T) {
 			text = append(text, line)
 		}
 	}
-
-	_ = misc.WriteLine("/Users/kv2/Desktop/target.csv", []byte(strings.Join(text, "\n")))
 }
