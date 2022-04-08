@@ -11,9 +11,7 @@ type TcpBanner struct {
 	Target    target
 	Response  response
 	TcpFinger *TcpFinger
-	ErrorMsg  error
-
-	status int
+	status    int
 }
 
 func NewTcpBanner(ip string, port int) TcpBanner {
@@ -22,7 +20,6 @@ func NewTcpBanner(ip string, port int) TcpBanner {
 		Response:  newResponse(),
 		TcpFinger: newFinger(),
 		status:    Unknown,
-		ErrorMsg:  nil,
 	}
 }
 
