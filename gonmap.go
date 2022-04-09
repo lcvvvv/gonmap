@@ -109,9 +109,6 @@ func customNMAPMatch() {
 	NMAP.AddMatch("TCP_NULL", `mysql m|.\x00\x00\x00\x0a(\d+\.\d+\.\d+)\x00.*caching_sha2_password\x00| p/MariaDB/ v/$1/`)
 	NMAP.AddMatch("TCP_NULL", `mysql m|.\x00\x00\x00\x0a([\d.-]+)-MariaDB\x00.*mysql_native_password\x00| p/MariaDB/ v/$1/`)
 	NMAP.AddMatch("TCP_NULL", `redis m|-DENIED Redis is running in.*| p/Redis/ i/Protected mode/`)
-	NMAP.AddMatch("TCP_NULL", `ftp m|^220 H3C Small-FTP Server Version ([\d.]+).* | p/H3C Small-FTP/ v/$1/`)
-	NMAP.AddMatch("TCP_redis-server", `redis m|^.*redis_version:([.\d]+)\n|s p/Redis key-value store/ v/$1/ cpe:/a:redislabs:redis:$1/`)
-	NMAP.AddMatch("TCP_redis-server", `redis m|^-NOAUTH Authentication required.|s p/Redis key-value store/`)
 	NMAP.AddMatch("TCP_NULL", `telnet m|^.*Welcome to visit (.*) series router!.*|s p/$1 Router/`)
 	NMAP.AddMatch("TCP_NULL", `telnet m|^Username: ??|`)
 	NMAP.AddMatch("TCP_NULL", `telnet m|^.*Telnet service is disabled or Your telnet session has expired due to inactivity.*|s i/Disabled/`)
@@ -126,12 +123,25 @@ func customNMAPMatch() {
 	NMAP.AddMatch("TCP_NULL", `telnet m|^\x0d\x0a\x0d\x0aWelcome to the host.\x0d\x0a.*|s o/Windows/`)
 	NMAP.AddMatch("TCP_NULL", `telnet m|^.*Welcome Visiting Huawei Home Gateway\x0d\x0aCopyright by Huawei Technologies Co., Ltd.*Login:|s p/Huawei/`)
 	NMAP.AddMatch("TCP_NULL", `telnet m|^..\x01..\x03..\x18..\x1f|s p/Huawei/`)
+	NMAP.AddMatch("TCP_NULL", `smtp m|^220 ([a-z0-1.-]+).*| h/$1/`)
+	NMAP.AddMatch("TCP_NULL", `ftp m|^220 H3C Small-FTP Server Version ([\d.]+).* | p/H3C Small-FTP/ v/$1/`)
+	NMAP.AddMatch("TCP_NULL", `ftp m|^421[- ]Service not available..*|`)
+	NMAP.AddMatch("TCP_NULL", `ftp m|^220[- ].*filezilla.*|i p/FileZilla/`)
 	NMAP.AddMatch("TCP_TerminalServerCookie", `ms-wbt-server m|^\x03\0\0\x13\x0e\xd0\0\0\x124\0\x02.*\0\x02\0\0\0| p/Microsoft Terminal Services/ o/Windows/ cpe:/o:microsoft:windows/a`)
-
+	NMAP.AddMatch("TCP_redis-server", `redis m|^.*redis_version:([.\d]+)\n|s p/Redis key-value store/ v/$1/ cpe:/a:redislabs:redis:$1/`)
+	NMAP.AddMatch("TCP_redis-server", `redis m|^-NOAUTH Authentication required.|s p/Redis key-value store/`)
 }
 
 func optimizeNMAPProbes() {
+	NMAP.probeGroup["TCP_GenericLines"].sslports.Push(993)
+	NMAP.probeGroup["TCP_GenericLines"].sslports.Push(994)
+	NMAP.probeGroup["TCP_GenericLines"].sslports.Push(465)
+	NMAP.probeGroup["TCP_GenericLines"].sslports.Push(995)
 	//优化检测逻辑，及端口对应的默认探针
+	NMAP.portProbeMap[993] = append([]string{"TCP_GenericLines"}, NMAP.portProbeMap[993]...)
+	NMAP.portProbeMap[994] = append([]string{"TCP_GenericLines"}, NMAP.portProbeMap[994]...)
+	NMAP.portProbeMap[995] = append([]string{"TCP_GenericLines"}, NMAP.portProbeMap[995]...)
+	NMAP.portProbeMap[465] = append([]string{"TCP_GenericLines"}, NMAP.portProbeMap[465]...)
 	NMAP.portProbeMap[3390] = append(NMAP.portProbeMap[3390], "TCP_TerminalServer")
 	NMAP.portProbeMap[3390] = append(NMAP.portProbeMap[3390], "TCP_TerminalServerCookie")
 	NMAP.portProbeMap[33890] = append(NMAP.portProbeMap[33890], "TCP_TerminalServer")
@@ -145,6 +155,7 @@ func optimizeNMAPProbes() {
 	NMAP.portProbeMap[6000] = append(NMAP.portProbeMap[6000], "TCP_Socks5")
 	NMAP.portProbeMap[7000] = append(NMAP.portProbeMap[7000], "TCP_Socks5")
 	//将TCP_GetRequest的fallback参数设置为NULL探针，避免漏资产
+	NMAP.probeGroup["TCP_GenericLines"].fallback = "TCP_NULL"
 	NMAP.probeGroup["TCP_GetRequest"].fallback = "TCP_NULL"
 	NMAP.probeGroup["TCP_TerminalServerCookie"].fallback = "TCP_GetRequest"
 	NMAP.probeGroup["TCP_TerminalServer"].fallback = "TCP_GetRequest"
