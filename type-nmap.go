@@ -142,8 +142,6 @@ func (n *Nmap) getFinger(response response, requestName string) *TcpFinger {
 	data := n.convResponse(response.string)
 
 	finger := n.probeGroup[requestName].match(data)
-	//标记当前探针名称
-	finger.ProbeName = requestName
 
 	if response.tls {
 		if finger.Service == "http" {
@@ -152,18 +150,22 @@ func (n *Nmap) getFinger(response response, requestName string) *TcpFinger {
 	}
 
 	if finger.Service != "" || n.probeGroup[requestName].fallback == "" {
+		//标记当前探针名称
+		finger.ProbeName = requestName
 		return finger
 	}
 
 	fallback := n.probeGroup[requestName].fallback
 	for fallback != "" {
-		logger.Println("fallback:", fallback)
+		logger.Println(requestName, " fallback is :", fallback)
 		finger = n.probeGroup[fallback].match(data)
 		fallback = n.probeGroup[fallback].fallback
 		if finger.Service != "" {
 			break
 		}
 	}
+	//标记当前探针名称
+	finger.ProbeName = requestName
 	return finger
 }
 
