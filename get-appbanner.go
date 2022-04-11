@@ -108,7 +108,6 @@ func getAppBanner(url *urlparse.URL, tcpBanner *TcpBanner) *AppBanner {
 		r.Protocol = "unknown"
 		r.SetInfo("MaybeProtocolIs :" + GuessProtocol(r.Port))
 		r.AppDigest = "ResponseIsEmpty"
-		//return nil
 	}
 
 	if r.StatusCode == ERROR_NOT_SUCH_HOST {
