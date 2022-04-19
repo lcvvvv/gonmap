@@ -36,7 +36,7 @@ func Xrange(args ...int) []int {
 	case 2:
 		start, stop = args[0], args[1]
 	case 3:
-		start, step, step = args[0], args[1], args[2]
+		start, stop, step = args[0], args[1], args[2]
 	default:
 		return nil
 	}
