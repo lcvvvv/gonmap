@@ -188,6 +188,10 @@ func (a *AppBanner) FingerPrint() map[string]string {
 	return a.fingerPrint
 }
 
+func (a *AppBanner) AddFingerPrint(key, value string) {
+	a.fingerPrint[key] = value
+}
+
 func (a *AppBanner) LoadRpcFinger(finger *gorpc.Finger) {
 	a.AppDigest = finger.Value()[0]
 
