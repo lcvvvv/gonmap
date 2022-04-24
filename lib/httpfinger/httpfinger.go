@@ -4,16 +4,16 @@ import (
 	"encoding/json"
 )
 
-//r["FaviconHash"] , r["KeywordFinger"]
-func Init() map[string]int {
+var CountFaviconHash = 0
+var CountKeywordFinger = 0
+
+func Init() {
 	_ = json.Unmarshal(faviconHashByte, &FaviconHash)
 	_ = json.Unmarshal(keywordFingerSourceByte, &KeywordFinger)
 	var keywordFingerFofa keywordFinger
 	_ = json.Unmarshal(keywordFingerFofaByte, &keywordFingerFofa)
 	KeywordFinger = append(KeywordFinger, keywordFingerFofa...)
 
-	r := make(map[string]int)
-	r["FaviconHash"] = len(FaviconHash)
-	r["KeywordFinger"] = len(KeywordFinger)
-	return r
+	CountFaviconHash = len(FaviconHash)
+	CountKeywordFinger = len(KeywordFinger)
 }
