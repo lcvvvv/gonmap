@@ -100,10 +100,11 @@ func Get(Url string) (*http.Response, error) {
 	return resp, err
 }
 
-func Header2String(header http.Header) string {
+func Header2String(resp http.Response) string {
 	var result string
-	for i := range header {
-		result = strings.Join([]string{result, fmt.Sprintf("%s: %s\n", i, header.Get(i))}, "")
+	result += resp.Proto + " " + resp.Status + "\r\n"
+	for key, value := range resp.Header {
+		result += fmt.Sprintf("%s: %s\r\n", key, strings.Join(value, ";"))
 	}
 	return result
 }

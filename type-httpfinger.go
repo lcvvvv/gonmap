@@ -50,7 +50,7 @@ func NewHttpFinger(url *urlparse.URL) *HttpFinger {
 func (h *HttpFinger) LoadHttpResponse(url *urlparse.URL, resp *http.Response) {
 	h.Title = getTitle(shttp.GetBody(resp))
 	h.StatusCode = resp.StatusCode
-	h.Header = getHeader(resp.Header.Clone())
+	h.Header = getHeader(*resp)
 	h.Response = getResponse(shttp.GetBody(resp))
 	h.ResponseDigest = getResponseDigest(shttp.GetBody(resp))
 
@@ -165,8 +165,8 @@ func getTitle(resp io.Reader) string {
 	return result
 }
 
-func getHeader(header http.Header) string {
-	return shttp.Header2String(header)
+func getHeader(resp http.Response) string {
+	return shttp.Header2String(resp)
 }
 
 func getResponse(resp io.Reader) string {
