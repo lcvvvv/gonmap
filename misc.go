@@ -81,6 +81,9 @@ func FixProtocol(oldProtocol string) string {
 	if oldProtocol == "ssl/http" {
 		return "https"
 	}
+	if oldProtocol == "http-proxy" {
+		return "http"
+	}
 	if oldProtocol == "ms-wbt-server" {
 		return "rdp"
 	}
@@ -109,7 +112,7 @@ func FixProtocol(oldProtocol string) string {
 		return "db2"
 	}
 	if oldProtocol == "socks-proxy" {
-		return "sock5"
+		return "socks5"
 	}
 	if len(oldProtocol) > 4 {
 		if oldProtocol[:4] == "ssl/" {
