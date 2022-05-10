@@ -37,9 +37,13 @@ func GetAppBannerFromTcpBanner(banner *TcpBanner) *AppBanner {
 	return getAppBanner(parse, banner)
 }
 
-func GetAppBannerFromUrl(url *urlparse.URL) *AppBanner {
-	if url.Scheme != "http" && url.Scheme != "https" {
-		banner := GetTcpBanner(url.Netloc, url.Port, New(), HttpTimeout*20)
+func GetAppBannerFromUrlString(urlString string) *AppBanner {
+	Url, err := urlparse.Load(urlString)
+	if err != nil {
+		logger.Println(err)
+	}
+	if Url.Scheme != "http" && Url.Scheme != "https" {
+		banner := GetTcpBanner(Url.Netloc, Url.Port, New(), HttpTimeout*20)
 		if banner == nil {
 			return nil
 		}
@@ -48,18 +52,16 @@ func GetAppBannerFromUrl(url *urlparse.URL) *AppBanner {
 		}
 		return GetAppBannerFromTcpBanner(banner)
 	}
-
-	if url.Port == 0 && url.Scheme == "" {
-		url.Port = 80
-		url.Scheme = "http"
+	if Url.Port == 0 && Url.Scheme == "http" {
+		Url.Port = 80
 	}
-	if url.Port == 0 && url.Scheme == "https" {
-		url.Port = 443
+	if Url.Port == 0 && Url.Scheme == "https" {
+		Url.Port = 443
 	}
-	if url.Port == 0 {
-		url.Port = 80
+	if Url.Port == 0 {
+		Url.Port = 80
 	}
-	return getAppBanner(url, nil)
+	return getAppBanner(Url, nil)
 }
 
 func getAppBanner(url *urlparse.URL, tcpBanner *TcpBanner) *AppBanner {

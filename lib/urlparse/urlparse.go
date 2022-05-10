@@ -37,13 +37,10 @@ func Load(s string) (*URL, error) {
 	}
 	return &URL{
 		Scheme: func() string {
-			if r.Port() == "80" {
-				return "http"
+			if r.Scheme != "" {
+				return r.Scheme
 			}
-			if r.Port() == "443" {
-				return "https"
-			}
-			return r.Scheme
+			return ""
 		}(),
 		Netloc: r.Hostname(),
 		Path: func() string {

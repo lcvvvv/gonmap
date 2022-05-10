@@ -53,6 +53,12 @@ func (p *probe) loads(sArr []string) {
 func (p *probe) scan(t target) (response, error) {
 	tls := p.sslports.Exist(t.port)
 	text, err := simplenet.Send(p.request.protocol, tls, t.URI(), p.request.string, p.totalwaitms, 512)
+	if err != nil {
+		if strings.Contains(err.Error(), "STEP1") && tls == true {
+			tls = false
+			text, err = simplenet.Send(p.request.protocol, tls, t.URI(), p.request.string, p.totalwaitms, 512)
+		}
+	}
 	return response{
 		string: text,
 		tls:    tls,
