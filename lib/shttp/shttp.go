@@ -64,6 +64,7 @@ func Get(Url string) (*http.Response, error) {
 	}
 	request.Header.Add("User-Agent", getUserAgent())
 	request.Header.Add("Cookie", "rememberMe=b69375edcb2b3c5084c02bd9690b6625")
+	request.Header.Set("Accept-Language", "zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2")
 	request.Close = true
 
 	tr := &http.Transport{}
