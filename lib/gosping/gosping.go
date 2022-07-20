@@ -11,7 +11,7 @@ func OsPing(host string) bool {
 	case "windows":
 		cmd = exec.Command("ping", host, "-n", "1", "-w", "200")
 	case "linux":
-		cmd = exec.Command("ping", host, "-c", "1", "-w", "200", "-W", "200")
+		cmd = exec.Command("ping", host, "-c", "1", "-W", "1")
 	case "darwin":
 		cmd = exec.Command("ping", host, "-c", "1", "-W", "200")
 	case "freebsd":
