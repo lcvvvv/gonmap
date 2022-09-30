@@ -1,6 +1,6 @@
 package gonmap
 
-var NMAP_SERVICE_PROBES = `
+var nmapServiceProbes = `
 # Nmap service detection probe list -*- mode: fundamental; -*-
 # $Id$
 #

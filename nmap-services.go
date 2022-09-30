@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-var NMAP_SERVICES = `1	tcpmux
+var nmapServicesString = `1	tcpmux
 2	compressnet
 3	compressnet
 5	rje
@@ -6459,9 +6459,9 @@ var NMAP_SERVICES = `1	tcpmux
 65301	pcanywhere
 65535	unknown`
 
-var NMAP_SERVICES_SLICE = func() []string {
+var nmapServices = func() []string {
 	var r []string
-	for _, line := range strings.Split(NMAP_SERVICES, "\n") {
+	for _, line := range strings.Split(nmapServicesString, "\n") {
 		index := strings.Index(line, "\t")
 		v1 := line[:index]
 		v2 := line[index+1:]

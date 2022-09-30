@@ -1,25 +1,40 @@
 package gonmap
 
-type response struct {
-	string string
-	tls    bool
-}
+const (
+	Closed     Status = 0x000a1
+	Open              = 0x000b2
+	Matched           = 0x000c3
+	NotMatched        = 0x000d4
+	Unknown           = 0x000e5
+)
 
-func newResponse() response {
-	return response{
-		string: "",
-		tls:    false,
+type Status int
+
+func (s Status) String() string {
+	switch s {
+	case Closed:
+		return "Closed"
+	case Open:
+		return "Open"
+	case Matched:
+		return "Matched"
+	case NotMatched:
+		return "NotMatched"
+	case Unknown:
+		return "Unknown"
+	default:
+		return "Unknown"
 	}
 }
 
-func (r response) Length() int {
-	return len(r.string)
+type Response struct {
+	Raw         string
+	TLS         bool
+	FingerPrint *FingerPrint
 }
 
-func (r response) Value() string {
-	return r.string
-}
-
-func (r response) TLS() bool {
-	return r.tls
+var dnsResponse = Response{Raw: "DnsServer", TLS: false,
+	FingerPrint: &FingerPrint{
+		Service: "dns",
+	},
 }

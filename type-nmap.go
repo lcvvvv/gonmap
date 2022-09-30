@@ -1,119 +1,313 @@
 package gonmap
 
 import (
-	"errors"
-	"strconv"
+	"context"
+	"fmt"
+	"net"
 	"strings"
 	"time"
 )
 
 type Nmap struct {
-	exclude    *port
-	probeGroup map[string]*probe
-	probeSort  []string
+	exclude      PortList
+	portProbeMap map[int]ProbeList
+	probeNameMap map[string]*probe
+	probeSort    ProbeList
 
-	portProbeMap   map[int][]string
-	usedProbeSlice []string
+	probeUsed ProbeList
 
-	target target
 	filter int
 
-	response response
-	finger   *TcpFinger
+	//检测端口存活的超时时间
+	timeout time.Duration
+
+	bypassAllProbePort PortList
+	sslSecondProbeMap  ProbeList
+	allProbeMap        ProbeList
+	sslProbeMap        ProbeList
 }
 
-func (n *Nmap) Scan(ip string, port int) TcpBanner {
-	n.target.host = ip
-	n.target.port = port
+//扫描类
 
-	//拼接端口探测队列，全端口探测放在最后
-	b := NewTcpBanner(ip, port)
+func (n *Nmap) ScanTimeout(ip string, port int, timeout time.Duration) (status Status, response *Response) {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	var resChan = make(chan bool)
 
-	//对特殊端口优先发起特定探针
-	if IsInIntArr(BypassAllProbePortMap, port) {
-		b.Load(n.ScanByProbeSlice(n.portProbeMap[port]))
-		if b.status == Closed || (b.status == Matched && b.TcpFinger.Service != "ssl") {
-			return b
-		}
-	} else { //非特殊端口，会优先进行全局探针测试
-		//开始使用全局探针进行测试
-		b.Load(n.ScanByProbeSlice(AllProbeMap))
-		if b.status == Closed || (b.status == Matched && b.TcpFinger.Service != "ssl") {
-			return b
-		}
-		//开始进行特定探针测试
-		b.Load(n.ScanByProbeSlice(n.portProbeMap[port]))
-		if b.status == Closed || (b.status == Matched && b.TcpFinger.Service != "ssl") {
-			return b
-		}
+	defer func() {
+		close(resChan)
+		cancel()
+	}()
+
+	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				if fmt.Sprint(r) != "send on closed channel" {
+					panic(r)
+				}
+			}
+		}()
+		status, response = n.Scan(ip, port)
+		resChan <- true
+	}()
+
+	select {
+	case <-ctx.Done():
+		return Closed, nil
+	case <-resChan:
+		return status, response
 	}
-
-	//开始SSL探针测试
-	if b.TcpFinger.Service != "ssl" {
-		b.Load(n.ScanByProbeSlice(SSLProbeMap))
-		if b.status == Closed {
-			return b
-		}
-	}
-
-	if b.status == Matched {
-		if b.TcpFinger.Service != "ssl" {
-			return b
-		}
-		b.Load(n.ScanByProbeSlice(SSLSecondProbeMap))
-
-		if b.TcpFinger.Service == "http" {
-			b.TcpFinger.Service = "https"
-		}
-
-		if b.status == Closed || b.status == Matched {
-			return b
-		}
-	}
-
-	return b
 }
 
-func (n *Nmap) getTcpBanner(p *probe) *TcpBanner {
-	tcpBanner := NewTcpBanner(n.target.host, n.target.port)
+func (n *Nmap) Scan(ip string, port int) (status Status, response *Response) {
+	var probeNames ProbeList
+	if n.bypassAllProbePort.exist(port) == true {
+		probeNames = append(n.portProbeMap[port], n.allProbeMap...)
+	} else {
+		probeNames = append(n.allProbeMap, n.portProbeMap[port]...)
+	}
+	probeNames = append(probeNames, n.sslProbeMap...)
+	//探针去重
+	probeNames = probeNames.removeDuplicate()
 
-	resp, err := p.scan(n.target)
+	firstProbe := probeNames[0]
+	status, response = n.getRealResponse(ip, port, n.timeout, firstProbe)
+	if status == Closed || status == Matched {
+		return status, response
+	}
+	otherProbes := probeNames[1:]
+	return n.getRealResponse(ip, port, 2*time.Second, otherProbes...)
+}
+
+func (n *Nmap) getRealResponse(host string, port int, timeout time.Duration, probes ...string) (status Status, response *Response) {
+	status, response = n.getResponseByProbes(host, port, timeout, probes...)
+	if status != Matched {
+		return status, response
+	}
+	if response.FingerPrint.Service == "ssl" {
+		status, response := n.getResponseBySSLSecondProbes(host, port, timeout)
+		if status == Matched {
+			return Matched, response
+		}
+	}
+	return status, response
+}
+
+func (n *Nmap) getResponseBySSLSecondProbes(host string, port int, timeout time.Duration) (status Status, response *Response) {
+	status, response = n.getResponseByProbes(host, port, timeout, n.
+		sslSecondProbeMap...)
+	if status != Matched {
+		return status, response
+	}
+	if response.FingerPrint.Service == "ssl" {
+		return NotMatched, response
+	}
+	if response.FingerPrint.Service == "http" {
+		response.FingerPrint.Service = "https"
+	}
+	return Matched, response
+}
+
+func (n *Nmap) getResponseByProbes(host string, port int, timeout time.Duration, probes ...string) (status Status, response *Response) {
+	var responseNotMatch *Response
+	for _, requestName := range probes {
+		if n.probeUsed.exist(requestName) {
+			continue
+		}
+		n.probeUsed = append(n.probeUsed, requestName)
+
+		status, response = n.getResponse(host, port, timeout, n.probeNameMap[requestName])
+		//如果端口未开放，则等待10s后重新连接
+		//if b.status == Closed {
+		//	time.Sleep(time.Second * 10)
+		//	b.Load(n.getResponse(host, port, n.probeNameMap[requestName]))
+		//}
+
+		//logger.Printf("Target:%s:%d,Probe:%s,Status:%v", host, port, requestName, status)
+
+		if status == Closed || status == Matched {
+			responseNotMatch = nil
+			break
+		}
+		if status == NotMatched {
+			responseNotMatch = response
+		}
+	}
+	if responseNotMatch != nil {
+		response = responseNotMatch
+	}
+	return status, response
+}
+
+func (n *Nmap) getResponse(host string, port int, timeout time.Duration, p *probe) (Status, *Response) {
+	if port == 53 {
+		if DnsScan(host, port) {
+			return Matched, &dnsResponse
+		} else {
+			return Closed, nil
+		}
+	}
+
+	text, tls, err := p.scan(host, port, p.sslports.exist(port), timeout, 10240)
 
 	if err != nil {
-		logger.Println(resp, err)
 		if strings.Contains(err.Error(), "STEP1") {
-			return tcpBanner.CLOSED()
+			return Closed, nil
 		}
 		if strings.Contains(err.Error(), "STEP2") {
-			return tcpBanner.CLOSED()
+			return Closed, nil
 		}
-		return tcpBanner.OPEN()
+		if p.protocol == "UDP" && strings.Contains(err.Error(), "refused") {
+			return Closed, nil
+		}
+		return Open, nil
 	}
 
-	tcpBanner.Response = resp
+	response := &Response{
+		Raw:         text,
+		TLS:         tls,
+		FingerPrint: &FingerPrint{},
+	}
 	//若存在返回包，则开始捕获指纹
+	fingerPrint := n.getFinger(text, tls, p.name)
+	response.FingerPrint = fingerPrint
 
-	tcpBanner.TcpFinger = n.getFinger(resp, p.request.name)
-
-	if tcpBanner.TcpFinger.Service == "" {
-		return tcpBanner.OPEN()
+	if fingerPrint.Service == "" {
+		return NotMatched, response
 	} else {
-		return tcpBanner.MATCHED()
+		return Matched, response
 	}
 	//如果成功匹配指纹，则直接返回指纹
 }
 
-func (n *Nmap) AddMatch(probeName string, expr string) {
-	n.probeGroup[probeName].loadMatch(expr, false)
+func (n *Nmap) getFinger(responseRaw string, tls bool, requestName string) *FingerPrint {
+	data := n.convResponse(responseRaw)
+	probe := n.probeNameMap[requestName]
+
+	finger := probe.match(data)
+
+	if tls == true {
+		if finger.Service == "http" {
+			finger.Service = "https"
+		}
+	}
+
+	if finger.Service != "" || n.probeNameMap[requestName].fallback == "" {
+		//标记当前探针名称
+		finger.ProbeName = requestName
+		return finger
+	}
+
+	fallback := n.probeNameMap[requestName].fallback
+	fallbackProbe := n.probeNameMap[fallback]
+	for fallback != "" {
+		logger.Println(requestName, " fallback is :", fallback)
+		finger = fallbackProbe.match(data)
+		fallback = n.probeNameMap[fallback].fallback
+		if finger.Service != "" {
+			break
+		}
+	}
+	//标记当前探针名称
+	finger.ProbeName = requestName
+	return finger
 }
 
-func (n *Nmap) setTimeout(timeout time.Duration) {
-	if timeout == 0 {
+func (n *Nmap) convResponse(s1 string) string {
+	//为了适配go语言的沙雕正则，只能讲二进制强行转换成UTF-8
+	b1 := []byte(s1)
+	var r1 []rune
+	for _, i := range b1 {
+		r1 = append(r1, rune(i))
+	}
+	s2 := string(r1)
+	return s2
+}
+
+//配置类
+
+func (n *Nmap) SetTimeout(timeout time.Duration) {
+	n.timeout = timeout
+}
+
+func (n *Nmap) OpenDeepIdentify() {
+	//-sV参数深度解析
+	n.allProbeMap = n.probeSort
+}
+
+func (n *Nmap) AddMatch(probeName string, expr string) {
+	var probe = n.probeNameMap[probeName]
+	probe.loadMatch(expr, false)
+}
+
+//初始化类
+
+func (n *Nmap) loads(s string) {
+	lines := strings.Split(s, "\n")
+	var probeGroups [][]string
+	var probeLines []string
+	for _, line := range lines {
+		if !n.isCommand(line) {
+			continue
+		}
+		commandName := line[:strings.Index(line, " ")]
+		if commandName == "Exclude" {
+			n.loadExclude(line)
+			continue
+		}
+		if commandName == "Probe" {
+			if len(probeLines) != 0 {
+				probeGroups = append(probeGroups, probeLines)
+				probeLines = []string{}
+			}
+		}
+		probeLines = append(probeLines, line)
+	}
+	probeGroups = append(probeGroups, probeLines)
+
+	for _, lines := range probeGroups {
+		p := parseProbe(lines)
+		n.pushProbe(*p)
+	}
+}
+
+func (n *Nmap) loadExclude(expr string) {
+	n.exclude = parsePortList(expr)
+}
+
+func (n *Nmap) pushProbe(p probe) {
+	n.probeSort = append(n.probeSort, p.name)
+	n.probeNameMap[p.name] = &p
+
+	//建立端口扫描对应表，将根据端口号决定使用何种请求包
+	//如果端口列表为空，则为全端口
+	if p.rarity > n.filter {
 		return
 	}
-	for _, p := range n.probeGroup {
-		p.totalwaitms = timeout
-		p.tcpwrappedms = timeout
+	//0记录所有使用的探针
+	n.portProbeMap[0] = append(n.portProbeMap[0], p.name)
+
+	//分别压入sslports,ports
+	for _, i := range p.ports {
+		n.portProbeMap[i] = append(n.portProbeMap[i], p.name)
+	}
+
+	for _, i := range p.sslports {
+		n.portProbeMap[i] = append(n.portProbeMap[i], p.name)
+	}
+
+}
+
+func (n *Nmap) fixFallback() {
+	for probeName, probeType := range n.probeNameMap {
+		fallback := probeType.fallback
+		if fallback == "" {
+			continue
+		}
+		if _, ok := n.probeNameMap["TCP_"+fallback]; ok {
+			n.probeNameMap[probeName].fallback = "TCP_" + fallback
+		} else {
+			n.probeNameMap[probeName].fallback = "UDP_" + fallback
+		}
 	}
 }
 
@@ -138,151 +332,54 @@ func (n *Nmap) isCommand(line string) bool {
 	return false
 }
 
-func (n *Nmap) getFinger(response response, requestName string) *TcpFinger {
-	data := n.convResponse(response.string)
-
-	finger := n.probeGroup[requestName].match(data)
-
-	if response.tls {
-		if finger.Service == "http" {
-			finger.Service = "https"
-		}
+func (n *Nmap) sortOfRarity(list ProbeList) ProbeList {
+	if len(list) == 0 {
+		return list
+	}
+	var raritySplice []int
+	for _, probeName := range list {
+		rarity := n.probeNameMap[probeName].rarity
+		raritySplice = append(raritySplice, rarity)
 	}
 
-	if finger.Service != "" || n.probeGroup[requestName].fallback == "" {
-		//标记当前探针名称
-		finger.ProbeName = requestName
-		return finger
-	}
-
-	fallback := n.probeGroup[requestName].fallback
-	for fallback != "" {
-		logger.Println(requestName, " fallback is :", fallback)
-		finger = n.probeGroup[fallback].match(data)
-		fallback = n.probeGroup[fallback].fallback
-		if finger.Service != "" {
-			break
-		}
-	}
-	//标记当前探针名称
-	finger.ProbeName = requestName
-	return finger
-}
-
-func (n *Nmap) convResponse(s1 string) string {
-	//	为了适配go语言的沙雕正则，只能讲二进制强行转换成UTF-8
-	b1 := []byte(s1)
-	var r1 []rune
-	for _, i := range b1 {
-		r1 = append(r1, rune(i))
-	}
-	s2 := string(r1)
-	return s2
-}
-
-func (n *Nmap) loads(s string) {
-	lines := strings.Split(s, "\n")
-	var probeArr []string
-	p := newProbe()
-	for _, line := range lines {
-		if !n.isCommand(line) {
-			continue
-		}
-		commandName := line[:strings.Index(line, " ")]
-		if commandName == "Exclude" {
-			n.loadExclude(line)
-			continue
-		}
-		if commandName == "Probe" {
-			if len(probeArr) != 0 {
-				p.loads(probeArr)
-				n.pushProbe(p)
+	for i := 0; i < len(raritySplice)-1; i++ {
+		for j := 0; j < len(raritySplice)-i-1; j++ {
+			if raritySplice[j] > raritySplice[j+1] {
+				m := raritySplice[j+1]
+				raritySplice[j+1] = raritySplice[j]
+				raritySplice[j] = m
+				mp := list[j+1]
+				list[j+1] = list[j]
+				list[j] = mp
 			}
-			probeArr = []string{}
-			p.Clean()
 		}
-		probeArr = append(probeArr, line)
 	}
-	p.loads(probeArr)
-	n.pushProbe(p)
+
+	for _, probeName := range list {
+		rarity := n.probeNameMap[probeName].rarity
+		raritySplice = append(raritySplice, rarity)
+	}
+
+	return list
 }
 
-func (n *Nmap) loadExclude(expr string) {
-	var exclude = newPort()
-	expr = expr[strings.Index(expr, " ")+1:]
-	for _, s := range strings.Split(expr, ",") {
-		if !exclude.Load(s) {
-			panic(errors.New("exclude 语句格式错误"))
-		}
-	}
-	n.exclude = exclude
-}
+//工具函数
 
-func (n *Nmap) pushProbe(p *probe) {
-	PROBE := newProbe()
-	*PROBE = *p
+func DnsScan(host string, port int) bool {
+	addr := fmt.Sprintf("%s:%d", host, port)
 
-	n.probeSort = append(n.probeSort, p.request.name)
-	n.probeGroup[p.request.name] = PROBE
-
-	//建立端口扫描对应表，将根据端口号决定使用何种请求包
-	//如果端口列表为空，则为全端口
-	if p.rarity > n.filter {
-		return
-	}
-	//0记录所有使用的探针
-	n.portProbeMap[0] = append(n.portProbeMap[0], p.request.name)
-
-	//分别压入sslports,ports
-	for _, i := range p.ports.value {
-		n.portProbeMap[i] = append(n.portProbeMap[i], p.request.name)
-	}
-	for _, i := range p.sslports.value {
-		n.portProbeMap[i] = append(n.portProbeMap[i], p.request.name)
-	}
-
-}
-
-func (n *Nmap) ScanByProbeSlice(probeSlice []string) *TcpBanner {
-	b := NewTcpBanner(n.target.host, n.target.port)
-	for _, requestName := range probeSlice {
-		if IsInStrArr(n.usedProbeSlice, requestName) {
-			continue
-		}
-		b.Load(n.getTcpBanner(n.probeGroup[requestName]))
-		//如果端口未开放，则等待10s后重新连接
-		if b.status == Closed {
-			time.Sleep(time.Second * 10)
-			b.Load(n.getTcpBanner(n.probeGroup[requestName]))
-		}
-		logger.Printf("Target:%s,Probe:%s,Status:%s,Service:%s,Response:%s", b.Target.URI(), requestName, b.StatusDisplay(), b.TcpFinger.Service, strconv.Quote(b.Response.string))
-		if b.status == Closed || b.status == Matched {
-			break
-		}
-		if n.target.port == 53 {
-			if DnsScan(n.target.URI()) {
-				b.TcpFinger.Service = "dns"
-				b.Response.string = "dns"
-				b.MATCHED()
-			} else {
-				b.CLOSED()
+	r := &net.Resolver{
+		PreferGo: true,
+		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+			d := net.Dialer{
+				Timeout: 2 * time.Second,
 			}
-			break
-		}
+			return d.DialContext(ctx, "udp", addr)
+		},
 	}
-	return &b
-}
-
-func (n *Nmap) fixFallback() {
-	for probeName, probeType := range n.probeGroup {
-		fallback := probeType.fallback
-		if fallback == "" {
-			continue
-		}
-		if _, ok := n.probeGroup["TCP_"+fallback]; ok {
-			n.probeGroup[probeName].fallback = "TCP_" + fallback
-		} else {
-			n.probeGroup[probeName].fallback = "UDP_" + fallback
-		}
+	_, err := r.LookupHost(context.Background(), "www.baidu.com")
+	if err != nil {
+		return false
 	}
+	return true
 }

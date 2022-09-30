@@ -1,6 +1,7 @@
 package gonmap
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -13,17 +14,17 @@ type match struct {
 	service       string
 	pattern       string
 	patternRegexp *regexp.Regexp
-	versioninfo   *TcpFinger
+	versionInfo   *FingerPrint
 }
 
-var MATCH_LOAD_REGEXPS = []*regexp.Regexp{
+var matchLoadRegexps = []*regexp.Regexp{
 	regexp.MustCompile("^([a-zA-Z0-9-_./]+) m\\|([^|]+)\\|([is]{0,2})(?: (.*))?$"),
 	regexp.MustCompile("^([a-zA-Z0-9-_./]+) m=([^=]+)=([is]{0,2})(?: (.*))?$"),
 	regexp.MustCompile("^([a-zA-Z0-9-_./]+) m%([^%]+)%([is]{0,2})(?: (.*))?$"),
 	regexp.MustCompile("^([a-zA-Z0-9-_./]+) m@([^@]+)@([is]{0,2})(?: (.*))?$"),
 }
 
-var MATCH_VARSIONINFO_REGEXPS = map[string]*regexp.Regexp{
+var matchVersionInfoRegexps = map[string]*regexp.Regexp{
 	"PRODUCTNAME": regexp.MustCompile("p/([^/]+)/"),
 	"VERSION":     regexp.MustCompile("v/([^/]+)/"),
 	"INFO":        regexp.MustCompile("i/([^/]+)/"),
@@ -32,43 +33,41 @@ var MATCH_VARSIONINFO_REGEXPS = map[string]*regexp.Regexp{
 	"DEVICE":      regexp.MustCompile("d/([^/]+)/"),
 }
 
-var MATCH_VERSIONINFO_HELPER_P_REGEXP = regexp.MustCompile(`\$P\((\d)\)`)
-var MATCH_VERSIONINFO_HELPER_REGEXP = regexp.MustCompile(`\$(\d)`)
+var matchVersionInfoHelperRegxP = regexp.MustCompile(`\$P\((\d)\)`)
+var matchVersionInfoHelperRegx = regexp.MustCompile(`\$(\d)`)
 
-func newMatch() *match {
-	return &match{
-		soft:        false,
-		service:     "",
-		pattern:     "",
-		versioninfo: newFinger(),
-	}
-}
+func parseMatch(s string, soft bool) *match {
+	var m = &match{}
+	var regx *regexp.Regexp
 
-func (m *match) load(s string, soft bool) bool {
-	var MATCH_LOAD_REGEXP *regexp.Regexp
-	for _, r := range MATCH_LOAD_REGEXPS {
+	for _, r := range matchLoadRegexps {
 		if r.MatchString(s) {
-			MATCH_LOAD_REGEXP = r
+			regx = r
 		}
 	}
-	if MATCH_LOAD_REGEXP == nil {
-		return false
+
+	if regx == nil {
+		panic(errors.New("match 语句参数不正确"))
 	}
-	args := MATCH_LOAD_REGEXP.FindStringSubmatch(s)
+
+	args := regx.FindStringSubmatch(s)
 	m.soft = soft
 	m.service = args[1]
 	m.service = FixProtocol(m.service)
 	m.pattern = args[2]
-	m.versioninfo.Service = m.service
-	m.versioninfo.ProductName = m.getVersionInfo(s, "PRODUCTNAME")
-	m.versioninfo.Version = m.getVersionInfo(s, "VERSION")
-	m.versioninfo.Info = m.getVersionInfo(s, "INFO")
-	m.versioninfo.Hostname = m.getVersionInfo(s, "HOSTNAME")
-	m.versioninfo.OperatingSystem = m.getVersionInfo(s, "OS")
-	m.versioninfo.DeviceType = m.getVersionInfo(s, "INFO")
-
 	m.patternRegexp = m.getPatternRegexp(m.pattern, args[3])
-	return true
+	m.versionInfo = &FingerPrint{
+		ProbeName:        "",
+		MatchRegexString: "",
+		Service:          m.service,
+		ProductName:      m.getVersionInfo(s, "PRODUCTNAME"),
+		Version:          m.getVersionInfo(s, "VERSION"),
+		Info:             m.getVersionInfo(s, "INFO"),
+		Hostname:         m.getVersionInfo(s, "HOSTNAME"),
+		OperatingSystem:  m.getVersionInfo(s, "OS"),
+		DeviceType:       m.getVersionInfo(s, "DEVICE"),
+	}
+	return m
 }
 
 func (m *match) getPatternRegexp(pattern string, opt string) *regexp.Regexp {
@@ -93,21 +92,21 @@ func (m *match) getPatternRegexp(pattern string, opt string) *regexp.Regexp {
 }
 
 func (m *match) getVersionInfo(s string, regID string) string {
-	if MATCH_VARSIONINFO_REGEXPS[regID].MatchString(s) {
-		return MATCH_VARSIONINFO_REGEXPS[regID].FindStringSubmatch(s)[1]
+	if matchVersionInfoRegexps[regID].MatchString(s) {
+		return matchVersionInfoRegexps[regID].FindStringSubmatch(s)[1]
 	} else {
 		return ""
 	}
 }
 
-func (m *match) makeVersionInfo(s string, f *TcpFinger) {
-	f.Info = m.makeVersionInfoSubHelper(s, m.versioninfo.Info)
-	f.DeviceType = m.makeVersionInfoSubHelper(s, m.versioninfo.DeviceType)
-	f.Hostname = m.makeVersionInfoSubHelper(s, m.versioninfo.Hostname)
-	f.OperatingSystem = m.makeVersionInfoSubHelper(s, m.versioninfo.OperatingSystem)
-	f.ProductName = m.makeVersionInfoSubHelper(s, m.versioninfo.ProductName)
-	f.Version = m.makeVersionInfoSubHelper(s, m.versioninfo.Version)
-	f.Service = m.makeVersionInfoSubHelper(s, m.versioninfo.Service)
+func (m *match) makeVersionInfo(s string, f *FingerPrint) {
+	f.Info = m.makeVersionInfoSubHelper(s, m.versionInfo.Info)
+	f.DeviceType = m.makeVersionInfoSubHelper(s, m.versionInfo.DeviceType)
+	f.Hostname = m.makeVersionInfoSubHelper(s, m.versionInfo.Hostname)
+	f.OperatingSystem = m.makeVersionInfoSubHelper(s, m.versionInfo.OperatingSystem)
+	f.ProductName = m.makeVersionInfoSubHelper(s, m.versionInfo.ProductName)
+	f.Version = m.makeVersionInfoSubHelper(s, m.versionInfo.Version)
+	f.Service = m.makeVersionInfoSubHelper(s, m.versionInfo.Service)
 }
 
 func (m *match) makeVersionInfoSubHelper(s string, pattern string) string {
@@ -119,16 +118,16 @@ func (m *match) makeVersionInfoSubHelper(s string, pattern string) string {
 	}
 	sArr := m.patternRegexp.FindStringSubmatch(s)
 
-	if MATCH_VERSIONINFO_HELPER_P_REGEXP.MatchString(pattern) {
-		pattern = MATCH_VERSIONINFO_HELPER_P_REGEXP.ReplaceAllStringFunc(pattern, func(repl string) string {
-			a := MATCH_VERSIONINFO_HELPER_P_REGEXP.FindStringSubmatch(repl)[1]
+	if matchVersionInfoHelperRegxP.MatchString(pattern) {
+		pattern = matchVersionInfoHelperRegxP.ReplaceAllStringFunc(pattern, func(repl string) string {
+			a := matchVersionInfoHelperRegxP.FindStringSubmatch(repl)[1]
 			return "$" + a
 		})
 	}
 
-	if MATCH_VERSIONINFO_HELPER_REGEXP.MatchString(pattern) {
-		pattern = MATCH_VERSIONINFO_HELPER_REGEXP.ReplaceAllStringFunc(pattern, func(repl string) string {
-			i, _ := strconv.Atoi(MATCH_VERSIONINFO_HELPER_REGEXP.FindStringSubmatch(repl)[1])
+	if matchVersionInfoHelperRegx.MatchString(pattern) {
+		pattern = matchVersionInfoHelperRegx.ReplaceAllStringFunc(pattern, func(repl string) string {
+			i, _ := strconv.Atoi(matchVersionInfoHelperRegx.FindStringSubmatch(repl)[1])
 			return sArr[i]
 		})
 	}

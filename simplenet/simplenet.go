@@ -17,24 +17,36 @@ func tcpSend(protocol string, netloc string, data string, duration time.Duration
 		return "", errors.New(err.Error() + " STEP1:CONNECT")
 	}
 	defer conn.Close()
-	buf := make([]byte, size)
 	_, err = conn.Write([]byte(data))
 	if err != nil {
 		return "", errors.New(err.Error() + " STEP2:WRITE")
 	}
-	//设置读取超时Deadline
-	_ = conn.SetReadDeadline(time.Now().Add(duration * 2))
-	//等待回复时长
-	time.Sleep(time.Second)
 	//读取数据
-	length, err := conn.Read(buf)
-	if err != nil && err.Error() != "EOF" {
+	var buf []byte              // big buffer
+	var tmp = make([]byte, 256) // using small tmo buffer for demonstrating
+	var length int
+	for {
+		//设置读取超时Deadline
+		_ = conn.SetReadDeadline(time.Now().Add(time.Second * 3))
+		length, err = conn.Read(tmp)
+		if err != nil {
+			break
+		}
+		buf = append(buf, tmp[:length]...)
+		if length < len(tmp) {
+			break
+		}
+		if len(buf) > size {
+			break
+		}
+	}
+	if err != nil && err != io.EOF {
 		return "", errors.New(err.Error() + " STEP3:READ")
 	}
-	if length == 0 {
+	if len(buf) == 0 {
 		return "", errors.New("STEP3:response is empty")
 	}
-	return string(buf[:length]), nil
+	return string(buf), nil
 }
 
 func tlsSend(protocol string, netloc string, data string, duration time.Duration, size int) (string, error) {
@@ -43,11 +55,11 @@ func tlsSend(protocol string, netloc string, data string, duration time.Duration
 		InsecureSkipVerify: true,
 		MinVersion:         tls.VersionTLS10,
 	}
-	dial := &net.Dialer{
+	dialer := &net.Dialer{
 		Timeout:  duration,
 		Deadline: time.Now().Add(duration * 2),
 	}
-	conn, err := tls.DialWithDialer(dial, protocol, netloc, config)
+	conn, err := tls.DialWithDialer(dialer, protocol, netloc, config)
 	if err != nil {
 		return "", errors.New(err.Error() + " STEP1:CONNECT")
 	}
@@ -56,46 +68,32 @@ func tlsSend(protocol string, netloc string, data string, duration time.Duration
 	if err != nil {
 		return "", errors.New(err.Error() + " STEP2:WRITE")
 	}
-	buf := make([]byte, size)
-	_ = conn.SetReadDeadline(time.Now().Add(duration * 2))
-	//等待回复时长
-	time.Sleep(time.Second)
 	//读取数据
-	length, err := conn.Read(buf)
-	if err != nil && err.Error() != "EOF" {
+	var buf []byte              // big buffer
+	var tmp = make([]byte, 256) // using small tmo buffer for demonstrating
+	var length int
+	for {
+		//设置读取超时Deadline
+		_ = conn.SetReadDeadline(time.Now().Add(time.Second * 3))
+		length, err = conn.Read(tmp)
+		if err != nil {
+			break
+		}
+		buf = append(buf, tmp[:length]...)
+		if length < len(tmp) {
+			break
+		}
+		if len(buf) > size {
+			break
+		}
+	}
+	if err != nil && err != io.EOF {
 		return "", errors.New(err.Error() + " STEP3:READ")
 	}
-	if length == 0 {
-		return "", errors.New("response is empty")
-	}
-	return string(buf[:length]), nil
-}
-
-func TcpConnectCheck(protocol string, netloc string, data string, duration time.Duration, size int) (string, error) {
-	protocol = strings.ToLower(protocol)
-	conn, err := net.DialTimeout(protocol, netloc, duration)
-	if err != nil {
-		return "", errors.New(err.Error() + " STEP1:CONNECT")
-	}
-	defer conn.Close()
-	buf := make([]byte, size)
-	_, err = conn.Write([]byte(data))
-	if err != nil {
-		return "", errors.New(err.Error() + " STEP2:WRITE")
-	}
-	//设置读取超时Deadline
-	_ = conn.SetReadDeadline(time.Now().Add(duration))
-	//等待回复时长
-	time.Sleep(time.Millisecond * 500)
-	//读取数据
-	length, err := conn.Read(buf)
-	if err != nil && err.Error() != "EOF" {
-		return "", errors.New(err.Error() + " STEP3:READ")
-	}
-	if length == 0 {
+	if len(buf) == 0 {
 		return "", errors.New("STEP3:response is empty")
 	}
-	return string(buf[:length]), nil
+	return string(buf), nil
 }
 
 func Send(protocol string, tls bool, netloc string, data string, duration time.Duration, size int) (string, error) {

@@ -2,78 +2,62 @@ package gonmap
 
 import (
 	"errors"
-	"github.com/lcvvvv/gonmap/lib/simplenet"
+	"fmt"
+	"github.com/lcvvvv/gonmap/simplenet"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 )
 
-var PROBE_LOAD_REGEXP = regexp.MustCompile("^(UDP|TCP) ([a-zA-Z0-9-_./]+) (?:q\\|([^|]*)\\|)$")
-var PROBE_INT_REGEXP = regexp.MustCompile(`^(\d+)$`)
-var PROBE_STRING_REGEXP = regexp.MustCompile(`^([a-zA-Z0-9-_./]+)$`)
-
 type probe struct {
-	rarity       int
-	ports        *port
-	sslports     *port
-	totalwaitms  time.Duration
-	tcpwrappedms time.Duration
-	request      *request
-	matchGroup   []*match
-	fallback     string
+	//探针级别
+	rarity int
+	//探针名称
+	name string
+	//探针适用默认端口号
+	ports PortList
+	//探针适用SSL端口号
+	sslports PortList
 
-	response        response
-	softMatchFilter string
+	//totalwaitms  time.Duration
+	//tcpwrappedms time.Duration
+
+	//探针对应指纹库
+	matchGroup []*match
+	//探针指纹库若匹配失败，则会尝试使用fallback指定探针的指纹库
+	fallback string
+
+	//探针发送协议类型
+	protocol string
+	//探针发送数据
+	sendRaw string
 }
 
-func newProbe() *probe {
-	return &probe{
-		rarity:       1,
-		totalwaitms:  time.Duration(0),
-		tcpwrappedms: time.Duration(0),
+func (p *probe) scan(host string, port int, tls bool, timeout time.Duration, size int) (string, bool, error) {
+	uri := fmt.Sprintf("%s:%d", host, port)
 
-		ports:      newPort(),
-		sslports:   newPort(),
-		request:    newRequest(),
-		matchGroup: []*match{},
-		fallback:   "",
+	sendRaw := strings.Replace(p.sendRaw, "{Host}", fmt.Sprintf("%s:%d", host, port), -1)
 
-		response:        newResponse(),
-		softMatchFilter: "",
+	text, err := simplenet.Send(p.protocol, tls, uri, sendRaw, timeout, size)
+	if err == nil {
+		return text, tls, nil
 	}
+	if strings.Contains(err.Error(), "STEP1") && tls == true {
+		text, err := simplenet.Send(p.protocol, false, uri, p.sendRaw, timeout, size)
+		return text, false, err
+	}
+	return "", false, err
 }
 
-func (p *probe) loads(sArr []string) {
-	for _, s := range sArr {
-		p.load(s)
-	}
-}
+func (p *probe) match(s string) *FingerPrint {
+	var f = &FingerPrint{}
+	var softFilter string
 
-func (p *probe) scan(t target) (response, error) {
-	tls := p.sslports.Exist(t.port)
-	text, err := simplenet.Send(p.request.protocol, tls, t.URI(), p.request.string, p.totalwaitms, 512)
-	if err != nil {
-		if strings.Contains(err.Error(), "STEP1") && tls == true {
-			tls = false
-			text, err = simplenet.Send(p.request.protocol, tls, t.URI(), p.request.string, p.totalwaitms, 512)
-		}
-	}
-	return response{
-		string: text,
-		tls:    tls,
-	}, err
-}
-
-func (p *probe) match(s string) *TcpFinger {
-	var f = newFinger()
-	if p.matchGroup == nil {
-		return f
-	}
 	for _, m := range p.matchGroup {
 		//实现软筛选
-		if p.softMatchFilter != "" {
-			if m.service != p.softMatchFilter {
+		if softFilter != "" {
+			if m.service != softFilter {
 				continue
 			}
 		}
@@ -84,7 +68,7 @@ func (p *probe) match(s string) *TcpFinger {
 			if m.soft {
 				//如果为软捕获，这设置筛选器
 				f.Service = m.service
-				p.softMatchFilter = m.service
+				softFilter = m.service
 				continue
 			} else {
 				//如果为硬捕获则直接获取指纹信息
@@ -94,12 +78,24 @@ func (p *probe) match(s string) *TcpFinger {
 			}
 		}
 	}
-	//清空软匹配过滤器
-	p.softMatchFilter = ""
 	return f
 }
 
-func (p *probe) load(s string) {
+var probeExprRegx = regexp.MustCompile("^(UDP|TCP) ([a-zA-Z0-9-_./]+) (?:q\\|([^|]*)\\|)$")
+var probeIntRegx = regexp.MustCompile(`^(\d+)$`)
+var probeStrRegx = regexp.MustCompile(`^([a-zA-Z0-9-_./]+)$`)
+
+func parseProbe(lines []string) *probe {
+	var p = &probe{}
+	p.ports = emptyPortList
+	p.sslports = emptyPortList
+	for _, line := range lines {
+		p.loadLine(line)
+	}
+	return p
+}
+
+func (p *probe) loadLine(s string) {
 	//分解命令
 	i := strings.Index(s, " ")
 	commandName := s[:i]
@@ -117,9 +113,9 @@ func (p *probe) load(s string) {
 	case "sslports":
 		p.loadPorts(commandArgs, true)
 	case "totalwaitms":
-		p.totalwaitms = time.Duration(p.getInt(commandArgs)) * time.Millisecond
+		//p.totalwaitms = time.Duration(p.getInt(commandArgs)) * time.Millisecond
 	case "tcpwrappedms":
-		p.tcpwrappedms = time.Duration(p.getInt(commandArgs)) * time.Millisecond
+		//p.tcpwrappedms = time.Duration(p.getInt(commandArgs)) * time.Millisecond
 	case "rarity":
 		p.rarity = p.getInt(commandArgs)
 	case "fallback":
@@ -129,26 +125,25 @@ func (p *probe) load(s string) {
 
 func (p *probe) loadProbe(s string) {
 	//Probe <protocol> <probename> <probestring>
-	if !PROBE_LOAD_REGEXP.MatchString(s) {
+	if !probeExprRegx.MatchString(s) {
 		panic(errors.New("probe 语句格式不正确"))
 	}
-	args := PROBE_LOAD_REGEXP.FindStringSubmatch(s)
+	args := probeExprRegx.FindStringSubmatch(s)
 	if args[1] == "" || args[2] == "" {
 		panic(errors.New("probe 参数格式不正确"))
 	}
-	p.request.protocol = args[1]
-	p.request.name = args[1] + "_" + args[2]
+	p.protocol = args[1]
+	p.name = args[1] + "_" + args[2]
 	str := args[3]
 	str = strings.ReplaceAll(str, `\0`, `\x00`)
 	str = strings.ReplaceAll(str, `"`, `${double-quoted}`)
 	str = `"` + str + `"`
 	str, _ = strconv.Unquote(str)
 	str = strings.ReplaceAll(str, `${double-quoted}`, `"`)
-	p.request.string = str
+	p.sendRaw = str
 }
 
 func (p *probe) loadMatch(s string, soft bool) {
-	m := newMatch()
 	//"match": misc.MakeRegexpCompile("^([a-zA-Z0-9-_./]+) m\\|([^|]+)\\|([is]{0,2}) (.*)$"),
 	//match <Service> <pattern>|<patternopt> [<versioninfo>]
 	//	"matchVersioninfoProductname": misc.MakeRegexpCompile("p/([^/]+)/"),
@@ -157,47 +152,29 @@ func (p *probe) loadMatch(s string, soft bool) {
 	//	"matchVersioninfoHostname":    misc.MakeRegexpCompile("h/([^/]+)/"),
 	//	"matchVersioninfoOS":          misc.MakeRegexpCompile("o/([^/]+)/"),
 	//	"matchVersioninfoDevice":      misc.MakeRegexpCompile("d/([^/]+)/"),
-	if m.load(s, soft) == false {
-		panic(errors.New("match 语句参数不正确"))
-	}
-	p.matchGroup = append(p.matchGroup, m)
+
+	p.matchGroup = append(p.matchGroup, parseMatch(s, soft))
 }
 
-func (p *probe) loadPorts(s string, ssl bool) {
+func (p *probe) loadPorts(expr string, ssl bool) {
 	if ssl {
-		if !p.sslports.LoadS(s) {
-			panic(errors.New("sslports 语句参数不正确"))
-		}
+		p.sslports = parsePortList(expr)
 	} else {
-		if !p.ports.LoadS(s) {
-			panic(errors.New("ports 语句参数不正确"))
-		}
+		p.ports = parsePortList(expr)
 	}
 }
 
 func (p *probe) getInt(expr string) int {
-	if !PROBE_INT_REGEXP.MatchString(expr) {
+	if !probeIntRegx.MatchString(expr) {
 		panic(errors.New("totalwaitms or tcpwrappedms 语句参数不正确"))
 	}
-	i, _ := strconv.Atoi(PROBE_INT_REGEXP.FindStringSubmatch(expr)[1])
+	i, _ := strconv.Atoi(probeIntRegx.FindStringSubmatch(expr)[1])
 	return i
 }
 
 func (p *probe) getString(expr string) string {
-	if !PROBE_STRING_REGEXP.MatchString(expr) {
+	if !probeStrRegx.MatchString(expr) {
 		panic(errors.New("fallback 语句参数不正确"))
 	}
-	return PROBE_STRING_REGEXP.FindStringSubmatch(expr)[1]
-}
-
-func (p *probe) Clean() {
-	p.ports = newPort()
-	p.sslports = newPort()
-
-	p.request = newRequest()
-	p.matchGroup = []*match{}
-	p.fallback = ""
-
-	p.response = newResponse()
-	p.softMatchFilter = ""
+	return probeStrRegx.FindStringSubmatch(expr)[1]
 }
