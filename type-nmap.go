@@ -3,7 +3,7 @@ package gonmap
 import (
 	"context"
 	"fmt"
-	"net"
+	"github.com/miekg/dns"
 	"strings"
 	"time"
 )
@@ -367,20 +367,15 @@ func (n *Nmap) sortOfRarity(list ProbeList) ProbeList {
 }
 
 //工具函数
-
 func DnsScan(host string, port int) bool {
-	addr := fmt.Sprintf("%s:%d", host, port)
-
-	r := &net.Resolver{
-		PreferGo: true,
-		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
-			d := net.Dialer{
-				Timeout: 2 * time.Second,
-			}
-			return d.DialContext(ctx, "udp", addr)
-		},
+	domainServer := fmt.Sprintf("%s:%d", host, port)
+	c := dns.Client{
+		Timeout: 2 * time.Second,
 	}
-	_, err := r.LookupHost(context.Background(), "www.baidu.com")
+	m := dns.Msg{}
+	// 最终都会指向一个ip 也就是typeA, 这样就可以返回所有层的cname.
+	m.SetQuestion("www.baidu.com.", dns.TypeA)
+	_, _, err := c.Exchange(&m, domainServer)
 	if err != nil {
 		return false
 	}
