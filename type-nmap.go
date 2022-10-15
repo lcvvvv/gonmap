@@ -93,18 +93,22 @@ func (n *Nmap) getRealResponse(host string, port int, timeout time.Duration, pro
 }
 
 func (n *Nmap) getResponseBySSLSecondProbes(host string, port int, timeout time.Duration) (status Status, response *Response) {
-	status, response = n.getResponseByProbes(host, port, timeout, n.
-		sslSecondProbeMap...)
-	if status != Matched {
-		return status, response
+	status, response = n.getResponseByProbes(host, port, timeout, n.sslSecondProbeMap...)
+	if status != Matched || response.FingerPrint.Service == "ssl" {
+		status, response = n.getResponseByHTTPS(host, port, timeout)
 	}
-	if response.FingerPrint.Service == "ssl" {
-		return NotMatched, response
+	if status == Matched && response.FingerPrint.Service != "ssl" {
+		if response.FingerPrint.Service == "http" {
+			response.FingerPrint.Service = "https"
+		}
+		return Matched, response
 	}
-	if response.FingerPrint.Service == "http" {
-		response.FingerPrint.Service = "https"
-	}
-	return Matched, response
+	return NotMatched, response
+}
+
+func (n *Nmap) getResponseByHTTPS(host string, port int, timeout time.Duration) (status Status, response *Response) {
+	var httpRequest = n.probeNameMap["TCP_GetRequest"]
+	return n.getResponse(host, port, true, timeout, httpRequest)
 }
 
 func (n *Nmap) getResponseByProbes(host string, port int, timeout time.Duration, probes ...string) (status Status, response *Response) {
@@ -114,8 +118,9 @@ func (n *Nmap) getResponseByProbes(host string, port int, timeout time.Duration,
 			continue
 		}
 		n.probeUsed = append(n.probeUsed, requestName)
+		p := n.probeNameMap[requestName]
 
-		status, response = n.getResponse(host, port, timeout, n.probeNameMap[requestName])
+		status, response = n.getResponse(host, port, p.sslports.exist(port), timeout, p)
 		//如果端口未开放，则等待10s后重新连接
 		//if b.status == Closed {
 		//	time.Sleep(time.Second * 10)
@@ -138,7 +143,7 @@ func (n *Nmap) getResponseByProbes(host string, port int, timeout time.Duration,
 	return status, response
 }
 
-func (n *Nmap) getResponse(host string, port int, timeout time.Duration, p *probe) (Status, *Response) {
+func (n *Nmap) getResponse(host string, port int, tls bool, timeout time.Duration, p *probe) (Status, *Response) {
 	if port == 53 {
 		if DnsScan(host, port) {
 			return Matched, &dnsResponse
@@ -146,9 +151,7 @@ func (n *Nmap) getResponse(host string, port int, timeout time.Duration, p *prob
 			return Closed, nil
 		}
 	}
-
-	text, tls, err := p.scan(host, port, p.sslports.exist(port), timeout, 10240)
-
+	text, tls, err := p.scan(host, port, tls, timeout, 10240)
 	if err != nil {
 		if strings.Contains(err.Error(), "STEP1") {
 			return Closed, nil
