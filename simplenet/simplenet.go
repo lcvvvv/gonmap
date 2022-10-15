@@ -29,11 +29,11 @@ func tcpSend(protocol string, netloc string, data string, duration time.Duration
 		//设置读取超时Deadline
 		_ = conn.SetReadDeadline(time.Now().Add(time.Second * 3))
 		length, err = conn.Read(tmp)
-		if err != nil {
-			break
-		}
 		buf = append(buf, tmp[:length]...)
 		if length < len(tmp) {
+			break
+		}
+		if err != nil {
 			break
 		}
 		if len(buf) > size {
@@ -76,11 +76,11 @@ func tlsSend(protocol string, netloc string, data string, duration time.Duration
 		//设置读取超时Deadline
 		_ = conn.SetReadDeadline(time.Now().Add(time.Second * 3))
 		length, err = conn.Read(tmp)
-		if err != nil {
-			break
-		}
 		buf = append(buf, tmp[:length]...)
 		if length < len(tmp) {
+			break
+		}
+		if err != nil {
 			break
 		}
 		if len(buf) > size {
