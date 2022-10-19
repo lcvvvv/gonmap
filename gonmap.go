@@ -12,7 +12,7 @@ var nmap *Nmap
 var ProbesCount = 0     //探针数
 var MatchCount = 0      //指纹数
 var UsedProbesCount = 0 //已使用探针数
-var UsedMatchCount = 0  //已使用探针数
+var UsedMatchCount = 0  //已使用指纹数
 
 var logger = Logger(log.New(os.Stderr, "[gonmap] ", log.Ldate|log.Ltime|log.Lshortfile))
 
