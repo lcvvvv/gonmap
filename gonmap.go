@@ -229,5 +229,6 @@ func FixProtocol(oldProtocol string) string {
 			return oldProtocol[4:] + "-ssl"
 		}
 	}
+	oldProtocol = strings.ReplaceAll(oldProtocol, "_", "-")
 	return oldProtocol
 }
