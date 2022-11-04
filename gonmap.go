@@ -3,6 +3,7 @@ package gonmap
 import (
 	"log"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -186,6 +187,8 @@ func GuessProtocol(port int) string {
 	return protocol
 }
 
+var regexpFirstNum = regexp.MustCompile(`^\d`)
+
 func FixProtocol(oldProtocol string) string {
 	//进行最后输出修饰
 	if oldProtocol == "ssl/http" {
@@ -228,6 +231,9 @@ func FixProtocol(oldProtocol string) string {
 		if oldProtocol[:4] == "ssl/" {
 			return oldProtocol[4:] + "-ssl"
 		}
+	}
+	if regexpFirstNum.MatchString(oldProtocol) {
+		oldProtocol = "S" + oldProtocol
 	}
 	oldProtocol = strings.ReplaceAll(oldProtocol, "_", "-")
 	return oldProtocol
